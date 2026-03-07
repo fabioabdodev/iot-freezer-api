@@ -1,13 +1,40 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Headers,
+  HttpCode,
+  Logger,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { IngestService } from './ingest.service';
 import { TemperatureDto } from './dto/temperature.dto';
 
 @Controller('iot') // mantém a URL antiga: /iot/temperature
 export class IngestController {
-  constructor(private ingest: IngestService) {}
+  private readonly logger = new Logger(IngestController.name);
+
+  constructor(
+    private readonly ingest: IngestService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post('temperature')
-  async temperature(@Body() body: TemperatureDto) {
+  @HttpCode(200)
+  async temperature(
+    @Headers('x-device-key') deviceKey: string | undefined,
+    @Body() body: TemperatureDto,
+  ) {
+    const expectedKey = this.configService.get<string>('DEVICE_API_KEY');
+
+    if (!expectedKey || !deviceKey || deviceKey !== expectedKey) {
+      this.logger.warn(
+        `Unauthorized ingest attempt for device_id=${body.device_id}`,
+      );
+      throw new UnauthorizedException('Invalid device key');
+    }
+
     await this.ingest.ingestTemperature(body);
     return { ok: true };
   }

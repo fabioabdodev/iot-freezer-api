@@ -1,9 +1,13 @@
+# dependencies
+/node_modules
+
 # compiled output
 /dist
-/node_modules
 /build
+/.next
+/out
 
-# Logs
+# logs
 logs
 *.log
 npm-debug.log*
@@ -14,8 +18,9 @@ lerna-debug.log*
 
 # OS
 .DS_Store
+Thumbs.db
 
-# Tests
+# tests
 /coverage
 /.nyc_output
 
@@ -28,7 +33,7 @@ lerna-debug.log*
 .settings/
 *.sublime-workspace
 
-# IDE - VSCode
+# VS Code
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -37,22 +42,33 @@ lerna-debug.log*
 
 # dotenv environment variable files
 .env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
+.env.*
+!.env.example
 
-# temp directory
+# temp directories
 .temp
 .tmp
+/tmp
+/temp
+.cache/
 
-# Runtime data
+# runtime data
 pids
 *.pid
 *.seed
 *.pid.lock
 
-# Diagnostic reports (https://nodejs.org/api/report.html)
+# diagnostic reports
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
+# prisma
 /generated/prisma
+prisma/*.db
+prisma/*.db-journal
+
+# next / frontend
+.next/
+out/
+
+# misc local files
+*.local

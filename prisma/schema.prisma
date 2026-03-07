@@ -18,6 +18,8 @@ model TemperatureLog {
 
 model Device {
   id       String    @id
+  clientId String?
+  client   Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
   name     String?
   location String?
   lastSeen DateTime?
@@ -25,4 +27,17 @@ model Device {
   isOffline    Boolean   @default(false)
   offlineSince DateTime?
   lastAlertAt  DateTime?
+
+  // configurable temperature boundaries for each device
+  minTemperature Float? // null => no lower limit
+  maxTemperature Float? // null => no upper limit
+
+  @@index([clientId])
+}
+
+model Client {
+  id        String   @id
+  name      String
+  createdAt DateTime @default(now())
+  devices   Device[]
 }

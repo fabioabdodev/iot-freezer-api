@@ -1,0 +1,14 @@
+CREATE TABLE "Client" (
+  "id" TEXT NOT NULL,
+  "name" TEXT NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "Client_pkey" PRIMARY KEY ("id")
+);
+
+ALTER TABLE "Device"
+ADD CONSTRAINT "Device_clientId_fkey"
+FOREIGN KEY ("clientId")
+REFERENCES "Client"("id")
+ON DELETE SET NULL
+ON UPDATE CASCADE;
+
