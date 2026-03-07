@@ -57,8 +57,8 @@ export class MonitorService {
         where: { id: device.id },
         data: {
           isOffline: true,
-          offlineSince: new Date(),
-          lastAlertAt: new Date(),
+          offlineSince: new Date(Date.now()),
+          lastAlertAt: new Date(Date.now()),
         },
       });
 
@@ -128,7 +128,7 @@ export class MonitorService {
     const above = rule.maxValue != null && temperature > rule.maxValue;
     const outOfRange = below || above;
 
-    const now = new Date();
+    const now = new Date(Date.now());
     const state = await this.prisma.alertRuleState.upsert({
       where: {
         ruleId_deviceId: {
@@ -223,7 +223,7 @@ export class MonitorService {
       const above = device.maxTemperature != null && temp > device.maxTemperature;
 
       if (below || above) {
-        const now = new Date();
+        const now = new Date(Date.now());
         const cooldownMs = temperatureCooldownMinutes * 60 * 1000;
         const lastAlert = device.lastAlertAt?.getTime() ?? 0;
 

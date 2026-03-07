@@ -11,3 +11,17 @@ export type DeviceSummary = {
   lastTemperature: number | null;
   lastReadingAt: string | null;
 };
+
+export type DeviceReading = {
+  temperature: number;
+  createdAt: string;
+};
+
+export type DeviceInput = {
+  id: string;
+  clientId?: string;
+  name?: string;
+  location?: string;
+  minTemperature?: number;
+  maxTemperature?: number;
+};
