@@ -1,98 +1,195 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+﻿# API de Monitoramento IoT (Freezer)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend em NestJS para monitoramento de dispositivos IoT, com ingestão de temperatura, detecção de offline, regras de alerta configuráveis e integração por webhook.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+- Node.js + NestJS
+- Prisma ORM
+- PostgreSQL (Supabase)
+- Scheduler (cron)
+- Integração de alertas via webhook (n8n)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Funcionalidades atuais
 
-## Project setup
+- Ingestão de temperatura via `POST /iot/temperature`
+- Autenticação de device por `x-device-key`
+- Rate limit por device
+- Gestão de devices (`POST/GET/PATCH/DELETE`)
+- Dashboard backend (`GET /devices` e histórico)
+- Leitura normalizada e agregada por resolução (`/readings`)
+- Gestão de clientes (`/clients`)
+- Regras de alerta (`/alert-rules`)
+- Monitoramento offline + alerta por temperatura
+- Base multi-tenant (`clientId`)
 
-```bash
-$ npm install
-```
+## Requisitos
 
-## Compile and run the project
+- Node.js 20+
+- npm 10+
+- Banco PostgreSQL acessível
 
-```bash
-# development
-$ npm run start
+## Configuração
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
+1. Instale dependências:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm ci
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+2. Copie o arquivo de exemplo de ambiente:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+cp .env.example .env
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+3. Ajuste variáveis em `.env` (principalmente `DATABASE_URL` e webhooks).
 
-## Resources
+Observação importante: se a senha do banco tiver caracteres especiais (`@`, `:`, `/`, etc.), faça URL encode.
+Exemplo: `@` vira `%40`.
 
-Check out a few resources that may come in handy when working with NestJS:
+4. Gere o Prisma Client:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+npx prisma generate
+```
 
-## Support
+5. Aplique migrations:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+npx prisma migrate deploy
+```
 
-## Stay in touch
+6. Rode em desenvolvimento:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+npm run start:dev
+```
 
-## License
+## Endpoints principais
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Health
+
+- `GET /health`
+
+Resposta:
+
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-03-07T23:00:00.000Z"
+}
+```
+
+### Ingestão
+
+- `POST /iot/temperature`
+- Header obrigatório: `x-device-key`
+
+Payload:
+
+```json
+{
+  "device_id": "freezer_01",
+  "temperature": -12.3
+}
+```
+
+### Devices
+
+- `POST /devices`
+- `GET /devices?clientId=...&limit=...`
+- `GET /devices/:id?clientId=...`
+- `PATCH /devices/:id?clientId=...`
+- `DELETE /devices/:id?clientId=...`
+- `GET /devices/:id/readings?clientId=...&limit=...`
+
+### Readings
+
+- `GET /readings/:deviceId?clientId=...&sensor=temperature&limit=...&resolution=5m|15m|1h|1d`
+
+### Clients
+
+- `POST /clients`
+- `GET /clients`
+- `GET /clients/:id`
+- `PATCH /clients/:id`
+- `DELETE /clients/:id`
+
+### Alert Rules
+
+- `POST /alert-rules`
+- `GET /alert-rules?clientId=...&deviceId=...&sensorType=temperature&enabled=true|false`
+- `GET /alert-rules/:id`
+- `PATCH /alert-rules/:id`
+- `DELETE /alert-rules/:id`
+
+## Testes
+
+Unitários:
+
+```bash
+npm test -- --runInBand
+```
+
+E2E:
+
+```bash
+npm run test:e2e -- --runInBand
+```
+
+Build:
+
+```bash
+npm run build
+```
+
+## Docker
+
+Build da imagem:
+
+```bash
+docker build -t iot-freezer-api:latest .
+```
+
+Execução:
+
+```bash
+docker run --rm -p 3000:3000 --env-file .env iot-freezer-api:latest
+```
+
+Healthcheck do container usa `GET /health`.
+
+## CI
+
+Pipeline GitHub Actions em `.github/workflows/ci.yml`:
+
+- install (`npm ci`)
+- prisma generate
+- build
+- testes unitários
+- testes e2e
+
+## Variáveis de ambiente (resumo)
+
+- `PORT`
+- `DATABASE_URL`
+- `DEVICE_API_KEY`
+- `DEVICE_OFFLINE_MINUTES`
+- `MONITOR_INTERVAL_SECONDS`
+- `TEMPERATURE_ALERT_COOLDOWN_MINUTES`
+- `DEVICE_RATE_LIMIT_WINDOW_SECONDS`
+- `DEVICE_RATE_LIMIT_MAX_REQUESTS`
+- `DEVICE_RATE_LIMIT_MAX_TRACKED_DEVICES`
+- `CACHE_TTL_SECONDS`
+- `N8N_OFFLINE_WEBHOOK_URL`
+- `N8N_TEMPERATURE_ALERT_WEBHOOK_URL`
+- `ALERT_QUEUE_BATCH_SIZE`
+- `ALERT_QUEUE_RETRY_MAX`
+- `ALERT_QUEUE_RETRY_DELAY_MS`
+
+## Observações de produção
+
+- Backend e frontend devem rodar como serviços separados.
+- Não versionar segredos (`.env` já está no `.gitignore`).
+- Preferir deploy containerizado (Docker/Swarm).

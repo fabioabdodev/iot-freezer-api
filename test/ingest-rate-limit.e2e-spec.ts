@@ -5,6 +5,7 @@ import request from 'supertest';
 import { IngestController } from '../src/modules/ingest/ingest.controller';
 import { IngestService } from '../src/modules/ingest/ingest.service';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { CacheService } from '../src/infra/cache/cache.service';
 
 describe('Ingest Rate Limit (e2e)', () => {
   let app: INestApplication;
@@ -35,6 +36,10 @@ describe('Ingest Rate Limit (e2e)', () => {
             }),
           },
         },
+        {
+          provide: CacheService,
+          useValue: { invalidatePrefix: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -50,7 +55,7 @@ describe('Ingest Rate Limit (e2e)', () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) await app.close();
   });
 
   it('POST /iot/temperature should return 429 when requests exceed limit for same device', async () => {
@@ -75,4 +80,3 @@ describe('Ingest Rate Limit (e2e)', () => {
       .expect(429);
   });
 });
-

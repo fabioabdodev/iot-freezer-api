@@ -13,8 +13,12 @@ export class DevicesController {
   }
 
   @Get()
-  async listDevices(@Query('clientId') clientId?: string) {
-    return this.service.listForDashboard(clientId);
+  async listDevices(
+    @Query('clientId') clientId?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const parsedLimit = limit ? Number(limit) : undefined;
+    return this.service.listForDashboard(clientId, parsedLimit);
   }
 
   @Get(':id')

@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AlertDeliveryQueueService } from '../../infra/alerts/alert-delivery-queue.service';
 
 @Injectable()
 export class MonitorService {
@@ -10,6 +11,7 @@ export class MonitorService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly alertQueue: AlertDeliveryQueueService,
   ) {}
 
   @Cron('*/1 * * * *')
@@ -23,7 +25,6 @@ export class MonitorService {
 
     const cutoff = new Date(Date.now() - minutesOffline * 60 * 1000);
 
-    // Buscar devices que passaram do cutoff e ainda não foram marcados como offline
     const offlineCandidates = await this.prisma.device.findMany({
       where: {
         AND: [
@@ -51,7 +52,6 @@ export class MonitorService {
     this.logger.log(`cutoff=${cutoff.toISOString()}`);
     this.logger.log(`offlineCandidates=${offlineCandidates.length}`);
 
-    // Para cada device offline, marcar como offline e alertar (apenas 1x por transição)
     for (const device of offlineCandidates) {
       await this.prisma.device.update({
         where: { id: device.id },
@@ -63,21 +63,154 @@ export class MonitorService {
       });
 
       this.logger.warn(`Device ${device.id} ficou OFFLINE!`);
-
-      // TODO: implementar webhook n8n quando N8N_OFFLINE_WEBHOOK_URL estiver configurado
+      // TODO: enviar webhook de offline no proximo passo
     }
 
-    // Verificar limites de temperatura dos dispositivos configurados
-    const devicesWithLimits = await this.prisma.device.findMany({
+    const hasConfigurableRules = await this.processConfiguredTemperatureRules();
+    if (!hasConfigurableRules) {
+      await this.processLegacyDeviceThresholds(temperatureCooldownMinutes);
+    }
+  }
+
+  private async processConfiguredTemperatureRules() {
+    const rules = await this.prisma.alertRule.findMany({
       where: {
-        OR: [
-          { minTemperature: { not: null } },
-          { maxTemperature: { not: null } },
-        ],
+        enabled: true,
+        sensorType: 'temperature',
+      },
+      orderBy: { createdAt: 'asc' },
+    } as any);
+
+    if (rules.length === 0) {
+      return false;
+    }
+
+    const devicesByClient = new Map<string, any[]>();
+
+    for (const rule of rules as any[]) {
+      let devices: any[] = [];
+
+      if (rule.deviceId) {
+        const device = await this.prisma.device.findUnique({
+          where: { id: rule.deviceId },
+        });
+        if (device && (device as any).clientId === rule.clientId) {
+          devices = [device];
+        }
+      } else {
+        if (!devicesByClient.has(rule.clientId)) {
+          const clientDevices = await this.prisma.device.findMany({
+            where: { clientId: rule.clientId },
+          } as any);
+          devicesByClient.set(rule.clientId, clientDevices);
+        }
+        devices = devicesByClient.get(rule.clientId) ?? [];
+      }
+
+      for (const device of devices) {
+        await this.evaluateTemperatureRuleForDevice(rule, device);
+      }
+    }
+
+    return true;
+  }
+
+  private async evaluateTemperatureRuleForDevice(rule: any, device: any) {
+    const lastLog = await this.prisma.temperatureLog.findFirst({
+      where: { deviceId: device.id },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!lastLog) return;
+
+    const temperature = lastLog.temperature;
+    const below = rule.minValue != null && temperature < rule.minValue;
+    const above = rule.maxValue != null && temperature > rule.maxValue;
+    const outOfRange = below || above;
+
+    const now = new Date();
+    const state = await this.prisma.alertRuleState.upsert({
+      where: {
+        ruleId_deviceId: {
+          ruleId: rule.id,
+          deviceId: device.id,
+        },
+      } as any,
+      update: {},
+      create: {
+        ruleId: rule.id,
+        deviceId: device.id,
+      } as any,
+    } as any);
+
+    if (!outOfRange) {
+      if ((state as any).breachStartedAt) {
+        await this.prisma.alertRuleState.update({
+          where: { id: (state as any).id },
+          data: { breachStartedAt: null },
+        } as any);
+      }
+      return;
+    }
+
+    const breachStartedAt = (state as any).breachStartedAt ?? now;
+    if (!(state as any).breachStartedAt) {
+      await this.prisma.alertRuleState.update({
+        where: { id: (state as any).id },
+        data: { breachStartedAt },
+      } as any);
+    }
+
+    const toleranceMs = (rule.toleranceMinutes ?? 0) * 60 * 1000;
+    if (now.getTime() - breachStartedAt.getTime() < toleranceMs) {
+      return;
+    }
+
+    const cooldownMs = (rule.cooldownMinutes ?? 5) * 60 * 1000;
+    const lastTriggeredAt = (state as any).lastTriggeredAt as Date | null;
+    if (
+      lastTriggeredAt &&
+      now.getTime() - lastTriggeredAt.getTime() < cooldownMs
+    ) {
+      return;
+    }
+
+    this.logger.warn(
+      `Rule ${rule.id} alerta de temperatura para device ${device.id}: ${temperature} (limites ${rule.minValue}-${rule.maxValue})`,
+    );
+
+    await this.sendTemperatureAlert({
+      deviceId: device.id,
+      clientId: rule.clientId,
+      ruleId: rule.id,
+      temperature,
+      minTemperature: rule.minValue ?? null,
+      maxTemperature: rule.maxValue ?? null,
+      occurredAt: now.toISOString(),
+    });
+
+    await this.prisma.alertRuleState.update({
+      where: { id: (state as any).id },
+      data: {
+        breachStartedAt,
+        lastTriggeredAt: now,
       },
     } as any);
 
-    for (const device of devicesWithLimits) {
+    await this.prisma.device.update({
+      where: { id: device.id },
+      data: { lastAlertAt: now },
+    });
+  }
+
+  private async processLegacyDeviceThresholds(temperatureCooldownMinutes: number) {
+    const devicesWithLimits = await this.prisma.device.findMany({
+      where: {
+        OR: [{ minTemperature: { not: null } }, { maxTemperature: { not: null } }],
+      },
+    } as any);
+
+    for (const device of devicesWithLimits as any[]) {
       const lastLog = await this.prisma.temperatureLog.findFirst({
         where: { deviceId: device.id },
         orderBy: { createdAt: 'desc' },
@@ -86,15 +219,10 @@ export class MonitorService {
       if (!lastLog) continue;
 
       const temp = lastLog.temperature;
-      const dev: any = device;
-
-      const below =
-        dev.minTemperature != null && temp < dev.minTemperature;
-      const above =
-        dev.maxTemperature != null && temp > dev.maxTemperature;
+      const below = device.minTemperature != null && temp < device.minTemperature;
+      const above = device.maxTemperature != null && temp > device.maxTemperature;
 
       if (below || above) {
-        // evitar spam: só enviar alerta se não foi disparado recentemente
         const now = new Date();
         const cooldownMs = temperatureCooldownMinutes * 60 * 1000;
         const lastAlert = device.lastAlertAt?.getTime() ?? 0;
@@ -106,14 +234,16 @@ export class MonitorService {
           });
 
           this.logger.warn(
-            `Device ${device.id} temperatura fora do limite: ${temp} (limites ${dev.minTemperature}-${dev.maxTemperature})`,
+            `Device ${device.id} temperatura fora do limite: ${temp} (limites ${device.minTemperature}-${device.maxTemperature})`,
           );
 
           await this.sendTemperatureAlert({
             deviceId: device.id,
+            clientId: (device as any).clientId ?? null,
+            ruleId: null,
             temperature: temp,
-            minTemperature: dev.minTemperature ?? null,
-            maxTemperature: dev.maxTemperature ?? null,
+            minTemperature: device.minTemperature ?? null,
+            maxTemperature: device.maxTemperature ?? null,
             occurredAt: now.toISOString(),
           });
         }
@@ -123,35 +253,22 @@ export class MonitorService {
 
   private async sendTemperatureAlert(payload: {
     deviceId: string;
+    clientId: string | null;
+    ruleId: string | null;
     temperature: number;
     minTemperature: number | null;
     maxTemperature: number | null;
     occurredAt: string;
   }) {
-    const webhookUrl = this.configService.get<string>(
-      'N8N_TEMPERATURE_ALERT_WEBHOOK_URL',
-    );
-
-    if (!webhookUrl) return;
-
-    try {
-      await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'temperature_out_of_range',
-          device_id: payload.deviceId,
-          temperature: payload.temperature,
-          min_temperature: payload.minTemperature,
-          max_temperature: payload.maxTemperature,
-          occurred_at: payload.occurredAt,
-        }),
-      });
-    } catch (error) {
-      this.logger.error(
-        `Falha ao enviar alerta de temperatura para device ${payload.deviceId}`,
-        error instanceof Error ? error.message : String(error),
-      );
-    }
+    this.alertQueue.enqueue({
+      type: 'temperature_out_of_range',
+      clientId: payload.clientId,
+      ruleId: payload.ruleId,
+      deviceId: payload.deviceId,
+      temperature: payload.temperature,
+      minTemperature: payload.minTemperature,
+      maxTemperature: payload.maxTemperature,
+      occurredAt: payload.occurredAt,
+    });
   }
 }

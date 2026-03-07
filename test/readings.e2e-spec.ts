@@ -4,6 +4,8 @@ import request from 'supertest';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { ReadingsController } from '../src/modules/readings/readings.controller';
 import { ReadingsService } from '../src/modules/readings/readings.service';
+import { CacheService } from '../src/infra/cache/cache.service';
+import { ConfigService } from '@nestjs/config';
 
 describe('Readings (e2e)', () => {
   let app: INestApplication;
@@ -49,6 +51,14 @@ describe('Readings (e2e)', () => {
       providers: [
         ReadingsService,
         { provide: PrismaService, useValue: fakePrisma },
+        {
+          provide: CacheService,
+          useValue: { get: jest.fn().mockReturnValue(null), set: jest.fn() },
+        },
+        {
+          provide: ConfigService,
+          useValue: { get: jest.fn((key: string) => (key === 'CACHE_TTL_SECONDS' ? 15 : undefined)) },
+        },
       ],
     }).compile();
 
@@ -64,7 +74,7 @@ describe('Readings (e2e)', () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) await app.close();
   });
 
   it('GET /readings/:deviceId should return normalized readings', async () => {
@@ -100,5 +110,19 @@ describe('Readings (e2e)', () => {
       .get('/readings/freezer_01?clientId=client_b')
       .expect(404);
   });
-});
 
+  it('GET /readings/:deviceId with resolution should return aggregated points', async () => {
+    await request(app.getHttpServer())
+      .get('/readings/freezer_01?resolution=5m')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body[0]).toEqual(
+          expect.objectContaining({
+            count: expect.any(Number),
+            minValue: expect.any(Number),
+            maxValue: expect.any(Number),
+          }),
+        );
+      });
+  });
+});

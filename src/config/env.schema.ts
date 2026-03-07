@@ -17,6 +17,10 @@ export const envSchema = z.object({
   DEVICE_RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().default(60),
   DEVICE_RATE_LIMIT_MAX_REQUESTS: z.coerce.number().default(30),
   DEVICE_RATE_LIMIT_MAX_TRACKED_DEVICES: z.coerce.number().default(10000),
+  CACHE_TTL_SECONDS: z.coerce.number().default(15),
+  ALERT_QUEUE_BATCH_SIZE: z.coerce.number().default(20),
+  ALERT_QUEUE_RETRY_MAX: z.coerce.number().default(3),
+  ALERT_QUEUE_RETRY_DELAY_MS: z.coerce.number().default(2000),
 
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 });

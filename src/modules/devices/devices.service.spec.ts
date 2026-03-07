@@ -2,10 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { DevicesService } from './devices.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CacheService } from '../../infra/cache/cache.service';
+import { ConfigService } from '@nestjs/config';
 
 describe('DevicesService', () => {
   let service: DevicesService;
   let fakePrisma: any;
+  let fakeCache: any;
+  let fakeConfigService: any;
 
   beforeEach(async () => {
     fakePrisma = {
@@ -18,11 +22,24 @@ describe('DevicesService', () => {
       },
       temperatureLog: { findMany: jest.fn(), deleteMany: jest.fn() },
     };
+    fakeCache = {
+      get: jest.fn().mockReturnValue(null),
+      set: jest.fn(),
+      invalidatePrefix: jest.fn(),
+    };
+    fakeConfigService = {
+      get: jest.fn((key: string) => {
+        if (key === 'CACHE_TTL_SECONDS') return 15;
+        return undefined;
+      }),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DevicesService,
         { provide: PrismaService, useValue: fakePrisma },
+        { provide: CacheService, useValue: fakeCache },
+        { provide: ConfigService, useValue: fakeConfigService },
       ],
     }).compile();
 
@@ -139,6 +156,7 @@ describe('DevicesService', () => {
     expect(fakePrisma.device.findMany).toHaveBeenCalledWith({
       where: { clientId: 'client_a' },
       orderBy: { id: 'asc' },
+      take: 100,
     });
   });
 

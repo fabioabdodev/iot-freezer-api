@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TemperatureDto } from './dto/temperature.dto';
+import { CacheService } from '../../infra/cache/cache.service';
 
 @Injectable()
 export class IngestService {
@@ -11,6 +12,7 @@ export class IngestService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly cache: CacheService,
   ) {}
 
   async ingestTemperature(body: TemperatureDto) {
@@ -36,6 +38,10 @@ export class IngestService {
         isOffline: false,
       },
     });
+
+    this.cache.invalidatePrefix('devices:dashboard:');
+    this.cache.invalidatePrefix('devices:history:');
+    this.cache.invalidatePrefix('readings:');
   }
 
   private enforceDeviceRateLimit(deviceId: string) {

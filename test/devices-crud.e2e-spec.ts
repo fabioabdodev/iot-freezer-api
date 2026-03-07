@@ -4,6 +4,8 @@ import request from 'supertest';
 import { DevicesController } from '../src/modules/devices/devices.controller';
 import { DevicesService } from '../src/modules/devices/devices.service';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { CacheService } from '../src/infra/cache/cache.service';
+import { ConfigService } from '@nestjs/config';
 
 describe('Devices CRUD (e2e)', () => {
   let app: INestApplication;
@@ -91,6 +93,18 @@ describe('Devices CRUD (e2e)', () => {
       providers: [
         DevicesService,
         { provide: PrismaService, useValue: fakePrisma },
+        {
+          provide: CacheService,
+          useValue: {
+            get: jest.fn().mockReturnValue(null),
+            set: jest.fn(),
+            invalidatePrefix: jest.fn(),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: { get: jest.fn((key: string) => (key === 'CACHE_TTL_SECONDS' ? 15 : undefined)) },
+        },
       ],
     }).compile();
 
@@ -106,7 +120,7 @@ describe('Devices CRUD (e2e)', () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) await app.close();
   });
 
   it('POST /devices should create a device', async () => {
@@ -183,4 +197,3 @@ describe('Devices CRUD (e2e)', () => {
     await request(app.getHttpServer()).delete('/devices/freezer_01').expect(404);
   });
 });
-

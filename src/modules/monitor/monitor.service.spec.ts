@@ -2,97 +2,133 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { MonitorService } from './monitor.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AlertDeliveryQueueService } from '../../infra/alerts/alert-delivery-queue.service';
 
 describe('MonitorService', () => {
   let service: MonitorService;
   let fakePrisma: any;
   let fakeConfigService: any;
-  let fetchMock: jest.Mock;
+  let fakeAlertQueue: { enqueue: jest.Mock };
 
   beforeEach(async () => {
     fakePrisma = {
       device: {
-        findMany: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([]),
+        findUnique: jest.fn(),
         update: jest.fn(),
       },
       temperatureLog: {
         findFirst: jest.fn(),
       },
+      alertRule: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      alertRuleState: {
+        upsert: jest.fn(),
+        update: jest.fn(),
+      },
     };
+
     fakeConfigService = {
       get: jest.fn((key: string) => {
         if (key === 'DEVICE_OFFLINE_MINUTES') return 5;
-        if (key === 'N8N_TEMPERATURE_ALERT_WEBHOOK_URL') return undefined;
+        if (key === 'TEMPERATURE_ALERT_COOLDOWN_MINUTES') return 5;
         return undefined;
       }),
     };
-    fetchMock = jest.fn().mockResolvedValue({ ok: true });
-    (global as any).fetch = fetchMock;
+    fakeAlertQueue = { enqueue: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MonitorService,
         { provide: PrismaService, useValue: fakePrisma },
         { provide: ConfigService, useValue: fakeConfigService },
+        { provide: AlertDeliveryQueueService, useValue: fakeAlertQueue },
       ],
     }).compile();
 
     service = module.get<MonitorService>(MonitorService);
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it('warns when a device has a temperature outside its limits', async () => {
-    // prepare one device with limits and an out-of-range log
-    const device = { id: 'dev1', minTemperature: 0, maxTemperature: 10, lastAlertAt: null };
-    fakePrisma.device.findMany
-      .mockResolvedValueOnce([]) // offlineCandidates (no offline devices)
-      .mockResolvedValueOnce([]) // allDevices for logging (ignored)
-      .mockResolvedValueOnce([device]); // devicesWithLimits
+  it('enqueues alert when configured temperature rule is violated', async () => {
+    const now = new Date('2026-03-07T10:00:00.000Z');
+    jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
 
+    fakePrisma.alertRule.findMany.mockResolvedValue([
+      {
+        id: 'rule_1',
+        clientId: 'client_a',
+        deviceId: 'dev1',
+        sensorType: 'temperature',
+        minValue: 0,
+        maxValue: 10,
+        cooldownMinutes: 5,
+        toleranceMinutes: 0,
+        enabled: true,
+      },
+    ]);
+
+    fakePrisma.device.findUnique.mockResolvedValue({
+      id: 'dev1',
+      clientId: 'client_a',
+    });
     fakePrisma.temperatureLog.findFirst.mockResolvedValue({ temperature: 15 });
-
-    const warnSpy = jest.spyOn((service as any).logger, 'warn');
-
-    await service.checkOfflineDevices();
-
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('temperatura fora do limite'),
-    );
-    expect(fakePrisma.device.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 'dev1' },
-        data: { lastAlertAt: expect.any(Date) },
-      }),
-    );
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it('sends webhook when temperature is outside limits and webhook is configured', async () => {
-    const device = { id: 'dev1', minTemperature: 0, maxTemperature: 10, lastAlertAt: null };
-    fakePrisma.device.findMany
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([device]);
-
-    fakePrisma.temperatureLog.findFirst.mockResolvedValue({ temperature: 15 });
-
-    fakeConfigService.get = jest.fn((key: string) => {
-      if (key === 'DEVICE_OFFLINE_MINUTES') return 5;
-      if (key === 'N8N_TEMPERATURE_ALERT_WEBHOOK_URL') return 'https://example.com/webhook';
-      return undefined;
+    fakePrisma.alertRuleState.upsert.mockResolvedValue({
+      id: 'state_1',
+      breachStartedAt: null,
+      lastTriggeredAt: null,
     });
 
     await service.checkOfflineDevices();
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://example.com/webhook',
+    expect(fakeAlertQueue.enqueue).toHaveBeenCalledWith(
       expect.objectContaining({
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        type: 'temperature_out_of_range',
+        deviceId: 'dev1',
       }),
     );
+    expect(fakePrisma.alertRuleState.update).toHaveBeenCalled();
+  });
+
+  it('does not send webhook before tolerance window is reached', async () => {
+    const now = new Date('2026-03-07T10:00:00.000Z');
+    jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
+
+    fakePrisma.alertRule.findMany.mockResolvedValue([
+      {
+        id: 'rule_1',
+        clientId: 'client_a',
+        deviceId: 'dev1',
+        sensorType: 'temperature',
+        minValue: 0,
+        maxValue: 10,
+        cooldownMinutes: 5,
+        toleranceMinutes: 10,
+        enabled: true,
+      },
+    ]);
+
+    fakePrisma.device.findUnique.mockResolvedValue({
+      id: 'dev1',
+      clientId: 'client_a',
+    });
+    fakePrisma.temperatureLog.findFirst.mockResolvedValue({ temperature: 15 });
+    fakePrisma.alertRuleState.upsert.mockResolvedValue({
+      id: 'state_1',
+      breachStartedAt: now,
+      lastTriggeredAt: null,
+    });
+
+    await service.checkOfflineDevices();
+
+    expect(fakeAlertQueue.enqueue).not.toHaveBeenCalled();
   });
 });

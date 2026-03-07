@@ -4,6 +4,8 @@ import request from 'supertest';
 import { DevicesController } from '../src/modules/devices/devices.controller';
 import { DevicesService } from '../src/modules/devices/devices.service';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { CacheService } from '../src/infra/cache/cache.service';
+import { ConfigService } from '@nestjs/config';
 
 describe('Devices Dashboard (e2e)', () => {
   let app: INestApplication;
@@ -54,12 +56,13 @@ describe('Devices Dashboard (e2e)', () => {
 
     const fakePrisma = {
       device: {
-        findMany: jest.fn(({ where, orderBy }: any = {}) => {
+        findMany: jest.fn(({ where, orderBy, take }: any = {}) => {
           let values = devices.slice();
           if (where?.clientId) {
             values = values.filter((d) => d.clientId === where.clientId);
           }
           if (orderBy?.id === 'asc') values.sort((a, b) => a.id.localeCompare(b.id));
+          if (typeof take === 'number') values = values.slice(0, take);
           return Promise.resolve(values);
         }),
       },
@@ -100,6 +103,14 @@ describe('Devices Dashboard (e2e)', () => {
       providers: [
         DevicesService,
         { provide: PrismaService, useValue: fakePrisma },
+        {
+          provide: CacheService,
+          useValue: { get: jest.fn().mockReturnValue(null), set: jest.fn() },
+        },
+        {
+          provide: ConfigService,
+          useValue: { get: jest.fn((key: string) => (key === 'CACHE_TTL_SECONDS' ? 15 : undefined)) },
+        },
       ],
     }).compile();
 
@@ -115,7 +126,7 @@ describe('Devices Dashboard (e2e)', () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) await app.close();
   });
 
   it('GET /devices should return dashboard summary with last readings', async () => {
@@ -154,6 +165,15 @@ describe('Devices Dashboard (e2e)', () => {
             clientId: 'client_a',
           }),
         );
+      });
+  });
+
+  it('GET /devices?limit=1 should return limited dashboard rows', async () => {
+    await request(app.getHttpServer())
+      .get('/devices?limit=1')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toHaveLength(1);
       });
   });
 

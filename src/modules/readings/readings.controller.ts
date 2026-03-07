@@ -11,6 +11,7 @@ export class ReadingsController {
     @Query('clientId') clientId?: string,
     @Query('sensor') sensor?: string,
     @Query('limit') limit?: string,
+    @Query('resolution') resolution?: string,
   ) {
     const parsedLimit = limit ? Number(limit) : undefined;
     return this.readingsService.listByDevice(
@@ -18,6 +19,7 @@ export class ReadingsController {
       clientId,
       sensor ?? 'temperature',
       parsedLimit,
+      resolution,
     );
   }
 }

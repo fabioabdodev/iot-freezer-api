@@ -10,7 +10,9 @@ import { MonitorModule } from './modules/monitor/monitor.module';
 import { DevicesModule } from './modules/devices/devices.module';
 import { ReadingsModule } from './modules/readings/readings.module';
 import { ClientsModule } from './modules/clients/clients.module';
+import { AlertRulesModule } from './modules/alert-rules/alert-rules.module';
 import { validateEnv } from './config/env';
+import { InfraModule } from './infra/infra.module';
 
 @Module({
   imports: [
@@ -18,6 +20,7 @@ import { validateEnv } from './config/env';
       isGlobal: true,
       validate: validateEnv,
     }),
+    InfraModule,
     ScheduleModule.forRoot(),
     PrismaModule,
     IngestModule,
@@ -25,6 +28,7 @@ import { validateEnv } from './config/env';
     DevicesModule,
     ReadingsModule,
     ClientsModule,
+    AlertRulesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

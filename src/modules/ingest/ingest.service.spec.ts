@@ -3,11 +3,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { IngestService } from './ingest.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CacheService } from '../../infra/cache/cache.service';
 
 describe('IngestService', () => {
   let service: IngestService;
   let fakePrisma: any;
   let fakeConfigService: any;
+  let fakeCache: any;
 
   beforeEach(async () => {
     fakePrisma = {
@@ -22,12 +24,16 @@ describe('IngestService', () => {
         return undefined;
       }),
     };
+    fakeCache = {
+      invalidatePrefix: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         IngestService,
         { provide: PrismaService, useValue: fakePrisma },
         { provide: ConfigService, useValue: fakeConfigService },
+        { provide: CacheService, useValue: fakeCache },
       ],
     }).compile();
 

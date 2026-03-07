@@ -1,11 +1,17 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateDeviceDto } from './dto/update-device.dto';
 import { CreateDeviceDto } from './dto/create-device.dto';
+import { CacheService } from '../../infra/cache/cache.service';
 
 @Injectable()
 export class DevicesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cache: CacheService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async create(dto: CreateDeviceDto) {
     if (
@@ -28,13 +34,22 @@ export class DevicesService {
       isOffline: false,
     };
 
-    return this.prisma.device.create({ data });
+    const created = await this.prisma.device.create({ data });
+    this.invalidateDeviceCaches();
+    return created;
   }
 
-  async listForDashboard(clientId?: string) {
+  async listForDashboard(clientId?: string, limit = 100) {
+    const normalizedLimit = Number.isFinite(limit) ? limit : 100;
+    const safeLimit = Math.max(1, Math.min(normalizedLimit, 500));
+    const cacheKey = `devices:dashboard:${clientId ?? 'all'}:${safeLimit}`;
+    const cached = this.cache.get<any[]>(cacheKey);
+    if (cached) return cached;
+
     const devices = await this.prisma.device.findMany({
       where: clientId ? ({ clientId } as any) : undefined,
       orderBy: { id: 'asc' },
+      take: safeLimit,
     });
 
     if (devices.length === 0) return [];
@@ -53,7 +68,7 @@ export class DevicesService {
       ]),
     );
 
-    return devices.map((device) => {
+    const payload = devices.map((device) => {
       const latest = latestByDevice.get(device.id);
       return {
         id: device.id,
@@ -69,6 +84,9 @@ export class DevicesService {
         lastReadingAt: latest?.createdAt ?? null,
       };
     });
+
+    this.cache.set(cacheKey, payload, this.getCacheTtlSeconds());
+    return payload;
   }
 
   async findOne(id: string, clientId?: string) {
@@ -91,19 +109,26 @@ export class DevicesService {
     const normalizedLimit = Number.isFinite(limit) ? limit : 100;
     const safeLimit = Math.max(1, Math.min(normalizedLimit, 500));
 
+    const cacheKey = `devices:history:${id}:${clientId ?? 'all'}:${safeLimit}`;
+    const cached = this.cache.get<any[]>(cacheKey);
+    if (cached) return cached;
+
     const rows = await this.prisma.temperatureLog.findMany({
       where: { deviceId: id },
       orderBy: { createdAt: 'desc' },
       take: safeLimit,
     });
 
-    return rows
+    const payload = rows
       .slice()
       .reverse()
       .map((row) => ({
         temperature: row.temperature,
         createdAt: row.createdAt,
       }));
+
+    this.cache.set(cacheKey, payload, this.getCacheTtlSeconds());
+    return payload;
   }
 
   async remove(id: string, clientId?: string) {
@@ -118,7 +143,9 @@ export class DevicesService {
       where: { deviceId: id },
     });
 
-    return this.prisma.device.delete({ where: { id } });
+    const deleted = await this.prisma.device.delete({ where: { id } });
+    this.invalidateDeviceCaches();
+    return deleted;
   }
 
   async update(id: string, dto: UpdateDeviceDto, clientId?: string) {
@@ -153,11 +180,13 @@ export class DevicesService {
       maxTemperature: dto.maxTemperature,
     };
 
-    return this.prisma.device.upsert({
+    const upserted = await this.prisma.device.upsert({
       where: { id },
       update: data,
       create: { id, ...(clientId ? { clientId } : {}), ...data },
     });
+    this.invalidateDeviceCaches();
+    return upserted;
   }
 
   private async ensureDeviceBelongsToClient(id: string, clientId: string) {
@@ -166,5 +195,15 @@ export class DevicesService {
       throw new NotFoundException('Device not found for client');
     }
     return device;
+  }
+
+  private getCacheTtlSeconds() {
+    return this.configService.get<number>('CACHE_TTL_SECONDS') ?? 15;
+  }
+
+  private invalidateDeviceCaches() {
+    this.cache.invalidatePrefix('devices:dashboard:');
+    this.cache.invalidatePrefix('devices:history:');
+    this.cache.invalidatePrefix('readings:');
   }
 }
