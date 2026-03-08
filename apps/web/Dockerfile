@@ -19,14 +19,13 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV NEXT_PUBLIC_API_BASE_URL=https://api-monitor.virtuagil.com.br
 
-COPY --from=builder /app/.next/standalone ./
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/public ./apps/web/public
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/.next/static ./apps/web/.next/static
 
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 CMD node -e "const http=require('http');http.get('http://127.0.0.1:3000/api/health',res=>process.exit(res.statusCode===200?0:1)).on('error',()=>process.exit(1));"
 
-CMD ["sh", "-c", "if [ -f /app/server.js ]; then node /app/server.js; elif [ -f /app/apps/web/server.js ]; then node /app/apps/web/server.js; else echo 'server.js not found in /app or /app/apps/web' >&2; exit 1; fi"]
+CMD ["npm", "run", "start"]
