@@ -41,7 +41,6 @@ services:
 
   web:
     image: ghcr.io/fabioabdodev/iot-freezer-api/web:latest
-    command: ["node", "/app/app/server.js"]
     environment:
       NODE_ENV: production
       PORT: 3000

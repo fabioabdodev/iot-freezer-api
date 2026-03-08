@@ -79,6 +79,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Copy stack file to server
+        if: ${{ secrets.PORTAINER_WEBHOOK_URL == '' }}
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -89,6 +90,7 @@ jobs:
           target: /opt/iot-freezer-api
 
       - name: Deploy stack via SSH
+        if: ${{ secrets.PORTAINER_WEBHOOK_URL == '' }}
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -111,3 +113,9 @@ jobs:
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
             docker stack deploy -c deploy/swarm/stack.prod.yml iot-monitor --with-registry-auth
             docker service ls | grep iot-monitor
+
+      - name: Trigger Portainer webhook
+        if: ${{ secrets.PORTAINER_WEBHOOK_URL != '' }}
+        run: |
+          set -e
+          curl -fsSL -X POST "${{ secrets.PORTAINER_WEBHOOK_URL }}"
