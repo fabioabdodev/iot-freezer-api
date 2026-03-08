@@ -10,7 +10,7 @@ Stack principal:
 - NestJS
 - Prisma ORM
 - PostgreSQL (Supabase)
-- Docker
+- Docker swarm (portainer)
 - n8n (automação)
 - Evolution API (WhatsApp)
 

@@ -9,10 +9,10 @@ A aplicação roda em uma VPS na Hostinger KVM4 usando Docker Swarm.
 
 Stack disponível na infraestrutura:
 
-- Docker Swarm
+- Docker Swarm (portainer)
 - Traefik (reverse proxy)
 - Cloudflare (DNS)
-- PostgreSQL
+- PostgreSQL 
 - MySQL
 - Redis
 - n8n (automação e workflows) → workflows.virtuagil.com.br
