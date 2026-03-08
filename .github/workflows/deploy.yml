@@ -66,6 +66,8 @@ jobs:
         with:
           context: ./apps/web
           file: ./apps/web/Dockerfile
+          build-args: |
+            NEXT_PUBLIC_API_BASE_URL=https://api-monitor.virtuagil.com.br
           push: true
           tags: ${{ steps.meta_web.outputs.tags }}
           labels: ${{ steps.meta_web.outputs.labels }}

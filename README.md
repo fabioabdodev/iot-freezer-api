@@ -185,7 +185,7 @@ Arquivos adicionados:
 2. Garantir rede externa do Traefik:
 
 ```bash
-docker network create --driver overlay --attachable traefik-public
+docker network create --driver overlay --attachable network_public
 ```
 
 3. Criar pasta de deploy:
@@ -206,6 +206,7 @@ Configurar em `Settings > Secrets and variables > Actions`:
 - `VPS_SSH_KEY`
 - `GHCR_USERNAME`
 - `GHCR_TOKEN` (PAT com `read:packages`; se for publicar por outro usuário, incluir `write:packages`)
+- `PORTAINER_WEBHOOK_URL` (opcional, quando o deploy for disparado pelo Portainer em vez de SSH)
 
 ### 3. DNS no Cloudflare
 
@@ -226,8 +227,10 @@ Push na branch `main` (ou `workflow_dispatch`) dispara:
 1. Build + push de imagens para GHCR:
    - `ghcr.io/fabioabdodev/iot-freezer-api/api:latest`
    - `ghcr.io/fabioabdodev/iot-freezer-api/web:latest`
-2. Cópia do `stack.prod.yml` para VPS.
-3. `docker stack deploy` no Swarm.
+2. Se `PORTAINER_WEBHOOK_URL` estiver vazio: cópia do `stack.prod.yml` para VPS e `docker stack deploy` no Swarm.
+3. Se `PORTAINER_WEBHOOK_URL` estiver configurado: GitHub Actions chama o webhook do Portainer para atualizar a stack.
+
+Observação: o frontend usa `NEXT_PUBLIC_API_BASE_URL` no build da imagem web. O workflow já publica a imagem com `https://api-monitor.virtuagil.com.br` embutido no bundle.
 
 ## Variáveis de ambiente (resumo)
 
