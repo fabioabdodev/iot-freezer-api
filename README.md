@@ -66,6 +66,12 @@ npx prisma migrate deploy
 npm run start:dev
 ```
 
+7. Opcional: popule dados de demonstracao:
+
+```bash
+npm run db:seed
+```
+
 ## Endpoints principais
 
 ### Health
@@ -143,6 +149,70 @@ Build:
 ```bash
 npm run build
 ```
+
+## Simulador IoT
+
+Para testar a API e o dashboard sem hardware real:
+
+```bash
+npm run simulate:iot -- --device freezer_01 --api-key CHANGE_ME
+```
+
+Exemplos uteis:
+
+```bash
+# envia temperaturas aleatorias entre -18 e -12
+npm run simulate:iot -- --device freezer_01 --api-key CHANGE_ME
+
+# faz a temperatura subir e descer continuamente
+npm run simulate:iot -- --device freezer_02 --api-key CHANGE_ME --mode ramp --min -25 --max -8
+
+# a cada 10 envios gera um pico para testar alerta
+npm run simulate:iot -- --device freezer_03 --api-key CHANGE_ME --mode spike --spike-value 12 --interval-ms 2000
+
+# envia varios devices em paralelo para movimentar o dashboard
+npm run simulate:iot -- --devices freezer_01,freezer_02,freezer_03 --api-key CHANGE_ME --mode ramp
+
+# usa um preset pronto para simular temperatura entrando em alerta
+npm run simulate:iot -- --devices freezer_01,freezer_02 --api-key CHANGE_ME --preset alerta
+
+# cadastra/atualiza os devices antes de iniciar a simulacao
+npm run simulate:iot -- --devices freezer_01,freezer_02 --preset normal --client-id virtuagil --ensure-devices --api-key CHANGE_ME
+```
+
+Opcoes principais:
+
+- `--url`: URL base da API, padrao `http://localhost:3000`
+- `--device`: identificador do device simulado
+- `--devices`: lista separada por virgula para simular varios devices de uma vez
+- `--preset`: `normal`, `alerta`, `critico` ou `geladeira`
+- `--ensure-devices`: cadastra ou atualiza os devices automaticamente via API
+- `--api-key`: valor do header `x-device-key`
+- `--interval-ms`: intervalo entre leituras
+- `--min` e `--max`: faixa de temperatura
+- `--mode`: `random`, `ramp` ou `spike`
+- `--count`: quantidade de envios antes de encerrar
+
+Presets disponiveis:
+
+- `normal`: freezer operando dentro da faixa esperada
+- `alerta`: freezer oscilando perto do limite superior
+- `critico`: freezer fora da faixa para testar alertas mais agressivos
+- `geladeira`: faixa positiva para equipamentos refrigerados, nao congelados
+
+## Seed de dados
+
+Para popular a base com clientes, devices, regras e historico inicial:
+
+```bash
+npm run db:seed
+```
+
+O seed e idempotente:
+
+- atualiza clientes e devices demo existentes
+- recria configuracao esperada das regras
+- so cria historico de temperatura se o device ainda nao tiver leituras
 
 ## Docker
 
@@ -255,3 +325,49 @@ Observação: o frontend usa `NEXT_PUBLIC_API_BASE_URL` no build da imagem web. 
 - Backend e frontend devem rodar como serviços separados.
 - Não versionar segredos (`.env` já está no `.gitignore`).
 - Preferir deploy containerizado (Docker/Swarm).
+
+## Checklist de pós-deploy
+
+Depois de um deploy em produção, valide nesta ordem:
+
+1. GitHub Actions:
+   - workflow `deploy` com `build-and-push` e `deploy-swarm` em verde
+2. Portainer:
+   - stack `iot-monitor`
+   - serviços `iot-monitor_api` e `iot-monitor_web` em `1/1`
+3. Health checks:
+   - `https://monitor.virtuagil.com.br/api/health`
+   - `https://api-monitor.virtuagil.com.br/health`
+4. Aplicação:
+   - abrir o dashboard web
+   - validar carregamento de dispositivos
+
+## Rotação de segredos
+
+Se alguma credencial for exposta, troque nesta ordem:
+
+1. Senha do banco no provedor (`Supabase` ou equivalente)
+2. `DEVICE_API_KEY`
+3. `GHCR_TOKEN`
+4. Atualize os valores em:
+   - `Settings > Secrets and variables > Actions` no GitHub
+   - `/opt/iot-freezer-api/.env.prod` na VPS
+5. Rode o workflow `deploy` novamente
+
+## Comandos úteis na VPS
+
+```bash
+docker service ls
+docker service ps iot-monitor_web
+docker service ps iot-monitor_api
+docker service logs iot-monitor_web --tail 100
+docker service logs iot-monitor_api --tail 100
+cat /opt/iot-freezer-api/.env.prod
+```
+
+## Nota sobre Portainer CE
+
+No `Portainer Community Edition`, `stack webhooks` não ficam disponíveis. Neste projeto, o fluxo recomendado é:
+
+1. build e push da imagem no GitHub Actions
+2. deploy da stack por `SSH`
