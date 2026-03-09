@@ -7,7 +7,9 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "db:seed": "node ./scripts/db-seed.mjs",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "simulate:iot": "node ./scripts/iot-simulator.mjs",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -18,6 +20,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
+  },
+  "prisma": {
+    "seed": "node ./scripts/db-seed.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
