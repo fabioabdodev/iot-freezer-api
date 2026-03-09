@@ -1,102 +1,80 @@
 ---
-description: regras de versionamento, CI/CD e deploy com GitHub Actions.
+description: regras de versionamento, CI/CD e deploy com GitHub Actions
 applyTo: '**'
 ---
 
-# CI_CD_RULES.md — Regras de CI/CD e versionamento
+# CI_CD_RULES.md - Regras de CI/CD e versionamento
 
-Este projeto é versionado no GitHub e utilizará GitHub Actions para automação de build e deploy.
+## Versionamento
 
----
+- O codigo fonte deve ficar no GitHub
+- Nunca versionar `.env`
+- Nunca versionar chaves privadas, tokens ou credenciais
+- Mudancas grandes devem ser separadas em commits coesos quando fizer sentido
 
-# Versionamento
-
-Regras:
-
-- O código fonte deve ser enviado para o GitHub.
-- Nunca enviar arquivos com segredos.
-- Nunca versionar `.env`.
-- Nunca versionar chaves privadas, tokens ou credenciais.
-
-Arquivos sensíveis devem ser configurados via:
+Arquivos sensiveis devem ser configurados via:
 
 - GitHub Secrets
-- variáveis de ambiente no servidor
-- secrets do Docker Swarm
+- `.env.prod` na VPS
+- variaveis de ambiente do Docker Swarm
 
----
+## Pipelines atuais
 
-# GitHub Actions
+O projeto usa GitHub Actions com dois workflows:
 
-O projeto utilizará GitHub Actions para:
+- `ci.yml`
+  - `npm ci`
+  - `prisma generate`
+  - `npm run build`
+  - testes unitarios
+  - testes e2e
+- `deploy.yml`
+  - build e push das imagens `api` e `web` para GHCR
+  - deploy da stack no Swarm
 
-- build
-- testes
-- deploy
+## Deploy atual
 
-Fluxo esperado:
+Ambiente de producao:
 
-1. push para branch principal
-2. GitHub Actions executa pipeline
-3. build de imagem Docker
-4. push para registry
-5. deploy no servidor usando Docker Swarm
-
----
-
-# Deploy
-
-Ambiente de deploy:
-
-- VPS com Docker Swarm
+- VPS na Hostinger
+- Docker Swarm
 - Traefik
-- containers Docker
+- GHCR como registry
+- Portainer Community Edition
 
-Regras:
+Fluxo padrao:
 
-- a aplicação deve ser compatível com containerização
-- preferir variáveis de ambiente para configuração
-- deploy deve ser automatizável
-- frontend e backend devem poder ser deployados separadamente
+1. push para `main`
+2. GitHub Actions publica as imagens
+3. workflow faz `docker stack deploy` por SSH
 
----
+Observacao:
 
-# Segurança de CI/CD
+- no Portainer Community Edition, webhook de stack nao e o fluxo padrao
+- o caminho principal deste projeto e deploy por SSH
 
-Nunca colocar no repositório:
+## Regras de seguranca
 
-- DATABASE_URL
-- API keys
-- tokens do GitHub
+Nunca colocar no repositorio:
+
+- `DATABASE_URL`
+- `DEVICE_API_KEY`
+- `GHCR_TOKEN`
 - tokens do Supabase
-- tokens do Evolution
-- webhooks sensíveis
-- secrets do n8n
+- webhooks sensiveis
+- credenciais da VPS
 
 Sempre usar:
 
 - GitHub Secrets
-- secrets do Swarm
-- environment variables
+- `.env.prod` fora do Git
+- environment variables no Swarm
 
----
+## Regras para agentes
 
-# Estrutura de pipelines
+Ao sugerir automacao, deploy ou pipeline:
 
-Back-end e front-end devem poder possuir pipelines independentes.
-
-Exemplo futuro:
-
-- pipeline do backend NestJS
-- pipeline do frontend Next.js
-
----
-
-# Regras para agentes
-
-Ao sugerir deploy, CI/CD ou automações:
-
-- considerar GitHub Actions como padrão
-- considerar Docker Swarm como ambiente de produção
-- não sugerir deploy manual como padrão
-- não sugerir segredos hardcoded em arquivos
+- considerar GitHub Actions como padrao
+- considerar Docker Swarm como ambiente de producao
+- considerar `api` e `web` como servicos independentes
+- nao sugerir segredos hardcoded

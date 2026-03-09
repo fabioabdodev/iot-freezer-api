@@ -1,102 +1,120 @@
 ---
-description: regras do projeto
+description: regras do projeto e conceitos do produto no estado atual
 applyTo: '**'
 ---
-# PROJECT_RULES.md — Regras e conceitos do produto (MVP -> SaaS)
 
-## Visão do produto
-Construir um **monitoramento inteligente** para equipamentos usando sensores IoT.
-O primeiro caso (MVP) é **temperatura de freezer** (vacinas, alimentos, laboratórios).
+# PROJECT_RULES.md - Regras e conceitos do produto
 
-O produto deve ser vendável como serviço:
-- alertas (WhatsApp)
-- histórico
-- status online/offline
-- dashboard básico
+## Visao do produto
 
-## MVP (o que entra agora)
-### Funcionalidades obrigatórias
-1. Ingestão de temperatura via HTTP:
-   - POST /iot/temperature
-2. Persistência:
-   - salvar logs de temperatura
-   - manter estado do device (lastSeen)
-3. Monitoramento:
-   - detectar device OFFLINE por inatividade
-   - alertar uma única vez por evento (sem spam)
-4. Operação:
-   - rodar local (dev) e em servidor (Swarm)
-   - banco: Supabase (Postgres)
+Construir um monitoramento inteligente para equipamentos usando sensores IoT.
+O primeiro caso do produto continua sendo temperatura de freezer, mas a base ja
+foi preparada para clientes, dispositivos, historico, alertas e dashboard web.
 
-### Funcionalidades que NÃO entram no MVP (por enquanto)
-- multi-tenant (vários clientes)
+## Escopo atual do projeto
+
+Funcionalidades ja implementadas:
+
+1. Ingestao de temperatura via HTTP
+   - `POST /iot/temperature`
+2. Persistencia
+   - leituras de temperatura
+   - estado do device (`lastSeen`, `isOffline`, `offlineSince`)
+3. Monitoramento
+   - deteccao de offline
+   - alerta por temperatura fora da faixa
+   - cooldown e tolerancia
+4. Operacao
+   - ambiente local
+   - deploy em Docker Swarm
+   - banco no Supabase
+5. Gestao
+   - clients
+   - devices
+   - alert rules
+   - dashboard web
+6. Multi-tenant basico
+   - isolamento por `clientId`
+
+## O que ainda nao entrou por completo
+
+- autenticacao de usuarios
 - billing / assinaturas
-- dashboard avançado
-- streaming de câmera
-- regras complexas (automação de múltiplos sensores)
+- dashboards por perfil de usuario
+- multiplos tipos reais de sensor no mesmo fluxo de ingestao
 - app mobile
 
-## Conceitos principais (domínio)
+## Conceitos principais
+
+### Client
+
+Representa a empresa ou operacao dona dos dispositivos.
+
 ### Device
-Representa o equipamento/instalação monitorada (ex.: freezer_01).
-Campos essenciais:
-- id (string)
-- lastSeen (Date)
-- isOffline (bool)
-- offlineSince (Date?)
-- lastAlertAt (Date?)
+
+Representa o equipamento monitorado, por exemplo `freezer_01`.
+
+Campos importantes:
+
+- `id`
+- `clientId`
+- `lastSeen`
+- `isOffline`
+- `offlineSince`
+- `lastAlertAt`
 
 ### Reading
-Uma leitura de sensor (ex.: temperatura).
-No MVP: TemperatureLog com:
-- deviceId
-- temperature
-- createdAt
 
-No futuro (SaaS): generalizar para múltiplos tipos:
-- sensorType (temperature, humidity, voltage, current, door, motion, camera_event)
-- value (number/string/json)
-- unit (C, %, V, A)
+Leitura de sensor armazenada no historico. Hoje o foco e temperatura, mas a
+arquitetura ja considera futura extensao para outros sensores.
 
-### Alert
-Evento de alerta (ex.: offline, temperatura fora do limite).
-No MVP: log via console + webhook n8n opcional.
-No futuro: tabela AlertEvent + histórico + ack.
+### Alert Rule
 
-## Regras de negócio (MVP)
-### Ingest
-- Ao receber leitura:
-  - salvar TemperatureLog
-  - atualizar Device:
-    - lastSeen = agora
-    - isOffline = false
-    - offlineSince = null
+Define os limites, tolerancia, cooldown e habilitacao do alerta por device,
+cliente e tipo de sensor.
 
-### Offline detection
-- Rodar a cada 1 minuto.
-- minutesOffline: 5 minutos (produção) / pode ser ajustado para testes
-- Se lastSeen < cutoff OU lastSeen null:
-  - se isOffline = false:
-    - marcar isOffline=true
-    - offlineSince=agora
-    - lastAlertAt=agora
-    - disparar alerta (log + webhook)
+## Regras de negocio atuais
 
-### Não spammar
-- Nunca alertar offline toda vez.
-- Alertar uma única vez por transição ONLINE->OFFLINE.
+### Ingestao
 
-## Segurança (MVP)
-- O endpoint do device deve ter autenticação simples (próximo passo):
-  - API Key por device (header: x-device-key)
-- Nunca comitar `.env`.
-- Logs não devem imprimir DATABASE_URL/tokens.
+Ao receber uma leitura valida:
 
-## Roadmap sugerido (ordem)
-1) MVP sólido: ingest + offline + alerta n8n
-2) Limites de temperatura por device (min/max) + alerta fora do limite
-3) Dashboard simples (status + gráfico)
-4) API Key por device (segurança)
-5) Multi-tenant (SaaS real)
-6) Múltiplos sensores (humidity, door, energy)
-7) Relatórios e auditoria
+- salvar a temperatura
+- atualizar `lastSeen`
+- marcar o device como online
+- limpar `offlineSince`
+
+### Offline
+
+O monitor roda de forma periodica.
+
+Se `lastSeen` estiver alem do cutoff:
+
+- marcar o device como offline
+- registrar `offlineSince`
+- disparar alerta uma unica vez na transicao
+
+### Temperatura fora da faixa
+
+Quando existir regra habilitada:
+
+- respeitar temperatura minima e maxima
+- respeitar tolerancia configurada
+- respeitar cooldown para nao spammar
+
+## Seguranca
+
+- `x-device-key` e obrigatorio no endpoint do device
+- nunca comitar `.env`
+- nunca logar `DATABASE_URL`, tokens ou webhooks sensiveis
+- segredos de pipeline devem ficar em GitHub Secrets
+
+## Direcao de evolucao
+
+Proximos blocos mais coerentes:
+
+1. autenticacao de usuarios
+2. suporte a mais sensores
+3. historico e graficos mais ricos
+4. alertas mais configuraveis
+5. evolucao real para SaaS multi-tenant completo

@@ -1,389 +1,123 @@
 ---
-description: Arquitetura técnica do projeto, incluindo componentes, estrutura de pastas, banco de dados e fluxo do sistema.
+description: arquitetura tecnica do projeto, componentes e fluxo do sistema
 applyTo: '**'
 ---
 
-# ARCHITECTURE.md — Arquitetura técnica
+# ARCHITECTURE.md - Arquitetura tecnica
 
-Stack principal:
+## Stack principal
 
 - NestJS
 - Prisma ORM
 - PostgreSQL (Supabase)
-- Docker swarm (portainer)
-- n8n (automação)
-- Evolution API (WhatsApp)
+- Next.js
+- Docker Swarm + Traefik
+- n8n para automacao
+- GHCR para imagens
 
-Este sistema implementa um **monitoramento inteligente de dispositivos IoT**, começando com sensores de temperatura.
-
-A arquitetura foi desenhada para evoluir futuramente para um **SaaS de monitoramento de equipamentos**.
-
----
-
-# Visão geral do sistema
+## Visao geral
 
 Fluxo principal:
 
-Device (ESP32)  
-↓  
-HTTP Request  
-↓  
-API (NestJS)  
-↓  
-Banco (Supabase / PostgreSQL)  
-↓  
-Monitor (cron scheduler)  
-↓  
-Alertas (n8n → Evolution → WhatsApp)
+Device -> API -> Database -> Monitor -> Queue -> n8n -> WhatsApp
 
-Representação:
+Tambem existe o fluxo operacional do dashboard:
 
-Device → API → Database  
-              ↓  
-           Monitor  
-              ↓  
-            n8n  
-              ↓  
-          WhatsApp
+Dashboard web -> API -> Database
 
----
+## Componentes principais
 
-# Componentes do sistema
+### Device
 
-## 1. Device (ESP32 ou outros dispositivos)
+ESP32 ou simulador HTTP que envia leituras periodicas.
 
-Responsável por enviar leituras periódicas para a API.
+Endpoint atual:
 
-Formato atual da requisição:
+- `POST /iot/temperature`
 
-POST /iot/temperature
+### API
 
-Payload:
+Responsavel por:
 
-{
-  "device_id": "freezer_01",
-  "temperature": -12.3
-}
-
-No futuro dispositivos poderão enviar outros sensores.
-
-Exemplo futuro:
-
-{
-  "device_id": "freezer_01",
-  "temperature": -12,
-  "humidity": 45
-}
-
----
-
-# 2. API (NestJS)
-
-Responsável por:
-
-- receber leituras dos dispositivos
-- validar dados
+- validar ingestao
 - persistir leituras
-- atualizar estado dos devices
-- fornecer endpoints para frontend
+- atualizar estado do device
+- expor endpoints para dashboard e administracao
 
-A API não deve enviar mensagens diretamente.
+### Dashboard web
 
-Alertas são delegados para **n8n via webhook**.
+Responsavel por:
 
----
+- listar devices
+- exibir historico
+- editar cadastro
+- configurar alertas
+- orientar testes via `/lab`
 
-# 3. Ingest Module
+### Monitor
 
-Localização:
+Processo agendado que:
 
-src/modules/ingest
+- detecta offline
+- avalia regras de temperatura
+- evita spam com cooldown e transicao de estado
 
-Responsável por receber dados dos dispositivos.
+### Fila de entrega de alertas
 
-Endpoint principal:
+Responsavel por desacoplar a deteccao do envio do webhook.
 
-POST /iot/temperature
+## Modulos do backend
 
-Fluxo:
+- `src/modules/ingest`
+  - recebe dados do device
+- `src/modules/devices`
+  - cadastro e estado operacional
+- `src/modules/readings`
+  - historico e agregacoes
+- `src/modules/alert-rules`
+  - configuracao de limites e tolerancias
+- `src/modules/clients`
+  - base multi-tenant
+- `src/modules/monitor`
+  - jobs periodicos e processamento de alertas
 
-1. Validar DTO
-2. Registrar leitura no banco
-3. Atualizar lastSeen do device
-4. Garantir que device está online
+## Modelo atual de dominio
 
----
+Entidades centrais:
 
-# 4. Devices Module
+- `Client`
+- `Device`
+- `TemperatureLog`
+- `AlertRule`
 
-Localização:
+O sistema ja opera com isolamento por `clientId`, embora a autenticacao de
+usuarios ainda nao exista.
 
-src/modules/devices
+## Seguranca
 
-Responsável por:
+- `x-device-key` obrigatorio para ingestao
+- rate limit por device
+- segredos fora do Git
+- logs operacionais sem valores sensiveis
 
-- estado dos dispositivos
-- controle de online/offline
-- metadados do dispositivo
+## Deploy
 
-Campos principais:
+Producao:
 
-- id
-- lastSeen
-- isOffline
-- offlineSince
-- lastAlertAt
+- `api` e `web` em servicos separados
+- imagens publicadas no GHCR
+- deploy via GitHub Actions + SSH
+- roteamento por Traefik
 
----
+Dominios atuais:
 
-# 5. Readings Module
+- `monitor.virtuagil.com.br`
+- `api-monitor.virtuagil.com.br`
 
-Localização:
+## Validacao manual minima
 
-src/modules/readings
-
-Responsável por armazenar leituras de sensores.
-
-Atualmente:
-
-- temperatura
-
-No futuro:
-
-- umidade
-- consumo de energia
-- sensores de porta
-- sensores industriais
-
----
-
-# 6. Monitor Module
-
-Localização:
-
-src/modules/monitor
-
-Executa tarefas periódicas.
-
-Tecnologia:
-
-NestJS Scheduler (cron)
-
-Função principal:
-
-detectar dispositivos offline.
-
-Fluxo:
-
-1. calcular cutoff (tempo limite)
-2. buscar dispositivos inativos
-3. verificar estado atual
-4. marcar device como offline
-5. disparar alerta
-
-Importante:
-
-Alertas só devem ocorrer na transição:
-
-ONLINE → OFFLINE
-
-para evitar spam.
-
----
-
-# Sistema de alertas
-
-A aplicação **não envia mensagens diretamente**.
-
-Fluxo correto:
-
-API  
-↓  
-Webhook  
-↓  
-n8n  
-↓  
-Evolution API  
-↓  
-WhatsApp
-
-Variável de ambiente usada:
-
-N8N_OFFLINE_WEBHOOK_URL
-
----
-
-# Estrutura de pastas
-
-src/
-  main.ts
-  app.module.ts
-
-  prisma/
-    prisma.service.ts
-    prisma.module.ts
-
-  modules/
-    ingest/
-    devices/
-    readings/
-    monitor/
-
-Cada módulo deve conter:
-
-- controller
-- service
-- dto
-
-Controllers devem ser finos.
-
----
-
-# Banco de dados (MVP)
-
-## Device
-
-Campos:
-
-- id (string)
-- lastSeen (DateTime)
-- isOffline (boolean)
-- offlineSince (DateTime)
-- lastAlertAt (DateTime)
-
-Representa um equipamento físico.
-
----
-
-## TemperatureLog
-
-Campos:
-
-- id (uuid)
-- deviceId (string)
-- temperature (float)
-- createdAt (DateTime)
-
-Índice recomendado:
-
-(deviceId, createdAt)
-
----
-
-# Evolução futura do banco
-
-Para suportar múltiplos sensores futuramente, o sistema poderá evoluir para um modelo genérico de leituras.
-
-Exemplo:
-
-SensorReading
-
-- id
-- deviceId
-- sensorType
-- value
-- unit
-- createdAt
-
-Isso permitirá monitorar:
-
-- temperatura
-- umidade
-- energia
-- sensores industriais
-
-sem alterar arquitetura.
-
----
-
-# Segurança
-
-Próximo passo de segurança:
-
-autenticação por API key.
-
-Exemplo de header:
-
-x-device-key: DEVICE_SECRET
-
-Outras medidas:
-
-- rate limit por IP
-- validação forte de DTO
-- logs sem segredos
-
----
-
-# Deploy
-
-Ambiente de produção:
-
-Docker containers  
-Docker Swarm  
-Traefik (reverse proxy)
-
-Banco:
-
-Supabase (PostgreSQL gerenciado)
-
-Frontend e backend devem ser serviços independentes.
-
----
-
-# Domínios
-
-Estrutura de domínios:
-
-virtuagil.com.br
-
-Site institucional.
-
-Sistema:
-
-monitor.virtuagil.com.br
-
-API:
-
-api-monitor.virtuagil.com.br
-
-Traefik será responsável pelo roteamento.
-
----
-
-# Testes manuais mínimos
-
-1. Enviar temperatura
-
-POST /iot/temperature
-
-{
-  "device_id": "freezer_01",
-  "temperature": -12.3
-}
-
-Esperado:
-
-- registro em TemperatureLog
-- atualização de lastSeen
-
----
-
-2. Simular offline
-
-Parar envio de dados por tempo maior que minutesOffline.
-
-Esperado:
-
-- log WARN no monitor
-- device marcado como offline
-
----
-
-3. Device volta online
-
-Enviar nova leitura.
-
-Esperado:
-
-- isOffline = false
-- offlineSince = null
+1. enviar leitura via simulador
+2. confirmar leitura no dashboard
+3. testar `/health`
+4. simular offline
+5. simular temperatura fora da faixa

@@ -1,214 +1,77 @@
 ---
-description: roadmap de desenvolvimento do sistema de monitoramento IoT e evolução para SaaS.
+description: roadmap de desenvolvimento do sistema de monitoramento IoT
 applyTo: '**'
 ---
 
-# ROADMAP.md — Evolução do sistema
+# ROADMAP.md - Evolucao do sistema
 
-Este documento define a ordem de evolução do projeto de monitoramento IoT.
+## Entregas ja concluidas
 
-O objetivo é transformar o MVP atual em um **SaaS de monitoramento inteligente de equipamentos**.
-
----
-
-# Fase 1 — MVP funcional (estado atual)
-
-Objetivo: garantir que o sistema funcione de ponta a ponta.
-
-Funcionalidades:
+### Fase 1 - Base operacional
 
 - API NestJS funcionando
-- Endpoint de ingestão de temperatura
-- Registro de devices
-- Armazenamento de leituras
-- Monitoramento de offline
-- Cron scheduler
-- Alertas enviados para n8n
-- Integração com Evolution API via n8n
+- ingestao de temperatura
+- armazenamento de leituras
+- monitoramento de offline
 
-Fluxo:
+### Fase 2 - Seguranca basica
 
-Device → API → Banco → Monitor → n8n → WhatsApp
+- autenticacao por `x-device-key`
+- rate limit por device
 
----
+### Fase 3 - Regras de temperatura
 
-# Fase 2 — Segurança básica
+- limites por regra
+- tolerancia
+- cooldown
+- envio de alerta por webhook
 
-Objetivo: evitar uso indevido da API.
+### Fase 4 - Dashboard inicial
 
-Funcionalidades:
-
-- autenticação de devices via API Key
-- header obrigatório:
-
-x-device-key
-
-- validação de device_id
-- rate limit por dispositivo
-- logs de segurança
-
----
-
-# Fase 3 — Limites de sensores
-
-Objetivo: detectar eventos críticos.
-
-Funcionalidades:
-
-- limite mínimo de temperatura
-- limite máximo de temperatura
-- configuração por device
-- alerta automático quando limite é ultrapassado
-
-Exemplo:
-
-freezer_01
-
-minTemperature: -20  
-maxTemperature: -10
-
-Se enviar:
-
-temperature: -5
-
-→ gerar alerta.
-
----
-
-# Fase 4 — Dashboard inicial
-
-Objetivo: criar interface para usuários.
-
-Frontend:
-
-monitor.virtuagil.com.br
-
-Funcionalidades:
-
+- frontend Next.js
 - lista de devices
-- status online/offline
-- última leitura
-- gráfico de temperatura
-- histórico de leituras
+- historico
+- configuracao de devices
+- configuracao de alertas
 
-Tecnologias possíveis:
+### Fase 5 - Base multi-tenant
 
-- Next.js
-- React
-- Chart.js ou Recharts
+- entidade `Client`
+- uso de `clientId` no fluxo administrativo
 
----
+### Fase 6 - Simulacao e operacao
 
-# Fase 5 — Gerenciamento de devices
+- seed de dados demo
+- simulador IoT
+- laboratorio `/lab`
+- deploy automatizado em producao
 
-Objetivo: permitir administração pelo usuário.
+## Proximos passos recomendados
 
-Funcionalidades:
+### Fase 7 - Autenticacao de usuarios
 
-- cadastrar device
-- editar device
-- remover device
-- configurar limites de sensores
-- associar device a cliente
+- login
+- perfis
+- isolamento por cliente no frontend
 
----
+### Fase 8 - Multi-sensor real
 
-# Fase 6 — Multi-sensor
-
-Objetivo: tornar sistema genérico.
-
-Adicionar suporte para:
-
-- temperatura
 - umidade
-- sensores de porta
-- energia elétrica
-- sensores industriais
+- porta
+- energia
+- leituras mais genericas
 
-Mudança no modelo de dados:
+### Fase 9 - Observabilidade e escala
 
-SensorReading genérico.
+- metricas
+- rastreabilidade
+- cache e filas mais robustos
+- otimização de historico
 
----
+### Fase 10 - SaaS completo
 
-# Fase 7 — Multi-tenant (SaaS)
-
-Objetivo: suportar múltiplos clientes.
-
-Adicionar:
-
-- entidade Client
-- autenticação de usuários
-- separação de dados por cliente
-- dashboard por cliente
-
-Estrutura:
-
-Client  
- └ Devices  
-    └ Sensors  
-       └ Readings
-
----
-
-# Fase 8 — Alertas configuráveis
-
-Objetivo: flexibilidade para clientes.
-
-Adicionar:
-
-- regras de alerta
-- múltiplos canais de notificação
-- limites configuráveis
-- tempo de tolerância
-
-Exemplo:
-
-alertar somente após 5 minutos fora do limite.
-
----
-
-# Fase 9 — Escalabilidade
-
-Objetivo: preparar para crescimento.
-
-Melhorias:
-
-- filas de processamento
-- Redis para cache
-- otimização de consultas
-- compressão de dados históricos
-
----
-
-# Fase 10 — Produto SaaS completo
-
-Funcionalidades finais:
-
-- gestão de clientes
-- gestão de usuários
-- múltiplos dispositivos
-- múltiplos sensores
-- dashboards avançados
-- relatórios
-- histórico completo
-
-Possíveis recursos adicionais:
-
-- aplicativo mobile
-- integração com outros sistemas
-- exportação de dados
-- API pública
-
----
-
-# Objetivo final
-
-Criar uma plataforma SaaS capaz de monitorar:
-
-- equipamentos comerciais
-- equipamentos industriais
-- ambientes críticos
-- sensores IoT em geral
-
-com alertas inteligentes e visualização em tempo real.
+- usuarios e equipes
+- dashboards por conta
+- relatorios
+- planos
+- API publica

@@ -1,158 +1,86 @@
 ---
-description: regras do frontend web do sistema de monitoramento inteligente.
+description: regras do frontend web do sistema de monitoramento
 applyTo: '**'
 ---
 
-# FRONTEND_RULES.md — Regras do frontend
+# FRONTEND_RULES.md - Regras do frontend
 
-O frontend do sistema deve ser desenvolvido em:
-
-- Next.js
-- TypeScript
-- Tailwind CSS
-- shadcn/ui
-- lucide icons
-
-**atenção** caso tenha outras bibliotecas UI e outras de desenvolvimento que você queria usar, pode aplicar. Apenas me avise.
-
-Objetivo do frontend:
-
-fornecer um dashboard moderno, responsivo e escalável para o sistema de monitoramento inteligente.
-
----
-
-# Estrutura do projeto frontend
-
-O frontend deve ficar separado do backend dentro do mesmo repositório.
-
-Estrutura preferida:
-
-apps/
-  api/
-  web/
-
-Onde:
-
-- apps/api = backend NestJS
-- apps/web = frontend Next.js
-
-O frontend não deve ficar dentro da pasta src do backend.
-
----
-
-# Domínios
-
-Frontend do sistema:
-
-monitor.virtuagil.com.br
-
-Backend da API:
-
-api-monitor.virtuagil.com.br
-
-O frontend deve consumir a API via domínio próprio.
-
----
-
-# Stack obrigatória do frontend
+## Stack atual do frontend
 
 - Next.js
 - TypeScript
-- Tailwind CSS
-- shadcn/ui
+- React Query
 - React Hook Form
 - Zod
-- TanStack Query
 - Recharts
 - Lucide React
 - date-fns
 
----
+O projeto usa componentes reutilizaveis proprios em `apps/web/components/ui`.
+Bibliotecas extras de UI podem ser adicionadas quando houver ganho claro de
+consistencia ou produtividade.
 
-# Objetivo do frontend
+## Estrutura esperada
 
-O frontend deve fornecer:
+O frontend fica separado do backend:
 
-- dashboard principal
-- status online/offline dos devices
-- última leitura de temperatura
-- histórico de leituras
-- gráficos
-- configuração de devices
-- configuração de limites e alertas
+```text
+apps/
+  web/
+src/
+```
 
----
+O frontend nao deve ser misturado com `src/` do backend.
 
-# Organização de componentes
+## Dominios
 
-Preferir componentes reutilizáveis e organizados por domínio.
+- frontend: `monitor.virtuagil.com.br`
+- backend: `api-monitor.virtuagil.com.br`
 
-Estrutura sugerida:
+## Objetivo atual do frontend
 
-apps/web/
-  app/
-  components/
-  lib/
-  hooks/
-  types/
+Entregar um dashboard moderno e util para operacao:
 
----
+- lista de devices
+- status online/offline
+- ultima leitura
+- historico de temperatura
+- gerenciamento de devices
+- regras de alerta
+- laboratorio de simulacao em `/lab`
 
-# Padrão visual
+## Regras de implementacao
 
-Interface deve ter aparência de SaaS moderno.
+- preferir componentes reutilizaveis
+- centralizar chamadas HTTP em `lib/`
+- formularios devem usar React Hook Form + Zod
+- graficos devem usar Recharts
+- feedback visual deve ser consistente
+- a UI deve ser responsiva em desktop e mobile
 
-Preferências visuais:
+## Direcao visual
 
-- layout limpo
-- boa hierarquia visual
-- dashboard com cards
-- tabelas organizadas
-- gráficos simples e claros
-- dark mode preparado
-- uso de componentes do shadcn/ui
-
-Evitar:
-
-- visual poluído
-- excesso de cores
-- componentes muito customizados sem necessidade
-
----
-
-# Consumo da API
-
-O frontend deve consumir a API do backend via HTTP.
+Interface deve parecer produto de operacao, nao painel generico.
 
 Preferir:
 
-- TanStack Query para cache e sincronização
-- validação com Zod
-- serviços centralizados para chamadas da API
+- hierarquia visual clara
+- cards e tabelas legiveis
+- estados vazios e estados de erro bem definidos
+- linguagem visual consistente com o mini design system local
 
----
+Evitar:
 
-# Regras de arquitetura frontend
+- repeticao de classes longas por toda a tela
+- componentes de UI duplicados com pequenas variacoes
+- acoplamento entre pagina e regra de API
 
-- Componentes de UI devem ser reutilizáveis.
-- Lógica de API não deve ficar espalhada em páginas.
-- Formulários devem usar React Hook Form + Zod.
-- Gráficos devem usar Recharts.
-- Ícones devem usar Lucide React.
-- Utilidades e funções compartilhadas devem ficar em lib/.
+## Evolucao futura
 
----
+O frontend deve continuar preparado para:
 
-# Evolução futura
-
-O frontend deverá evoluir para suportar:
-
-- autenticação de usuários
-- múltiplos clientes
+- autenticacao de usuarios
 - dashboards por cliente
-- múltiplos dispositivos
-- múltiplos sensores
-- relatórios
-- planos SaaS
-
-A arquitetura do frontend deve permitir essa evolução.
+- multiplos sensores
+- filtros mais ricos
+- historico e relatorios

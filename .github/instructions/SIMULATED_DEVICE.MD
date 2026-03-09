@@ -1,209 +1,105 @@
 ---
-description: regras e métodos para simulação de dispositivos IoT enquanto hardware físico não está disponível.
+description: regras e metodos para simulacao de dispositivos IoT sem hardware fisico
 applyTo: '**'
 ---
 
-# SIMULATED_DEVICES.md — Simulação de dispositivos IoT
+# SIMULATED_DEVICE.md - Simulacao de dispositivos IoT
 
-Enquanto os dispositivos físicos (ESP32 e sensores) não estão disponíveis, o comportamento dos dispositivos deve ser **simulado via HTTP**.
+Enquanto os dispositivos fisicos nao chegam, o comportamento do device deve ser
+simulado via HTTP para validar backend, banco, alertas e dashboard.
 
-Isso permite desenvolver e testar:
+## Endpoint usado
 
-- backend
-- banco de dados
-- monitoramento
-- alertas
-- dashboard
-
-sem depender do hardware real.
-
----
-
-# Objetivo da simulação
-
-Simular o comportamento de um dispositivo IoT que envia leituras periódicas para a API.
-
-Fluxo simulado:
-
-Simulated Device → HTTP Request → API → Database → Monitor → Alert
-
----
-
-# Endpoint utilizado
-
-Endpoint atual do sistema:
-
-POST /iot/temperature
-
----
-
-# Exemplo de requisição
+- `POST /iot/temperature`
+- header obrigatorio: `x-device-key`
 
 Payload:
 
+```json
 {
   "device_id": "freezer_01",
   "temperature": -12.3
 }
+```
 
 Resposta esperada:
 
+```json
 {
   "ok": true
 }
+```
 
----
+## Ferramentas aceitas
 
-# Ferramentas de simulação
-
-Durante o desenvolvimento podem ser utilizadas:
-
+- script Node.js do proprio repositorio
 - Insomnia
 - curl
-- scripts Node.js
-- scripts Python
 
-Essas ferramentas representam o comportamento do dispositivo ESP32.
+O caminho preferido hoje e o script oficial:
 
----
+```bash
+npm run simulate:iot -- --device freezer_01 --api-key CHANGE_ME
+```
 
-# Teste manual com Insomnia
+## Capacidades atuais do simulador
 
-Criar requisição:
+O script `scripts/iot-simulator.mjs` suporta:
 
-POST
+- device unico com `--device`
+- varios devices com `--devices`
+- presets `normal`, `alerta`, `critico` e `geladeira`
+- modos `random`, `ramp` e `spike`
+- encerramento por quantidade com `--count`
+- cadastro/atualizacao automatica com `--ensure-devices`
 
-http://localhost:3000/iot/temperature
+## Fluxos de teste recomendados
 
-Body (JSON):
+### Operacao normal
 
-{
-  "device_id": "freezer_01",
-  "temperature": -12.3
-}
+```bash
+npm run simulate:iot -- --devices freezer_01,freezer_02 --preset normal --api-key CHANGE_ME
+```
 
-Resultado esperado:
+### Temperatura em alerta
 
-- registro em TemperatureLog
-- atualização de lastSeen em Device
+```bash
+npm run simulate:iot -- --devices freezer_01 --preset alerta --api-key CHANGE_ME
+```
 
----
+### Cenario critico
 
-# Teste com curl
+```bash
+npm run simulate:iot -- --devices freezer_01 --preset critico --api-key CHANGE_ME
+```
 
-Exemplo de comando:
+### Cadastro automatico antes da simulacao
 
-curl -X POST http://localhost:3000/iot/temperature \
--H "Content-Type: application/json" \
--d '{
-  "device_id": "freezer_01",
-  "temperature": -12.3
-}'
+```bash
+npm run simulate:iot -- --devices freezer_01,freezer_02 --client-id virtuagil --ensure-devices --preset normal --api-key CHANGE_ME
+```
 
----
+## Simulacao de offline
 
-# Simulação de envio periódico
+Para testar offline:
 
-Um device real enviaria dados a cada intervalo de tempo.
-
-Exemplo:
-
-- 30 segundos
-- 60 segundos
-
-Para simulação manual basta repetir a requisição.
-
----
-
-# Simulação de dispositivo offline
-
-Para testar detecção de offline:
-
-1. Enviar algumas leituras normalmente.
-2. Parar de enviar dados.
-3. Esperar tempo maior que minutesOffline.
+1. envie leituras normalmente
+2. interrompa o simulador
+3. espere o tempo maior que `DEVICE_OFFLINE_MINUTES`
 
 Resultado esperado:
 
-- monitor detecta offline
-- log de alerta gerado
-- webhook para n8n disparado (se configurado)
+- monitor marca o device como offline
+- alerta e enfileirado
+- webhook e enviado se configurado
 
----
+## Seed de dados
 
-# Simulação de retorno online
+Para criar base demo antes da simulacao:
 
-Após um dispositivo ficar offline:
+```bash
+npm run db:seed
+```
 
-1. Enviar nova leitura.
-
-Resultado esperado:
-
-- device volta para online
-- isOffline = false
-- offlineSince = null
-
----
-
-# Simulação de múltiplos dispositivos
-
-É possível simular múltiplos equipamentos.
-
-Exemplo:
-
-freezer_01  
-freezer_02  
-camara_fria_01
-
-Payload exemplo:
-
-{
-  "device_id": "freezer_02",
-  "temperature": -15.1
-}
-
----
-
-# Simulação de eventos críticos
-
-Também é possível simular temperatura fora do limite.
-
-Exemplo:
-
-{
-  "device_id": "freezer_01",
-  "temperature": -3
-}
-
-Se os limites estiverem configurados:
-
-minTemperature = -20  
-maxTemperature = -10
-
-Isso deverá gerar alerta.
-
----
-
-# Simulação com script Node.js (futuro)
-
-No futuro pode ser criado um simulador automático.
-
-Exemplo de comportamento:
-
-- enviar dados a cada 30 segundos
-- variar temperatura
-- simular falhas de comunicação
-
-Isso ajuda a testar:
-
-- carga do sistema
-- monitoramento
-- alertas
-
----
-
-# Objetivo desta etapa
-
-Garantir que todo o sistema funcione corretamente antes de conectar dispositivos físicos.
-
-Quando o hardware chegar, o ESP32 deverá apenas substituir o simulador.
+O seed cria clients, devices, regras e historico inicial sem duplicar o que ja
+existir.

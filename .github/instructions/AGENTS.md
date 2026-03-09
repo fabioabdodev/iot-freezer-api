@@ -1,261 +1,113 @@
 ---
 applyTo: '**'
-description: regras globais para agentes de IA neste repositório
+description: regras globais para agentes de IA neste repositorio
 ---
 
-# AGENTS.md — Regras para agentes neste repositório
+# AGENTS.md - Regras para agentes neste repositorio
 
-Este repositório implementa um MVP de **monitoramento inteligente** para dispositivos IoT  
-(inicialmente monitoramento de temperatura de freezer).
+Este repositorio implementa um sistema de monitoramento IoT para equipamentos,
+com foco inicial em temperatura de freezers e geladeiras.
 
-Stack principal:
+Stack atual:
 
-- NestJS
+- NestJS no backend
 - Prisma ORM
 - PostgreSQL (Supabase)
-- Node.js
-- Docker (deploy futuro)
+- Next.js no frontend
+- Docker Swarm + Traefik em producao
+- GitHub Actions para CI/CD
 
-O projeto foi desenhado para evoluir futuramente para um **SaaS de monitoramento de equipamentos**.
+## Regra principal de colaboracao
 
----
+Antes de editar arquivos, o agente deve:
 
-# Regra mais importante
+1. Explicar o que pretende alterar
+2. Dizer por que a mudanca e necessaria
+3. Listar os arquivos que devem ser modificados
 
-**Sempre explique o que pretende modificar antes de alterar arquivos.**
+Depois disso, pode seguir com a implementacao sem exigir nova confirmacao quando
+a direcao ja estiver clara no pedido do usuario.
 
-Fluxo obrigatório para qualquer mudança:
-
-1. Analisar o problema
-2. Explicar a solução proposta
-3. Listar arquivos que serão modificados
-4. Somente depois gerar código
-
-Nunca modificar arquivos diretamente sem explicar primeiro.
-
----
-
-# Como trabalhar no projeto
+## Como trabalhar no projeto
 
 Preferir sempre:
 
-- mudanças pequenas
-- mudanças seguras
-- código legível
+- mudancas pequenas e coesas
+- codigo legivel
+- baixo risco de regressao
+- compatibilidade com deploy em Docker Swarm
 
 Evitar:
 
-- refatorações grandes desnecessárias
-- alterar arquitetura sem justificativa
-- mover arquivos sem explicar
+- refatoracoes grandes sem necessidade
+- mover arquivos sem motivo claro
+- espalhar regra de negocio em controllers
 
-Controllers devem ser **finos**.
+## Regras de backend
 
-Controllers devem apenas:
+- Controllers devem ser finos
+- Regras de negocio devem ficar em services
+- Acesso ao banco deve acontecer via Prisma em services/infra
+- Nunca expor segredos em logs
+- Sempre considerar `clientId` quando o fluxo for multi-tenant
 
-- validar DTO
-- receber requisição HTTP
-- chamar services
+## Regras de API atuais
 
-Toda regra de negócio deve estar em **Services**.
+Fluxo principal de ingestao:
 
-Persistência deve acontecer em Services usando **Prisma**.
+- `POST /iot/temperature`
+- header obrigatorio: `x-device-key`
 
-Evitar acessar Prisma diretamente dentro de Controllers.
+Payload esperado:
 
-# Modo de trabalho do agente
-
-O agente deve trabalhar de forma didática e incremental.
-
-Regras obrigatórias:
-
-- não implementar grandes blocos de funcionalidade de uma vez
-- sempre propor apenas o próximo passo pequeno
-- sempre explicar o que será feito antes de alterar arquivos
-- sempre listar os arquivos que pretende modificar
-- esperar confirmação do usuário antes de aplicar mudanças
-- priorizar aprendizado e clareza sobre velocidade
-- explicar a lógica das mudanças de forma simples
-
----
-
-# Estrutura de pastas (arquitetura alvo)
-
-src/
-  modules/
-    ingest/
-      entrada de dados do device
-      exemplo: POST /iot/temperature
-
-    devices/
-      estado do device
-      lastSeen
-      status online/offline
-
-    readings/
-      armazenamento de leituras
-      atualmente temperatura
-      futuramente outros sensores
-
-    monitor/
-      cron de monitoramento
-      verificação de offline
-      disparo de alertas
-
-  prisma/
-    PrismaService
-    PrismaModule
-
----
-
-# Regras de API (MVP)
-
-Manter compatibilidade com o endpoint atual:
-
-POST /iot/temperature
-
-Payload esperado do device:
-
+```json
 {
   "device_id": "freezer_01",
   "temperature": -12.3
 }
+```
 
 Resposta esperada:
 
+```json
 {
   "ok": true
 }
+```
 
-Regras adicionais:
+## Regras de monitoramento
 
-- Validar DTO com class-validator
-- Converter tipos com class-transformer
-- Nunca expor segredos em logs
-- Nunca logar DATABASE_URL ou tokens
+- Device offline e detectado por inatividade
+- Alerta deve ocorrer apenas na transicao `online -> offline`
+- Quando o device volta a enviar dados, o estado offline deve ser limpo
+- Alertas de temperatura devem respeitar tolerancia e cooldown configurados
 
----
+## Integracoes externas
 
-# Regras de monitoramento
+O backend nao envia WhatsApp diretamente.
 
-Device deve ser considerado offline quando:
+Fluxo correto:
 
-lastSeen < (agora - X minutos)
+Backend -> webhook -> n8n -> Evolution API -> WhatsApp
 
-ou
+## Documentacao obrigatoria
 
-lastSeen = null
+Se a mudanca alterar fluxo, deploy, simulacao ou arquitetura, atualizar tambem o
+documento relevante em `.github/instructions/`.
 
-Evitar spam de alertas:
+Arquivos mais importantes:
 
-- Alertar apenas na transição ONLINE → OFFLINE
-- Usar campo isOffline para controlar estado
+- `ARCHITECTURE.md`
+- `PROJECT_RULES.md`
+- `CI_CD_RULES.md`
+- `FRONTEND_RULES.md`
+- `SIMULATED_DEVICE.md`
 
-Quando device volta a enviar dados:
+## Testes e validacao
 
-isOffline = false  
-offlineSince = null
+Sempre indicar como validar a mudanca. Prioridade:
 
----
-
-# Integrações externas
-
-Quando habilitadas:
-
-- n8n → recebe webhook de alerta
-- Evolution API → envio de WhatsApp
-
-Responsabilidade do backend:
-
-- apenas enviar webhook
-- não enviar mensagens diretamente
-
----
-
-# Prisma / Banco de dados
-
-Sempre que alterar schema.prisma:
-
-Executar:
-
-npx prisma migrate dev
-
-ou
-
-npx prisma generate
-
-Modelos principais do MVP:
-
-Device
-
-- id
-- lastSeen
-- isOffline
-- offlineSince
-- lastAlertAt
-
-TemperatureLog
-
-- deviceId
-- temperature
-- createdAt
-
----
-
-# Testes manuais esperados
-
-Sempre indicar como testar.
-
-Exemplo:
-
-POST /iot/temperature
-
-{
-  "device_id": "freezer_01",
-  "temperature": -12
-}
-
-Verificar:
-
-- registro em TemperatureLog
-- atualização de lastSeen em Device
-
----
-
-# Qualidade de código
-
-Prioridades:
-
-1. código legível
-2. simplicidade
-3. segurança
-
-Sempre:
-
-- tratar integrações externas com try/catch
-- logar erros importantes
-- não esconder exceções críticas
-
----
-
-# Atualização de documentação
-
-Se mudanças alterarem conceitos do projeto:
-
-Atualizar também:
-
-- ARCHITECTURE.md
-- PROJECT_RULES.md
-
----
-
-# Futuro do projeto
-
-Este projeto deverá evoluir para suportar:
-
-- múltiplos sensores
-- múltiplos tipos de leitura
-- múltiplos dispositivos
-- múltiplos clientes (multi-tenant SaaS)
-
-A arquitetura deve permitir essa evolução.
+1. `npm run build`
+2. `npm test -- --runInBand`
+3. `npm run test:e2e -- --runInBand`
+4. validacao manual quando envolver dashboard, ingestao ou deploy

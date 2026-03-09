@@ -83,7 +83,10 @@ Resposta:
 ```json
 {
   "status": "ok",
-  "timestamp": "2026-03-07T23:00:00.000Z"
+  "timestamp": "2026-03-07T23:00:00.000Z",
+  "uptimeSeconds": 1234,
+  "environment": "production",
+  "alertQueueDepth": 0
 }
 ```
 
@@ -371,3 +374,5 @@ No `Portainer Community Edition`, `stack webhooks` não ficam disponíveis. Nest
 
 1. build e push da imagem no GitHub Actions
 2. deploy da stack por `SSH`
+
+O uso de `PORTAINER_WEBHOOK_URL` so faz sentido se a stack for gerenciada por uma edicao do Portainer que suporte webhook.
