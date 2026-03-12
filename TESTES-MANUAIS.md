@@ -26,9 +26,9 @@
 
 ## Melhorias recomendadas
 
-- [ ] Trocar confirmacao nativa do navegador por modal proprio
-- [ ] Destacar melhor temperatura fora da faixa no dashboard
-- [ ] Melhorar atualizacao automatica da listagem sem precisar refresh manual
+- [x] Trocar confirmacao nativa do navegador por modal proprio
+- [x] Destacar melhor temperatura fora da faixa no dashboard
+- [x] Melhorar atualizacao automatica da listagem sem precisar refresh manual
 - [ ] Refinar mensagens de erro da interface
 - [ ] Revisar feedback visual de acoes criticas
 
@@ -40,3 +40,10 @@
 - [ ] Validar cooldown e tolerancia das regras de alerta
 - [ ] Testar historico com mais volume de leituras
 - [ ] Validar entrega real de webhook/alerta, se aplicavel
+
+## Contexto de Produto
+
+- O projeto esta evoluindo para uma plataforma de automacao e monitoramento por modulos.
+- O modulo atual em consolidacao e `temperatura`.
+- O proximo modulo previsto e `acionamento`.
+- A visao de evolucao esta registrada em `ROADMAP-MODULAR.md`.

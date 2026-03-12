@@ -14,6 +14,7 @@
 - Polling automatico no dashboard para devices e historico aberto
 - Testes unitarios e e2e corrigidos e passando localmente
 - Testes de ambiente adicionados
+- Documentacao de continuidade e roadmap modular adicionados
 
 ## Validado em Producao
 
@@ -32,18 +33,21 @@
 - Device volta para online ao receber leitura
 - Device volta para offline apos tempo sem leitura
 - Modal customizado de exclusao funcionando
+- Dashboard atualiza automaticamente devices e historico apos polling
 
 ## Pendencias
 
-- Melhorar atualizacao automatica do dashboard para status online/offline
 - Refinar mensagens de erro da interface
 - Testar cooldown e tolerancia das regras de alerta
 - Validar envio real de webhook/alerta
 - Investigar de forma definitiva a instabilidade do deploy `deploy-swarm` no GitHub Actions
+- Consolidar criterios de "modulo temperatura finalizado"
+- Definir escopo minimo do modulo `acionamento`
 
 ## Observacoes Importantes
 
 - Ja existe o arquivo `TESTES-MANUAIS.md` com checklist do que foi testado.
+- Ja existe o arquivo `ROADMAP-MODULAR.md` com a visao da plataforma por modulos.
 - Em um momento o GitHub Actions falhou no `deploy-swarm` por `scp ... i/o timeout`, mas o rerun funcionou.
 - O frontend em producao pode parecer desatualizado quando o job de deploy falha, mesmo com o commit ja no GitHub.
 

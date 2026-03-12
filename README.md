@@ -23,6 +23,26 @@ Backend em NestJS para monitoramento de dispositivos IoT, com ingestão de tempe
 - Monitoramento offline + alerta por temperatura
 - Base multi-tenant (`clientId`)
 
+## Direcao do produto
+
+O projeto esta evoluindo para uma plataforma modular de automacao e monitoramento.
+
+Modulo atual:
+
+- `temperatura`
+
+Proximo modulo planejado:
+
+- `acionamento`
+
+Resumo da estrategia:
+
+- consolidar um modulo por vez
+- validar o uso real
+- evoluir a plataforma reaproveitando a mesma base
+
+Mais detalhes em `ROADMAP-MODULAR.md`.
+
 ## Requisitos
 
 - Node.js 20+
