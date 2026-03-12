@@ -13,6 +13,39 @@ function buildAuthHeaders(authToken?: string) {
   return headers;
 }
 
+function normalizeDeviceReadings(rows: unknown): DeviceReading[] {
+  if (!Array.isArray(rows)) return [];
+
+  return rows.flatMap((row) => {
+    if (!row || typeof row !== 'object') return [];
+
+    const record = row as Record<string, unknown>;
+    const createdAt = record.createdAt;
+
+    if (typeof createdAt !== 'string') return [];
+
+    if (typeof record.temperature === 'number') {
+      return [
+        {
+          temperature: record.temperature,
+          createdAt,
+        },
+      ];
+    }
+
+    if (typeof record.value === 'number') {
+      return [
+        {
+          temperature: record.value,
+          createdAt,
+        },
+      ];
+    }
+
+    return [];
+  });
+}
+
 export async function fetchDevices(
   clientId?: string,
   limit = 50,
@@ -45,20 +78,37 @@ export async function fetchDeviceReadings(
   const query = new URLSearchParams();
   query.set('limit', String(limit));
   if (clientId) query.set('clientId', clientId);
+  const headers = buildAuthHeaders(authToken);
+  const primaryUrl = `${API_BASE_URL}/devices/${deviceId}/readings?${query.toString()}`;
+  const fallbackUrl = `${API_BASE_URL}/readings/${deviceId}?sensor=temperature&${query.toString()}`;
 
-  const response = await fetch(
-    `${API_BASE_URL}/devices/${deviceId}/readings?${query.toString()}`,
-    {
+  try {
+    const response = await fetch(primaryUrl, {
       cache: 'no-store',
-      headers: buildAuthHeaders(authToken),
-    },
-  );
+      headers,
+    });
 
-  if (!response.ok) {
-    throw new Error('Falha ao carregar historico do device');
+    if (response.ok) {
+      return normalizeDeviceReadings(await response.json());
+    }
+  } catch {
+    // Ignoramos a excecao aqui para tentar o endpoint legado/alternativo de leituras.
   }
 
-  return response.json() as Promise<DeviceReading[]>;
+  try {
+    const fallbackResponse = await fetch(fallbackUrl, {
+      cache: 'no-store',
+      headers,
+    });
+
+    if (!fallbackResponse.ok) {
+      throw new Error('Falha ao carregar historico do device');
+    }
+
+    return normalizeDeviceReadings(await fallbackResponse.json());
+  } catch {
+    throw new Error('Falha ao carregar historico do device');
+  }
 }
 
 export async function createDevice(
