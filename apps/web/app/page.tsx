@@ -104,7 +104,7 @@ function DashboardContent() {
     [queryClientId],
   );
 
-  const { data, isLoading, isError, refetch } = useDevices(
+  const { data, isLoading, isError, error, refetch } = useDevices(
     clientId,
     50,
     authToken,
@@ -420,14 +420,18 @@ function DashboardContent() {
         updateMutation.isError ||
         deleteMutation.isError ? (
           <Feedback variant="danger" className="mb-3">
-            Erro ao salvar alteracoes do device. Verifique os dados e tente
-            novamente.
+            {createMutation.error?.message ??
+              updateMutation.error?.message ??
+              deleteMutation.error?.message ??
+              'Erro ao salvar alteracoes do device. Verifique os dados e tente novamente.'}
           </Feedback>
         ) : null}
 
         {isLoading ? <Feedback>Carregando...</Feedback> : null}
         {isError && devices.length === 0 ? (
-          <Feedback variant="danger">Erro ao carregar dispositivos.</Feedback>
+          <Feedback variant="danger">
+            {error?.message ?? 'Erro ao carregar dispositivos.'}
+          </Feedback>
         ) : null}
         {isError && devices.length > 0 ? (
           <Feedback className="mb-3">

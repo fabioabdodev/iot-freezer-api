@@ -135,5 +135,26 @@ describe('Alert Rules (e2e)', () => {
       })
       .expect(400);
   });
-});
 
+  it('should reject when cooldownMinutes is less than 1', async () => {
+    await request(app.getHttpServer())
+      .post('/alert-rules')
+      .send({
+        clientId: 'client_a',
+        sensorType: 'temperature',
+        cooldownMinutes: 0,
+      })
+      .expect(400);
+  });
+
+  it('should reject when toleranceMinutes is negative', async () => {
+    await request(app.getHttpServer())
+      .post('/alert-rules')
+      .send({
+        clientId: 'client_a',
+        sensorType: 'temperature',
+        toleranceMinutes: -1,
+      })
+      .expect(400);
+  });
+});

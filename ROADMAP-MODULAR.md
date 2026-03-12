@@ -37,6 +37,9 @@ Os recursos abaixo pertencem ao nucleo da plataforma e devem ser reutilizados po
 - historico
 - regras e alertas
 - scheduler
+- Redis como infraestrutura compartilhada de suporte
+- integracao com `n8n`
+- integracao com `Evolution`
 - controle de acesso por modulo no futuro
 
 ## Modulo Atual: Temperatura
@@ -112,6 +115,11 @@ Conceitos que devem orientar a evolucao:
 - `schedule`
 - `automation_rule`
 - `module_entitlement`
+
+Direcao de infraestrutura:
+
+- hoje a API ainda usa memoria local para cache curto e fila de alertas
+- como o ambiente ja possui `Redis` para apoiar o `n8n`, ele pode virar o proximo passo natural para fila e cache compartilhados da plataforma
 
 ## Regra de Produto
 

@@ -43,6 +43,29 @@ Resumo da estrategia:
 
 Mais detalhes em `ROADMAP-MODULAR.md`.
 
+## Arquitetura operacional atual
+
+Servicos em uso hoje:
+
+- `monitor.virtuagil.com.br`: dashboard web
+- `api-monitor.virtuagil.com.br`: API principal
+- `workflow.virtuagil.com.br`: `n8n` para webhooks e automacoes
+- `evolution.virtuagil.com.br`: camada de mensageria e integracoes de comunicacao
+- `Redis` no ambiente Docker: suporte operacional para fluxos e filas do `n8n`
+
+Fluxo esperado para alertas:
+
+1. device envia leitura para a API
+2. a API detecta evento de temperatura ou offline
+3. a API envia webhook para o `n8n`
+4. o `n8n` pode orquestrar notificacoes e integracoes
+5. o `Evolution` pode ser usado para entrega de mensagens, como WhatsApp
+
+Observacao de infraestrutura:
+
+- hoje o `Redis` apoia principalmente os fluxos do `n8n`
+- no medio prazo ele tambem pode ser reaproveitado pela API para fila de alertas e cache compartilhado
+
 ## Requisitos
 
 - Node.js 20+
@@ -91,6 +114,23 @@ npm run start:dev
 ```bash
 npm run db:seed
 ```
+
+## Banco e backup
+
+O projeto usa PostgreSQL no Supabase.
+
+Observacoes praticas:
+
+- no plano Free do Supabase existe backup automatico diario, mas com acesso e operacao mais limitados do que nos planos pagos
+- por isso, para ambiente importante, nao e recomendavel depender apenas do backup nativo do plano Free
+- o recomendado e manter tambem um processo proprio de export do banco com `pg_dump` ou `supabase db dump`
+- esse dump deve ser armazenado fora do Supabase
+
+Uso de webhook no banco:
+
+- o Supabase possui suporte a Database Webhooks
+- mesmo assim, neste projeto a estrategia principal continua sendo disparar alertas pela API e orquestrar fluxos no `n8n`
+- isso preserva melhor a regra de negocio fora do banco e facilita evolucao da plataforma
 
 ## Endpoints principais
 

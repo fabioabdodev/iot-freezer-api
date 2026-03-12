@@ -12,8 +12,18 @@ type TemperatureAlertPayload = {
   occurredAt: string;
 };
 
+type OfflineAlertPayload = {
+  type: 'device_offline';
+  clientId: string | null;
+  deviceId: string;
+  lastSeenAt: string | null;
+  offlineSince: string;
+};
+
+type AlertPayload = TemperatureAlertPayload | OfflineAlertPayload;
+
 type QueueJob = {
-  payload: TemperatureAlertPayload;
+  payload: AlertPayload;
   attempts: number;
   nextAttemptAt: number;
 };
@@ -29,7 +39,7 @@ export class AlertDeliveryQueueService implements OnModuleDestroy {
     this.startWorker();
   }
 
-  enqueue(payload: TemperatureAlertPayload) {
+  enqueue(payload: AlertPayload) {
     this.jobs.push({
       payload,
       attempts: 0,
@@ -78,9 +88,7 @@ export class AlertDeliveryQueueService implements OnModuleDestroy {
   }
 
   private async processJob(job: QueueJob) {
-    const webhookUrl = this.configService.get<string>(
-      'N8N_TEMPERATURE_ALERT_WEBHOOK_URL',
-    );
+    const webhookUrl = this.getWebhookUrl(job.payload.type);
     if (!webhookUrl) {
       this.removeJob(job);
       return;
@@ -90,16 +98,7 @@ export class AlertDeliveryQueueService implements OnModuleDestroy {
       await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: job.payload.type,
-          client_id: job.payload.clientId,
-          rule_id: job.payload.ruleId,
-          device_id: job.payload.deviceId,
-          temperature: job.payload.temperature,
-          min_temperature: job.payload.minTemperature,
-          max_temperature: job.payload.maxTemperature,
-          occurred_at: job.payload.occurredAt,
-        }),
+        body: JSON.stringify(this.mapPayloadToWebhookBody(job.payload)),
       });
       this.logger.log(
         `Delivered alert device=${job.payload.deviceId} attempts=${job.attempts + 1}`,
@@ -131,5 +130,36 @@ export class AlertDeliveryQueueService implements OnModuleDestroy {
   private removeJob(job: QueueJob) {
     const idx = this.jobs.indexOf(job);
     if (idx >= 0) this.jobs.splice(idx, 1);
+  }
+
+  private getWebhookUrl(type: AlertPayload['type']) {
+    if (type === 'device_offline') {
+      return this.configService.get<string>('N8N_OFFLINE_WEBHOOK_URL');
+    }
+
+    return this.configService.get<string>('N8N_TEMPERATURE_ALERT_WEBHOOK_URL');
+  }
+
+  private mapPayloadToWebhookBody(payload: AlertPayload) {
+    if (payload.type === 'device_offline') {
+      return {
+        type: payload.type,
+        client_id: payload.clientId,
+        device_id: payload.deviceId,
+        last_seen_at: payload.lastSeenAt,
+        offline_since: payload.offlineSince,
+      };
+    }
+
+    return {
+      type: payload.type,
+      client_id: payload.clientId,
+      rule_id: payload.ruleId,
+      device_id: payload.deviceId,
+      temperature: payload.temperature,
+      min_temperature: payload.minTemperature,
+      max_temperature: payload.maxTemperature,
+      occurred_at: payload.occurredAt,
+    };
   }
 }

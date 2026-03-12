@@ -4,6 +4,29 @@ import { AlertRule, AlertRuleInput } from '@/types/alert-rule';
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 
+async function extractApiErrorMessage(
+  response: Response,
+  fallback: string,
+): Promise<string> {
+  try {
+    const payload = (await response.json()) as
+      | { message?: string | string[] }
+      | undefined;
+
+    if (Array.isArray(payload?.message) && payload.message.length > 0) {
+      return payload.message.join(', ');
+    }
+
+    if (typeof payload?.message === 'string' && payload.message.trim()) {
+      return payload.message;
+    }
+  } catch {
+    // Ignora erro de parse e usa mensagem padrao abaixo.
+  }
+
+  return fallback;
+}
+
 function buildAuthHeaders(authToken?: string) {
   // O token e opcional para permitir uso local e ambientes sem autenticacao no dashboard.
   const headers: HeadersInit = {};
@@ -62,7 +85,9 @@ export async function fetchDevices(
   });
 
   if (!response.ok) {
-    throw new Error('Falha ao carregar dispositivos');
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao carregar dispositivos'),
+    );
   }
 
   return response.json() as Promise<DeviceSummary[]>;
@@ -87,7 +112,12 @@ export async function fetchDeviceReadings(
   });
 
   if (!response.ok) {
-    throw new Error('Falha ao carregar historico do device');
+    throw new Error(
+      await extractApiErrorMessage(
+        response,
+        'Falha ao carregar historico do device',
+      ),
+    );
   }
 
   return normalizeDeviceReadings(await response.json());
@@ -107,7 +137,9 @@ export async function createDevice(
   });
 
   if (!response.ok) {
-    throw new Error('Falha ao criar device');
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao criar device'),
+    );
   }
 
   return response.json() as Promise<DeviceSummary>;
@@ -135,7 +167,9 @@ export async function updateDevice(
   );
 
   if (!response.ok) {
-    throw new Error('Falha ao atualizar device');
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao atualizar device'),
+    );
   }
 
   return response.json() as Promise<DeviceSummary>;
@@ -158,7 +192,9 @@ export async function deleteDevice(
   );
 
   if (!response.ok) {
-    throw new Error('Falha ao remover device');
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao remover device'),
+    );
   }
 
   return response.json() as Promise<DeviceSummary>;
@@ -180,7 +216,12 @@ export async function fetchAlertRules(
   );
 
   if (!response.ok) {
-    throw new Error('Falha ao carregar regras de alerta');
+    throw new Error(
+      await extractApiErrorMessage(
+        response,
+        'Falha ao carregar regras de alerta',
+      ),
+    );
   }
 
   return response.json() as Promise<AlertRule[]>;
@@ -200,7 +241,9 @@ export async function createAlertRule(
   });
 
   if (!response.ok) {
-    throw new Error('Falha ao criar regra de alerta');
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao criar regra de alerta'),
+    );
   }
 }
 
@@ -214,6 +257,11 @@ export async function deleteAlertRule(
   });
 
   if (!response.ok) {
-    throw new Error('Falha ao remover regra de alerta');
+    throw new Error(
+      await extractApiErrorMessage(
+        response,
+        'Falha ao remover regra de alerta',
+      ),
+    );
   }
 }

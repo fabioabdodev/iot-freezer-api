@@ -38,19 +38,26 @@ export class MonitorService {
     );
 
     for (const device of offlineCandidates) {
+      const offlineSince = new Date(Date.now());
       await this.prisma.device.update({
         where: { id: device.id },
         data: {
           isOffline: true,
-          offlineSince: new Date(Date.now()),
-          lastAlertAt: new Date(Date.now()),
+          offlineSince,
+          lastAlertAt: offlineSince,
         },
       });
 
       this.logger.warn(
         `Device ${device.id} ficou OFFLINE lastSeen=${device.lastSeen ? device.lastSeen.toISOString() : 'null'}`,
       );
-      // TODO: enviar webhook de offline no proximo passo
+      this.alertQueue.enqueue({
+        type: 'device_offline',
+        clientId: (device as any).clientId ?? null,
+        deviceId: device.id,
+        lastSeenAt: device.lastSeen ? device.lastSeen.toISOString() : null,
+        offlineSince: offlineSince.toISOString(),
+      });
     }
 
     const hasConfigurableRules = await this.processConfiguredTemperatureRules();

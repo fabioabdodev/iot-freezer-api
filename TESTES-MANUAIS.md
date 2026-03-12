@@ -29,7 +29,7 @@
 - [x] Trocar confirmacao nativa do navegador por modal proprio
 - [x] Destacar melhor temperatura fora da faixa no dashboard
 - [x] Melhorar atualizacao automatica da listagem sem precisar refresh manual
-- [ ] Refinar mensagens de erro da interface
+- [x] Refinar mensagens de erro da interface
 - [ ] Revisar feedback visual de acoes criticas
 
 ## Testes sugeridos para depois
@@ -37,9 +37,10 @@
 - [ ] Criar e excluir regra no cliente `almanaque`
 - [ ] Criar novamente um device do zero apos os ajustes de loading
 - [ ] Testar mais de um device enviando leitura ao mesmo tempo
-- [ ] Validar cooldown e tolerancia das regras de alerta
+- [x] Validar cooldown e tolerancia das regras de alerta
 - [ ] Testar historico com mais volume de leituras
 - [ ] Validar entrega real de webhook/alerta, se aplicavel
+- [ ] Validar webhook de offline ponta a ponta, se aplicavel
 
 ## Contexto de Produto
 

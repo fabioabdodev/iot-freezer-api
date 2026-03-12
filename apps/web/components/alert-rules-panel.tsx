@@ -76,7 +76,10 @@ export function AlertRulesPanel({
   authToken,
   devices,
 }: AlertRulesPanelProps) {
-  const { data, isLoading, isError } = useAlertRules(clientId, authToken);
+  const { data, isLoading, isError, error } = useAlertRules(
+    clientId,
+    authToken,
+  );
   const { createMutation, deleteMutation } = useAlertRuleMutations(
     clientId,
     authToken,
@@ -216,9 +219,23 @@ export function AlertRulesPanel({
         </form>
       ) : null}
 
+      {createMutation.isError ? (
+        <Feedback variant="danger" className="mb-3">
+          {createMutation.error?.message ?? 'Falha ao criar regra de alerta.'}
+        </Feedback>
+      ) : null}
+      {deleteMutation.isError ? (
+        <Feedback variant="danger" className="mb-3">
+          {deleteMutation.error?.message ??
+            'Falha ao remover regra de alerta.'}
+        </Feedback>
+      ) : null}
+
       {isLoading ? <Feedback>Carregando regras...</Feedback> : null}
       {isError && (data?.length ?? 0) === 0 ? (
-        <Feedback variant="danger">Erro ao carregar regras.</Feedback>
+        <Feedback variant="danger">
+          {error?.message ?? 'Erro ao carregar regras.'}
+        </Feedback>
       ) : null}
       {isError && (data?.length ?? 0) > 0 ? (
         <Feedback className="mb-3">

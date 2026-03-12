@@ -70,5 +70,34 @@ describe('AlertRulesService', () => {
       NotFoundException,
     );
   });
-});
 
+  it('should update alert rule preserving client and device validation', async () => {
+    fakePrisma.alertRule.findUnique.mockResolvedValueOnce({
+      id: 'rule_1',
+      clientId: 'client_a',
+      deviceId: 'freezer_01',
+      minValue: -20,
+      maxValue: -10,
+    });
+    fakePrisma.client.findUnique.mockResolvedValue({ id: 'client_a' });
+    fakePrisma.device.findUnique.mockResolvedValue({
+      id: 'freezer_01',
+      clientId: 'client_a',
+    });
+    fakePrisma.alertRule.update.mockResolvedValue({
+      id: 'rule_1',
+      toleranceMinutes: 3,
+    });
+
+    const result = await service.update('rule_1', {
+      toleranceMinutes: 3,
+    } as any);
+
+    expect(result).toEqual({ id: 'rule_1', toleranceMinutes: 3 });
+    expect(fakePrisma.alertRule.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'rule_1' },
+      }),
+    );
+  });
+});

@@ -59,6 +59,31 @@ describe('MonitorService', () => {
     expect(service).toBeDefined();
   });
 
+  it('enqueues offline alert when a device crosses offline threshold', async () => {
+    const now = new Date('2026-03-07T10:00:00.000Z');
+    jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
+
+    fakePrisma.device.count.mockResolvedValue(1);
+    fakePrisma.device.findMany.mockResolvedValueOnce([
+      {
+        id: 'dev1',
+        clientId: 'client_a',
+        lastSeen: new Date('2026-03-07T09:40:00.000Z'),
+        isOffline: false,
+      },
+    ]);
+
+    await service.checkOfflineDevices();
+
+    expect(fakeAlertQueue.enqueue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'device_offline',
+        deviceId: 'dev1',
+        clientId: 'client_a',
+      }),
+    );
+  });
+
   it('enqueues alert when configured temperature rule is violated', async () => {
     const now = new Date('2026-03-07T10:00:00.000Z');
     jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
@@ -126,6 +151,40 @@ describe('MonitorService', () => {
       id: 'state_1',
       breachStartedAt: now,
       lastTriggeredAt: null,
+    });
+
+    await service.checkOfflineDevices();
+
+    expect(fakeAlertQueue.enqueue).not.toHaveBeenCalled();
+  });
+
+  it('does not send webhook while cooldown is still active', async () => {
+    const now = new Date('2026-03-07T10:00:00.000Z');
+    jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
+
+    fakePrisma.alertRule.findMany.mockResolvedValue([
+      {
+        id: 'rule_1',
+        clientId: 'client_a',
+        deviceId: 'dev1',
+        sensorType: 'temperature',
+        minValue: 0,
+        maxValue: 10,
+        cooldownMinutes: 5,
+        toleranceMinutes: 0,
+        enabled: true,
+      },
+    ]);
+
+    fakePrisma.device.findUnique.mockResolvedValue({
+      id: 'dev1',
+      clientId: 'client_a',
+    });
+    fakePrisma.temperatureLog.findFirst.mockResolvedValue({ temperature: 15 });
+    fakePrisma.alertRuleState.upsert.mockResolvedValue({
+      id: 'state_1',
+      breachStartedAt: new Date('2026-03-07T09:50:00.000Z'),
+      lastTriggeredAt: new Date('2026-03-07T09:57:00.000Z'),
     });
 
     await service.checkOfflineDevices();

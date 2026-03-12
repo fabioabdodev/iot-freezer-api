@@ -16,6 +16,8 @@ describe('AlertDeliveryQueueService', () => {
       get: jest.fn((key: string) => {
         if (key === 'N8N_TEMPERATURE_ALERT_WEBHOOK_URL')
           return 'https://example.com/webhook';
+        if (key === 'N8N_OFFLINE_WEBHOOK_URL')
+          return 'https://example.com/offline-webhook';
         if (key === 'ALERT_QUEUE_BATCH_SIZE') return 20;
         if (key === 'ALERT_QUEUE_RETRY_MAX') return 3;
         if (key === 'ALERT_QUEUE_RETRY_DELAY_MS') return 1000;
@@ -56,5 +58,25 @@ describe('AlertDeliveryQueueService', () => {
 
     expect(fetchMock).toHaveBeenCalled();
   });
-});
 
+  it('should enqueue and deliver offline alert payload', async () => {
+    service.enqueue({
+      type: 'device_offline',
+      clientId: 'client_a',
+      deviceId: 'dev1',
+      lastSeenAt: new Date('2026-03-12T10:00:00.000Z').toISOString(),
+      offlineSince: new Date('2026-03-12T10:06:00.000Z').toISOString(),
+    });
+
+    jest.advanceTimersByTime(1100);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://example.com/offline-webhook',
+      expect.objectContaining({
+        method: 'POST',
+      }),
+    );
+  });
+});
