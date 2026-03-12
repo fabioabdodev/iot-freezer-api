@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useAlertRuleMutations } from '@/hooks/use-alert-rule-mutations';
@@ -79,6 +80,7 @@ export function AlertRulesPanel({
     clientId,
     authToken,
   );
+  const [deletingRuleId, setDeletingRuleId] = useState<string | null>(null);
 
   const {
     register,
@@ -100,7 +102,12 @@ export function AlertRulesPanel({
   async function handleRemove(id: string) {
     const confirmed = window.confirm('Remover regra de alerta?');
     if (!confirmed) return;
-    await deleteMutation.mutateAsync(id);
+    setDeletingRuleId(id);
+    try {
+      await deleteMutation.mutateAsync(id);
+    } finally {
+      setDeletingRuleId(null);
+    }
   }
 
   return (
@@ -184,6 +191,7 @@ export function AlertRulesPanel({
                 type="submit"
                 variant="primary"
                 disabled={createMutation.isPending}
+                loading={createMutation.isPending}
                 className="min-w-[168px]"
               >
                 {createMutation.isPending ? 'Salvando...' : 'Criar regra'}
@@ -193,14 +201,18 @@ export function AlertRulesPanel({
         </form>
       ) : null}
 
-      {isLoading ? (
-        <Feedback>Carregando regras...</Feedback>
-      ) : null}
-      {isError ? (
+      {isLoading ? <Feedback>Carregando regras...</Feedback> : null}
+      {isError && (data?.length ?? 0) === 0 ? (
         <Feedback variant="danger">Erro ao carregar regras.</Feedback>
       ) : null}
+      {isError && (data?.length ?? 0) > 0 ? (
+        <Feedback className="mb-3">
+          Falha momentanea ao atualizar regras. Exibindo os ultimos dados
+          carregados.
+        </Feedback>
+      ) : null}
 
-      {!isLoading && !isError ? (
+      {!isLoading && (data?.length ?? 0) > 0 ? (
         <DataTableWrapper className="rounded-[22px]">
           <DataTable>
             <thead>
@@ -232,8 +244,12 @@ export function AlertRulesPanel({
                       }}
                       variant="danger"
                       size="sm"
+                      loading={deletingRuleId === rule.id}
+                      disabled={
+                        deleteMutation.isPending && deletingRuleId !== rule.id
+                      }
                     >
-                      Excluir
+                      {deletingRuleId === rule.id ? 'Excluindo...' : 'Excluir'}
                     </Button>
                   </td>
                 </tr>
@@ -241,6 +257,9 @@ export function AlertRulesPanel({
             </tbody>
           </DataTable>
         </DataTableWrapper>
+      ) : null}
+      {!isLoading && !isError && (data?.length ?? 0) === 0 ? (
+        <Feedback>Sem regras cadastradas para este clientId.</Feedback>
       ) : null}
     </Panel>
   );

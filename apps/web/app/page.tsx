@@ -69,6 +69,7 @@ function DashboardContent() {
     'closed',
   );
   const [editingDeviceId, setEditingDeviceId] = useState<string | null>(null);
+  const [deletingDeviceId, setDeletingDeviceId] = useState<string | null>(null);
 
   useEffect(() => {
     // Mantem o campo de filtro sincronizado quando a URL muda por navegacao ou refresh.
@@ -143,7 +144,12 @@ function DashboardContent() {
     );
     if (!confirmed) return;
 
-    await deleteMutation.mutateAsync(id);
+    setDeletingDeviceId(id);
+    try {
+      await deleteMutation.mutateAsync(id);
+    } finally {
+      setDeletingDeviceId(null);
+    }
 
     if (selectedDeviceId === id) setSelectedDeviceId(null);
     if (editingDeviceId === id) {
@@ -390,11 +396,17 @@ function DashboardContent() {
         ) : null}
 
         {isLoading ? <Feedback>Carregando...</Feedback> : null}
-        {isError ? (
+        {isError && devices.length === 0 ? (
           <Feedback variant="danger">Erro ao carregar dispositivos.</Feedback>
         ) : null}
+        {isError && devices.length > 0 ? (
+          <Feedback className="mb-3">
+            Falha momentanea ao atualizar dispositivos. Exibindo os ultimos dados
+            carregados.
+          </Feedback>
+        ) : null}
 
-        {!isLoading && !isError ? (
+        {!isLoading && devices.length > 0 ? (
           <div className="space-y-4">
             <DataTableWrapper>
               <DataTable>
@@ -465,8 +477,15 @@ function DashboardContent() {
                             }}
                             variant="danger"
                             size="sm"
+                            loading={deletingDeviceId === device.id}
+                            disabled={
+                              deleteMutation.isPending &&
+                              deletingDeviceId !== device.id
+                            }
                           >
-                            Excluir
+                            {deletingDeviceId === device.id
+                              ? 'Excluindo...'
+                              : 'Excluir'}
                           </Button>
                         </div>
                       </td>
@@ -499,6 +518,9 @@ function DashboardContent() {
               />
             ) : null}
           </div>
+        ) : null}
+        {!isLoading && !isError && devices.length === 0 ? (
+          <Feedback>Sem dispositivos para este clientId.</Feedback>
         ) : null}
       </Panel>
 

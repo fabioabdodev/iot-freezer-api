@@ -197,7 +197,13 @@ export function DeviceForm({
         </div>
 
         <div className="mt-4 flex items-center gap-2">
-          <Button type="submit" variant="primary" disabled={loading} className="min-w-[168px]">
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={loading}
+            loading={loading}
+            className="min-w-[168px]"
+          >
             {loading
               ? 'Salvando...'
               : mode === 'create'
