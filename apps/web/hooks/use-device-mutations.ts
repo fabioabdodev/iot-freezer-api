@@ -2,35 +2,74 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createDevice, deleteDevice, updateDevice } from '@/lib/api';
-import { DeviceInput } from '@/types/device';
+import { DeviceInput, DeviceSummary } from '@/types/device';
 
 export function useDeviceMutations(clientId?: string, authToken?: string) {
   const queryClient = useQueryClient();
 
   const invalidateDevices = async () => {
-    await queryClient.invalidateQueries({ queryKey: ['devices'] });
+    await queryClient.invalidateQueries({
+      queryKey: ['devices'],
+      refetchType: 'active',
+    });
     await queryClient.invalidateQueries({ queryKey: ['device-readings'] });
+  };
+
+  const upsertDeviceInCaches = (device: DeviceSummary) => {
+    queryClient.setQueriesData(
+      { queryKey: ['devices'] },
+      (current: DeviceSummary[] | undefined) => {
+        if (!current) return current;
+
+        const existingIndex = current.findIndex((row) => row.id === device.id);
+        if (existingIndex === -1) return current;
+
+        const next = current.slice();
+        next[existingIndex] = {
+          ...next[existingIndex],
+          ...device,
+        };
+        return next;
+      },
+    );
+  };
+
+  const removeDeviceFromCaches = (deviceId: string) => {
+    queryClient.setQueriesData(
+      { queryKey: ['devices'] },
+      (current: DeviceSummary[] | undefined) =>
+        current?.filter((row) => row.id !== deviceId) ?? current,
+    );
   };
 
   const createMutation = useMutation({
     mutationFn: (payload: DeviceInput) => createDevice(payload, authToken),
-    onSuccess: invalidateDevices,
+    onSuccess: async (device) => {
+      upsertDeviceInCaches(device);
+      await invalidateDevices();
+    },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({
       id,
       payload,
-    }: {
+      }: {
       id: string;
       payload: Omit<DeviceInput, 'id'>;
     }) => updateDevice(id, payload, clientId, authToken),
-    onSuccess: invalidateDevices,
+    onSuccess: async (device) => {
+      upsertDeviceInCaches(device);
+      await invalidateDevices();
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteDevice(id, clientId, authToken),
-    onSuccess: invalidateDevices,
+    onSuccess: async (device) => {
+      removeDeviceFromCaches(device.id);
+      await invalidateDevices();
+    },
   });
 
   return {

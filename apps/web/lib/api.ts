@@ -79,42 +79,24 @@ export async function fetchDeviceReadings(
   query.set('limit', String(limit));
   if (clientId) query.set('clientId', clientId);
   const headers = buildAuthHeaders(authToken);
-  const primaryUrl = `${API_BASE_URL}/devices/${deviceId}/readings?${query.toString()}`;
-  const fallbackUrl = `${API_BASE_URL}/readings/${deviceId}?sensor=temperature&${query.toString()}`;
+  const url = `${API_BASE_URL}/readings/${deviceId}?sensor=temperature&${query.toString()}`;
 
-  try {
-    const response = await fetch(primaryUrl, {
-      cache: 'no-store',
-      headers,
-    });
+  const response = await fetch(url, {
+    cache: 'no-store',
+    headers,
+  });
 
-    if (response.ok) {
-      return normalizeDeviceReadings(await response.json());
-    }
-  } catch {
-    // Ignoramos a excecao aqui para tentar o endpoint legado/alternativo de leituras.
-  }
-
-  try {
-    const fallbackResponse = await fetch(fallbackUrl, {
-      cache: 'no-store',
-      headers,
-    });
-
-    if (!fallbackResponse.ok) {
-      throw new Error('Falha ao carregar historico do device');
-    }
-
-    return normalizeDeviceReadings(await fallbackResponse.json());
-  } catch {
+  if (!response.ok) {
     throw new Error('Falha ao carregar historico do device');
   }
+
+  return normalizeDeviceReadings(await response.json());
 }
 
 export async function createDevice(
   input: DeviceInput,
   authToken?: string,
-): Promise<void> {
+): Promise<DeviceSummary> {
   const response = await fetch(`${API_BASE_URL}/devices`, {
     method: 'POST',
     headers: {
@@ -127,6 +109,8 @@ export async function createDevice(
   if (!response.ok) {
     throw new Error('Falha ao criar device');
   }
+
+  return response.json() as Promise<DeviceSummary>;
 }
 
 export async function updateDevice(
@@ -134,7 +118,7 @@ export async function updateDevice(
   input: Omit<DeviceInput, 'id'>,
   clientId?: string,
   authToken?: string,
-): Promise<void> {
+): Promise<DeviceSummary> {
   const query = new URLSearchParams();
   if (clientId) query.set('clientId', clientId);
 
@@ -153,13 +137,15 @@ export async function updateDevice(
   if (!response.ok) {
     throw new Error('Falha ao atualizar device');
   }
+
+  return response.json() as Promise<DeviceSummary>;
 }
 
 export async function deleteDevice(
   id: string,
   clientId?: string,
   authToken?: string,
-): Promise<void> {
+): Promise<DeviceSummary> {
   const query = new URLSearchParams();
   if (clientId) query.set('clientId', clientId);
 
@@ -174,6 +160,8 @@ export async function deleteDevice(
   if (!response.ok) {
     throw new Error('Falha ao remover device');
   }
+
+  return response.json() as Promise<DeviceSummary>;
 }
 
 export async function fetchAlertRules(
