@@ -46,29 +46,59 @@ applyTo: '**'
 - laboratorio `/lab`
 - deploy automatizado em producao
 
+### Fase 7 - Consolidacao do modulo temperatura
+
+- loading e feedback melhores no dashboard
+- confirmacao customizada para exclusao
+- destaque visual para temperatura fora da faixa
+- polling automatico no dashboard
+- mensagens de erro mais claras
+- testes ampliados para cooldown e tolerance
+- webhook de offline implementado
+
+Estado:
+
+- quase concluido
+- pendente de estabilizacao operacional do `n8n` + Redis
+- pendente de estabilizacao definitiva do deploy automatizado
+
+Referencia complementar:
+
+- detalhes do estado atual em `.github/instructions/PROJECT_RULES.md`
+- direcao de produto em `.github/instructions/PRODUCT_RULES.md`
+
+### Fase 8 - Modulo acionamento
+
+Escopo inicial sugerido:
+
+- ligar/desligar manualmente uma carga
+- exibir estado atual
+- registrar historico basico de comandos
+- caso inicial sugerido: sauna
+
 ## Proximos passos recomendados
 
-### Fase 7 - Autenticacao de usuarios
+### Fase 9 - Autenticacao de usuarios
 
 - login
 - perfis
 - isolamento por cliente no frontend
 
-### Fase 8 - Multi-sensor real
+### Fase 10 - Multi-sensor real
 
 - umidade
 - porta
 - energia
 - leituras mais genericas
 
-### Fase 9 - Observabilidade e escala
+### Fase 11 - Observabilidade e escala
 
 - metricas
 - rastreabilidade
 - cache e filas mais robustos
-- otimização de historico
+- otimizacao de historico
 
-### Fase 10 - SaaS completo
+### Fase 12 - SaaS completo
 
 - usuarios e equipes
 - dashboards por conta

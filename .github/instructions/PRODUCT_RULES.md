@@ -1,13 +1,13 @@
 ---
-description: regras de produto, visao do sistema e evolucao para SaaS de monitoramento IoT
+description: regras de produto, visao do sistema e evolucao modular da plataforma
 applyTo: '**'
 ---
 
 # PRODUCT_RULES.md - Regras de produto
 
-Este projeto implementa um sistema de monitoramento inteligente de equipamentos
-usando IoT. O primeiro caso e temperatura de freezer, mas a plataforma deve
-evoluir para outros sensores e para um modelo SaaS.
+Este projeto implementa uma plataforma modular de automacao e monitoramento
+usando IoT. O primeiro modulo e `temperatura`, com caso inicial focado em
+freezer, mas a base deve permitir evolucao para novos modulos.
 
 ## Estado atual do produto
 
@@ -21,24 +21,7 @@ O MVP expandido ja entrega:
 - monitoramento de offline
 - alerta por temperatura
 - integracao por webhook com n8n
-
-## Entidades principais
-
-### Client
-
-Representa a operacao dona dos devices.
-
-### Device
-
-Representa o equipamento monitorado.
-
-### Reading
-
-Representa a leitura capturada. Hoje o foco e temperatura.
-
-### Alert Rule
-
-Representa a configuracao de monitoramento do device.
+- integracao operacional com Evolution
 
 ## Regras de produto
 
@@ -46,7 +29,8 @@ Representa a configuracao de monitoramento do device.
 - alertas devem ser desacoplados via webhook
 - o backend nao deve enviar mensagens diretamente
 - o dashboard deve focar em operacao rapida e leitura clara
-- a base deve continuar preparada para novos sensores
+- a base deve continuar preparada para novos sensores e atuadores
+- a evolucao deve ocorrer modulo por modulo
 
 ## Integracao de alertas
 
@@ -54,12 +38,29 @@ Fluxo correto:
 
 Backend -> webhook -> n8n -> Evolution API -> WhatsApp
 
+## Estrategia modular
+
+Plataforma base compartilhada:
+
+- clients
+- devices
+- historico
+- alertas
+- dashboard
+- multi-tenant
+
+Modulo atual:
+
+- `temperatura`
+
+Proximo modulo sugerido:
+
+- `acionamento`
+
+Regra de evolucao:
+
+- nao abrir o proximo modulo antes de aceitar conscientemente o estado do modulo atual
+
 ## Evolucao esperada
 
-Proximos grandes blocos de produto:
-
-1. autenticacao de usuarios
-2. dashboards por cliente
-3. novos sensores
-4. alertas e relatorios mais ricos
-5. recursos reais de SaaS
+Ver `.github/instructions/ROADMAP.md` para a sequencia planejada de fases.

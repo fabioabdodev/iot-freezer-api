@@ -41,7 +41,7 @@ Resumo da estrategia:
 - validar o uso real
 - evoluir a plataforma reaproveitando a mesma base
 
-Mais detalhes em `ROADMAP-MODULAR.md`.
+Mais detalhes em `.github/instructions/PRODUCT_RULES.md` e `.github/instructions/ROADMAP.md`.
 
 ## Arquitetura operacional atual
 

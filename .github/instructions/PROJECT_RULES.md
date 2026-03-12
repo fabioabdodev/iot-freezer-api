@@ -3,13 +3,7 @@ description: regras do projeto e conceitos do produto no estado atual
 applyTo: '**'
 ---
 
-# PROJECT_RULES.md - Regras e conceitos do produto
-
-## Visao do produto
-
-Construir um monitoramento inteligente para equipamentos usando sensores IoT.
-O primeiro caso do produto continua sendo temperatura de freezer, mas a base ja
-foi preparada para clientes, dispositivos, historico, alertas e dashboard web.
+# PROJECT_RULES.md - Regras e estado atual do projeto
 
 ## Escopo atual do projeto
 
@@ -24,10 +18,12 @@ Funcionalidades ja implementadas:
    - deteccao de offline
    - alerta por temperatura fora da faixa
    - cooldown e tolerancia
+   - webhook de temperatura e offline
 4. Operacao
    - ambiente local
    - deploy em Docker Swarm
    - banco no Supabase
+   - integracao com n8n e Evolution
 5. Gestao
    - clients
    - devices
@@ -35,6 +31,27 @@ Funcionalidades ja implementadas:
    - dashboard web
 6. Multi-tenant basico
    - isolamento por `clientId`
+
+## Estado atual do modulo temperatura
+
+O modulo `temperatura` esta em estado de quase conclusao.
+
+Ja foi validado:
+
+- cadastro de cliente
+- cadastro de device
+- cadastro de regra
+- historico
+- temperatura fora da faixa
+- online/offline
+- filtro por cliente
+- feedback principal do dashboard
+- integracao da API com webhook do n8n ate a criacao da execucao
+
+Pendencias principais restantes:
+
+- estabilizacao do processamento do `n8n` com Redis
+- estabilizacao do deploy automatico quando houver falha intermitente de SSH/SCP
 
 ## O que ainda nao entrou por completo
 
@@ -66,7 +83,7 @@ Campos importantes:
 ### Reading
 
 Leitura de sensor armazenada no historico. Hoje o foco e temperatura, mas a
-arquitetura ja considera futura extensao para outros sensores.
+arquitetura deve continuar preparada para futura extensao.
 
 ### Alert Rule
 
@@ -111,10 +128,4 @@ Quando existir regra habilitada:
 
 ## Direcao de evolucao
 
-Proximos blocos mais coerentes:
-
-1. autenticacao de usuarios
-2. suporte a mais sensores
-3. historico e graficos mais ricos
-4. alertas mais configuraveis
-5. evolucao real para SaaS multi-tenant completo
+Ver `.github/instructions/ROADMAP.md` para a sequencia de evolucao.

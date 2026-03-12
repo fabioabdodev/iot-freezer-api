@@ -13,13 +13,15 @@ applyTo: '**'
 - Next.js
 - Docker Swarm + Traefik
 - n8n para automacao
+- Evolution para mensageria
+- Redis como infraestrutura de suporte
 - GHCR para imagens
 
 ## Visao geral
 
 Fluxo principal:
 
-Device -> API -> Database -> Monitor -> Queue -> n8n -> WhatsApp
+Device -> API -> Database -> Monitor -> Queue -> n8n -> Evolution -> WhatsApp
 
 Tambem existe o fluxo operacional do dashboard:
 
@@ -65,6 +67,12 @@ Processo agendado que:
 ### Fila de entrega de alertas
 
 Responsavel por desacoplar a deteccao do envio do webhook.
+
+Estado atual:
+
+- a fila da API ainda e em memoria local
+- existe previsao de migracao futura para Redis
+- o ambiente ja possui Redis por causa do n8n
 
 ## Modulos do backend
 
@@ -113,6 +121,9 @@ Dominios atuais:
 
 - `monitor.virtuagil.com.br`
 - `api-monitor.virtuagil.com.br`
+- `workflow.virtuagil.com.br`
+- `webhookworkflow.virtuagil.com.br`
+- `evolution.virtuagil.com.br`
 
 ## Validacao manual minima
 
@@ -121,3 +132,4 @@ Dominios atuais:
 3. testar `/health`
 4. simular offline
 5. simular temperatura fora da faixa
+6. confirmar chegada do webhook no n8n
