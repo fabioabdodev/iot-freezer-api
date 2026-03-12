@@ -13,9 +13,10 @@ describe('MonitorService', () => {
   beforeEach(async () => {
     fakePrisma = {
       device: {
+        count: jest.fn().mockResolvedValue(0),
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn(),
-        update: jest.fn(),
+        update: jest.fn().mockResolvedValue(undefined),
       },
       temperatureLog: {
         findFirst: jest.fn(),
@@ -25,7 +26,7 @@ describe('MonitorService', () => {
       },
       alertRuleState: {
         upsert: jest.fn(),
-        update: jest.fn(),
+        update: jest.fn().mockResolvedValue(undefined),
       },
     };
 

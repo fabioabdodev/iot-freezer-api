@@ -14,5 +14,8 @@ export function useDeviceReadings(
     queryFn: () =>
       fetchDeviceReadings(deviceId as string, clientId, limit, authToken),
     enabled: Boolean(deviceId),
+    retry: 2,
+    refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
   });
 }

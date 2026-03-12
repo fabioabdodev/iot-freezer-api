@@ -52,12 +52,16 @@ export function DeviceHistoryPanel({
         <Badge>Ultimos 48 pontos</Badge>
       </div>
 
-      {isLoading ? (
-        <Feedback>Carregando historico...</Feedback>
-      ) : null}
-      {isError ? (
+      {isLoading ? <Feedback>Carregando historico...</Feedback> : null}
+      {isError && points.length === 0 ? (
         <Feedback variant="danger">
           Erro ao carregar historico do device.
+        </Feedback>
+      ) : null}
+      {isError && points.length > 0 ? (
+        <Feedback className="mb-3">
+          Falha momentanea ao atualizar o historico. Exibindo os ultimos dados
+          carregados.
         </Feedback>
       ) : null}
 

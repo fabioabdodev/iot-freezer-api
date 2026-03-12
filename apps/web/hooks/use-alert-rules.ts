@@ -8,5 +8,8 @@ export function useAlertRules(clientId?: string, authToken?: string) {
     queryKey: ['alert-rules', clientId, authToken],
     queryFn: () => fetchAlertRules(clientId, authToken),
     enabled: Boolean(clientId),
+    retry: 2,
+    refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
   });
 }
