@@ -8,6 +8,7 @@ export function useDeviceReadings(
   clientId?: string,
   limit = 48,
   authToken?: string,
+  live = false,
 ) {
   return useQuery({
     queryKey: ['device-readings', deviceId, clientId, limit, authToken],
@@ -16,6 +17,8 @@ export function useDeviceReadings(
     enabled: Boolean(deviceId),
     retry: 2,
     refetchOnWindowFocus: false,
+    refetchInterval: live ? 15000 : false,
+    refetchIntervalInBackground: live,
     placeholderData: (previousData) => previousData,
   });
 }

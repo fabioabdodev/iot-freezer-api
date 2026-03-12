@@ -9,6 +9,8 @@ export function useDevices(clientId?: string, limit = 50, authToken?: string) {
     queryFn: () => fetchDevices(clientId, limit, authToken),
     retry: 2,
     refetchOnWindowFocus: false,
+    refetchInterval: 30000,
+    refetchIntervalInBackground: true,
     placeholderData: (previousData) => previousData,
   });
 }

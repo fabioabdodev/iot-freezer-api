@@ -33,6 +33,7 @@ export function DeviceHistoryPanel({
     clientId,
     48,
     authToken,
+    true,
   );
 
   const points = (data ?? []).map((item) => ({
