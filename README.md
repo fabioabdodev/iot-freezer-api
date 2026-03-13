@@ -431,6 +431,26 @@ SSL/TLS recomendado:
 - Cloudflare: `Full (strict)`
 - Traefik com `certresolver=cloudflare` (já definido nas labels do stack)
 
+Estado operacional validado em 13/03/2026:
+
+- conta Cloudflare atual: plano `Free`
+- `monitor.virtuagil.com.br`: `Proxied` e validado com sucesso
+- `virtuagil.com.br`: tentativa de `Proxied` retornou erro `526 Invalid SSL certificate`
+- causa do erro no dominio raiz: ainda nao existe origem HTTPS valida para `virtuagil.com.br`
+- recomendacao atual para o dominio raiz: manter `DNS only` ate o site institucional existir no Traefik com certificado valido
+- `api-monitor.virtuagil.com.br`: manter `DNS only` ate fazer uma rodada dedicada de testes
+- `automacao.virtuagil.com.br`: manter `DNS only`
+- `workflow.virtuagil.com.br`: manter `DNS only`
+- `webhookworkflow.virtuagil.com.br`: manter `DNS only`
+
+Configuracao recomendada no Cloudflare para o estado atual:
+
+- `SSL/TLS`: `Full (strict)`
+- `TLS 1.3`: ligado
+- `Automatic HTTPS Rewrites`: ligado
+- `Always Use HTTPS`: recomendado ligado
+- proxy habilitado apenas nos hosts que ja possuem origem HTTPS valida
+
 ### 4. Deploy
 
 Push na branch `main` (ou `workflow_dispatch`) dispara:
@@ -476,6 +496,7 @@ Observação: o frontend usa `NEXT_PUBLIC_API_BASE_URL` no build da imagem web. 
 - Preferir deploy containerizado (Docker/Swarm).
 - Se usar Cloudflare proxy, manter `SSL/TLS = Full (strict)`.
 - Se ativar `Cloudflare Turnstile`, configure a chave publica no frontend e a chave secreta na API.
+- Se um host retornar `526 Invalid SSL certificate`, isso indica que a origem ainda nao apresenta certificado valido para aquele dominio; nesse caso, volte o host para `DNS only` ate corrigir a origem.
 
 ## Protecao recomendada para login
 

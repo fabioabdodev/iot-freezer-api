@@ -210,6 +210,12 @@ Correcoes validadas em producao:
 - `N8N_TEMPERATURE_ALERT_WEBHOOK_URL` foi corrigida para `https://webhookworkflow.virtuagil.com.br/webhook/temperature-alert`
 - `N8N_OFFLINE_WEBHOOK_URL` foi corrigida para `https://webhookworkflow.virtuagil.com.br/webhook/device-offline`
 - `DATABASE_URL` da API em producao foi migrada da conexao direta IPv6 do Supabase para o `session pooler`
+- Cloudflare configurado no plano `Free`
+- `monitor.virtuagil.com.br` validado com proxy ativo no Cloudflare
+- `virtuagil.com.br` testado com proxy ativo, mas retornou erro `526 Invalid SSL certificate` por ainda nao existir origem HTTPS valida para esse host
+- recomendacao operacional atual: manter o dominio raiz em `DNS only` ate o site institucional existir com rota e certificado valido no Traefik
+- recomendacao operacional atual: manter `api-monitor`, `automacao`, `workflow` e `webhookworkflow` em `DNS only` ate rodada dedicada de testes
+- Cloudflare mantido com `SSL/TLS = Full (strict)` e `Automatic HTTPS Rewrites` ligado
 
 Observacao importante para continuidade:
 
@@ -253,6 +259,7 @@ Estado em 13/03/2026:
   - `clientId` do usuario autenticado agora limita consultas e mutacoes sensiveis
   - login agora usa rate limit e bloqueio temporario contra brute force
   - backend ja esta preparado para `Cloudflare Turnstile` quando `TURNSTILE_SECRET_KEY` for configurada
+  - frontend ainda nao exibe o widget do Turnstile; a integracao visual fica para etapa posterior
 - modulos por cliente:
   - backend ja possui `/client-modules`
   - seed define modulos habilitados por cliente demo
@@ -279,3 +286,4 @@ Estado em 13/03/2026:
   - continuidade deve priorizar simulacao, contratos de API, dashboard e operacao manual
 - observacao operacional:
   - em 13/03/2026 houve tentativa de `npx prisma migrate deploy` contra o banco configurado, mas o comando excedeu o tempo de execucao e nao confirmou conclusao
+  - em 13/03/2026 o Cloudflare foi ajustado para `Full (strict)`; `monitor.virtuagil.com.br` ficou funcional com proxy e o dominio raiz apresentou `526` por falta de origem HTTPS valida
