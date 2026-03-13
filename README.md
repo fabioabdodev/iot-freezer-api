@@ -104,13 +104,19 @@ npx prisma generate
 npx prisma migrate deploy
 ```
 
-6. Rode em desenvolvimento:
+6. Opcionalmente confirme se o modulo `acionamento` entrou no banco:
+
+```bash
+npm run db:verify-actuation
+```
+
+7. Rode em desenvolvimento:
 
 ```bash
 npm run start:dev
 ```
 
-7. Opcional: popule dados de demonstracao:
+8. Opcional: popule dados de demonstracao:
 
 ```bash
 npm run db:seed
@@ -287,6 +293,45 @@ O seed e idempotente:
 - atualiza clientes e devices demo existentes
 - recria configuracao esperada das regras
 - so cria historico de temperatura se o device ainda nao tiver leituras
+
+## Verificacao do modulo acionamento
+
+Para confirmar se a migration do `acionamento` foi aplicada no banco configurado:
+
+```bash
+npm run db:verify-actuation
+```
+
+Resultado esperado:
+
+- migration `20260313013000_create_actuation_module` encontrada
+- tabela `Actuator` encontrada
+- tabela `ActuationCommand` encontrada
+
+Checklist rapido no Supabase:
+
+1. rode `npx prisma migrate deploy`
+2. rode `npm run db:verify-actuation`
+3. se a verificacao passar, suba a API com `npm run start:dev`
+4. crie um atuador:
+
+```bash
+curl -X POST http://localhost:3000/actuators -H "Content-Type: application/json" -d "{\"id\":\"sauna_main\",\"clientId\":\"virtuagil\",\"name\":\"Sauna principal\"}"
+```
+
+5. envie um comando manual:
+
+```bash
+curl -X POST http://localhost:3000/actuators/sauna_main/commands -H "Content-Type: application/json" -d "{\"desiredState\":\"on\",\"source\":\"checklist\"}"
+```
+
+6. confirme o historico:
+
+```bash
+curl http://localhost:3000/actuators/sauna_main/commands
+```
+
+Se os passos 2, 5 e 6 responderem corretamente, o modulo `acionamento` esta funcional no banco atual.
 
 ## Docker
 

@@ -221,6 +221,8 @@ Estado em 13/03/2026:
 - pendencia imediata:
   - aplicar `npx prisma migrate deploy` no banco conectado ao ambiente desejado
   - confirmar no banco real se as tabelas `Actuator` e `ActuationCommand` foram criadas
+  - usar `npm run db:verify-actuation` como verificacao rapida apos a migration
+  - usar o checklist do README para validar criacao, comando e historico no ambiente integrado
 - restricao importante:
   - ainda nao existem hardwares fisicos disponiveis
   - continuidade deve priorizar simulacao, contratos de API, dashboard e operacao manual
