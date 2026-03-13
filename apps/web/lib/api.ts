@@ -1,5 +1,11 @@
 import { DeviceInput, DeviceReading, DeviceSummary } from '@/types/device';
 import { AlertRule, AlertRuleInput } from '@/types/alert-rule';
+import {
+  ActuationCommand,
+  ActuationCommandInput,
+  ActuatorInput,
+  ActuatorSummary,
+} from '@/types/actuator';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
@@ -264,4 +270,91 @@ export async function deleteAlertRule(
       ),
     );
   }
+}
+
+export async function fetchActuators(
+  clientId?: string,
+  authToken?: string,
+): Promise<ActuatorSummary[]> {
+  const query = new URLSearchParams();
+  if (clientId) query.set('clientId', clientId);
+
+  const response = await fetch(`${API_BASE_URL}/actuators?${query.toString()}`, {
+    cache: 'no-store',
+    headers: buildAuthHeaders(authToken),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao carregar atuadores'),
+    );
+  }
+
+  return response.json() as Promise<ActuatorSummary[]>;
+}
+
+export async function createActuator(
+  input: ActuatorInput,
+  authToken?: string,
+): Promise<ActuatorSummary> {
+  const response = await fetch(`${API_BASE_URL}/actuators`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...buildAuthHeaders(authToken),
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao criar atuador'),
+    );
+  }
+
+  return response.json() as Promise<ActuatorSummary>;
+}
+
+export async function issueActuatorCommand(
+  actuatorId: string,
+  input: ActuationCommandInput,
+  authToken?: string,
+): Promise<ActuationCommand> {
+  const response = await fetch(`${API_BASE_URL}/actuators/${actuatorId}/commands`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...buildAuthHeaders(authToken),
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao enviar comando'),
+    );
+  }
+
+  return response.json() as Promise<ActuationCommand>;
+}
+
+export async function fetchActuatorCommands(
+  actuatorId: string,
+  authToken?: string,
+): Promise<ActuationCommand[]> {
+  const response = await fetch(`${API_BASE_URL}/actuators/${actuatorId}/commands`, {
+    cache: 'no-store',
+    headers: buildAuthHeaders(authToken),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(
+        response,
+        'Falha ao carregar historico do atuador',
+      ),
+    );
+  }
+
+  return response.json() as Promise<ActuationCommand[]>;
 }

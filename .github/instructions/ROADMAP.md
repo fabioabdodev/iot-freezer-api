@@ -79,9 +79,18 @@ Escopo inicial sugerido:
 - registrar historico basico de comandos
 - caso inicial sugerido: sauna
 
+Estado atual:
+
+- backend inicial implementado
+- dashboard inicial implementado
+- fluxo atual e manual/simulado, sem hardware fisico
+- migration criada e pendente de aplicacao no banco real
+
 Proximo ponto de continuidade:
 
-- modelar entidades e fluxos do modulo `acionamento`
+- aplicar migration do modulo `acionamento`
+- validar fluxo manual ponta a ponta em ambiente integrado
+- adicionar refinamentos operacionais no dashboard do `acionamento`
 - manter o modulo `temperatura` apenas em manutencao corretiva
 
 ## Proximos passos recomendados

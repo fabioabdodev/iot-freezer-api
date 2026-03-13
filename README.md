@@ -16,6 +16,7 @@ Backend em NestJS para monitoramento de dispositivos IoT, com ingestão de tempe
 - Autenticação de device por `x-device-key`
 - Rate limit por device
 - Gestão de devices (`POST/GET/PATCH/DELETE`)
+- Gestão de atuadores e comandos manuais (`/actuators`)
 - Dashboard backend (`GET /devices` e histórico)
 - Leitura normalizada e agregada por resolução (`/readings`)
 - Gestão de clientes (`/clients`)
@@ -192,6 +193,16 @@ Payload:
 - `GET /alert-rules/:id`
 - `PATCH /alert-rules/:id`
 - `DELETE /alert-rules/:id`
+
+### Actuators
+
+- `POST /actuators`
+- `GET /actuators?clientId=...&deviceId=...&state=on|off`
+- `GET /actuators/:id?clientId=...`
+- `PATCH /actuators/:id`
+- `DELETE /actuators/:id`
+- `POST /actuators/:id/commands`
+- `GET /actuators/:id/commands?limit=...`
 
 ## Testes
 

@@ -103,3 +103,25 @@ npm run db:seed
 
 O seed cria clients, devices, regras e historico inicial sem duplicar o que ja
 existir.
+
+## Simulacao atual do modulo acionamento
+
+Enquanto nao houver hardware fisico:
+
+- o modulo `acionamento` nao depende de ESP32 ou rele real
+- o estado do atuador e alterado manualmente pelo dashboard ou API
+- o historico e registrado no backend para validar fluxo operacional
+
+Endpoints uteis:
+
+- `POST /actuators`
+- `GET /actuators`
+- `POST /actuators/:id/commands`
+- `GET /actuators/:id/commands`
+
+Fluxo recomendado sem hardware:
+
+1. criar um atuador para um `clientId`
+2. opcionalmente vincular o atuador a um `deviceId`
+3. enviar comandos `on` e `off`
+4. validar a mudanca de estado e o historico no dashboard

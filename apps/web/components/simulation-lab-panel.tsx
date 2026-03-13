@@ -52,6 +52,21 @@ export function SimulationLabPanel({ clientId }: SimulationLabPanelProps) {
       command: 'npm run db:seed',
       badge: 'seed',
     },
+    {
+      title: 'Cadastrar atuador',
+      description:
+        'Cria um atuador manual para validar o modulo de acionamento sem rele fisico.',
+      command: `curl -X POST http://localhost:3000/actuators -H "Content-Type: application/json" -d "{\\"id\\":\\"sauna_main\\",\\"clientId\\":\\"${clientId ?? 'virtuagil'}\\",\\"name\\":\\"Sauna principal\\"}"`,
+      badge: 'acionamento',
+    },
+    {
+      title: 'Enviar comando manual',
+      description:
+        'Liga ou desliga a carga pela API para testar dashboard e historico do atuador.',
+      command:
+        'curl -X POST http://localhost:3000/actuators/sauna_main/commands -H "Content-Type: application/json" -d "{\\"desiredState\\":\\"on\\",\\"source\\":\\"lab\\"}"',
+      badge: 'manual',
+    },
   ];
 
   async function copyCommand(command: string) {

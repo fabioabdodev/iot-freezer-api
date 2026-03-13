@@ -34,6 +34,7 @@ model Device {
 
   alertRules AlertRule[]
   alertRuleStates AlertRuleState[]
+  actuators Actuator[]
 
   @@index([clientId])
 }
@@ -44,6 +45,8 @@ model Client {
   createdAt DateTime @default(now())
   devices   Device[]
   alertRules AlertRule[]
+  actuators Actuator[]
+  actuationCommands ActuationCommand[]
 }
 
 model AlertRule {
@@ -83,4 +86,38 @@ model AlertRuleState {
   @@unique([ruleId, deviceId])
   @@index([ruleId])
   @@index([deviceId])
+}
+
+model Actuator {
+  id              String             @id
+  clientId        String
+  deviceId        String?
+  name            String
+  location        String?
+  currentState    String             @default("off")
+  lastCommandAt   DateTime?
+  lastCommandBy   String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  client          Client             @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  device          Device?            @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  commands        ActuationCommand[]
+
+  @@index([clientId])
+  @@index([deviceId])
+}
+
+model ActuationCommand {
+  id           String   @id @default(uuid())
+  actuatorId   String
+  clientId     String
+  desiredState String
+  source       String?
+  note         String?
+  executedAt   DateTime @default(now())
+  actuator     Actuator @relation(fields: [actuatorId], references: [id], onDelete: Cascade)
+  client       Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([actuatorId, executedAt])
+  @@index([clientId, executedAt])
 }

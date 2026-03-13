@@ -11,6 +11,7 @@ import { DevicesModule } from './modules/devices/devices.module';
 import { ReadingsModule } from './modules/readings/readings.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { AlertRulesModule } from './modules/alert-rules/alert-rules.module';
+import { ActuatorsModule } from './modules/actuators/actuators.module';
 import { validateEnv } from './config/env';
 import { InfraModule } from './infra/infra.module';
 
@@ -32,6 +33,7 @@ import { InfraModule } from './infra/infra.module';
     ReadingsModule,
     ClientsModule,
     AlertRulesModule,
+    ActuatorsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

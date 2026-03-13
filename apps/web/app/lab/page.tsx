@@ -45,6 +45,7 @@ const workflowSteps = [
   'Opcionalmente rode `npm run db:seed` para carregar clientes e historico demo.',
   'Use o simulador com `--ensure-devices` para criar os devices e iniciar a telemetria.',
   'Abra o dashboard principal e acompanhe cards, tabela e historico.',
+  'Cadastre um atuador e teste comandos manuais de ligar/desligar no dashboard.',
   'Teste cenarios de alerta com presets `alerta` e `critico`.',
 ];
 
@@ -173,6 +174,10 @@ export default function LabPage() {
               <p className="rounded-2xl border border-line/70 bg-card/40 px-4 py-3">
                 Use `preset alerta` e `preset critico` para validar regras e
                 resposta visual do dashboard.
+              </p>
+              <p className="rounded-2xl border border-line/70 bg-card/40 px-4 py-3">
+                No modulo `acionamento`, trate o estado do atuador como fluxo
+                manual e simulado ate a chegada do hardware fisico.
               </p>
               <p className="rounded-2xl border border-line/70 bg-card/40 px-4 py-3">
                 Quando o hardware chegar, reaproveite os mesmos fluxos para

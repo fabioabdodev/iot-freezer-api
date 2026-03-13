@@ -29,6 +29,8 @@ Funcionalidades ja implementadas:
    - devices
    - alert rules
    - dashboard web
+   - actuators
+   - actuation commands
 6. Multi-tenant basico
    - isolamento por `clientId`
 
@@ -55,7 +57,9 @@ Pendencias principais restantes:
 
 - reduzir ruido operacional do deploy em Swarm
 - revisar a imagem da API para incluir OpenSSL e reduzir warnings do Prisma
-- organizar o inicio do modulo `acionamento`
+- aplicar a migration do modulo `acionamento` no banco real
+- validar o fluxo manual de acionamento em ambiente integrado
+- manter o modulo `acionamento` em modo simulado ate a chegada do hardware
 
 ## O que ainda nao entrou por completo
 
@@ -64,6 +68,7 @@ Pendencias principais restantes:
 - dashboards por perfil de usuario
 - multiplos tipos reais de sensor no mesmo fluxo de ingestao
 - app mobile
+- integracao com hardware fisico de acionamento
 
 ## Conceitos principais
 
@@ -93,6 +98,32 @@ arquitetura deve continuar preparada para futura extensao.
 
 Define os limites, tolerancia, cooldown e habilitacao do alerta por device,
 cliente e tipo de sensor.
+
+### Actuator
+
+Representa uma carga controlavel no modulo `acionamento`, por exemplo
+`sauna_main`.
+
+Campos importantes:
+
+- `id`
+- `clientId`
+- `deviceId`
+- `currentState`
+- `lastCommandAt`
+- `lastCommandBy`
+
+### Actuation Command
+
+Representa um comando registrado no historico do atuador.
+
+Campos importantes:
+
+- `actuatorId`
+- `desiredState`
+- `source`
+- `note`
+- `executedAt`
 
 ## Regras de negocio atuais
 
@@ -128,6 +159,16 @@ Quando existir regra habilitada:
 - respeitar tolerancia configurada
 - respeitar cooldown para nao spammar
 
+### Acionamento sem hardware
+
+Enquanto nao houver hardware fisico:
+
+- o modulo `acionamento` deve ser validado por dashboard e API
+- `POST /actuators/:id/commands` atualiza estado e historico no backend
+- nao assumir confirmacao eletrica real da carga
+- tratar `currentState` como estado operacional registrado pela plataforma
+- integracao com rele, ESP32 ou retorno fisico fica para fase posterior
+
 ## Seguranca
 
 - `x-device-key` e obrigatorio no endpoint do device
@@ -141,18 +182,43 @@ Ver `.github/instructions/ROADMAP.md` para a sequencia de evolucao.
 
 ## Registro operacional recente
 
-Correções validadas em produção:
+Correcoes validadas em producao:
 
 - stack do `n8n` passou a usar `QUEUE_BULL_REDIS_HOST=redis_redis`
 - `N8N_NODE_PATH` do `n8n` foi corrigido para `/home/node/.n8n/nodes`
 - `N8N_TEMPERATURE_ALERT_WEBHOOK_URL` foi corrigida para `https://webhookworkflow.virtuagil.com.br/webhook/temperature-alert`
 - `N8N_OFFLINE_WEBHOOK_URL` foi corrigida para `https://webhookworkflow.virtuagil.com.br/webhook/device-offline`
-- `DATABASE_URL` da API em produção foi migrada da conexão direta IPv6 do Supabase para o `session pooler`
+- `DATABASE_URL` da API em producao foi migrada da conexao direta IPv6 do Supabase para o `session pooler`
 
-Observação importante para continuidade:
+Observacao importante para continuidade:
 
 - a stack `iot-monitor` so carrega corretamente as variaveis da API quando o deploy e feito no mesmo shell com:
   - `set -a`
   - `. ./.env.prod`
   - `set +a`
   - `docker stack deploy -c deploy/swarm/stack.prod.yml iot-monitor --with-registry-auth`
+
+## Registro de continuidade para proximos agentes
+
+Estado em 13/03/2026:
+
+- modulo `temperatura` segue encerrado no escopo funcional atual
+- modulo `acionamento` foi iniciado no backend e no dashboard
+- backend do `acionamento` ja possui:
+  - modelagem `Actuator` e `ActuationCommand`
+  - endpoints CRUD basicos para atuadores
+  - endpoint de comando manual `POST /actuators/:id/commands`
+  - historico em `GET /actuators/:id/commands`
+- dashboard web ja possui:
+  - cadastro de atuadores
+  - botoes de ligar e desligar
+  - historico recente de comandos
+- validacoes concluidas localmente:
+  - `npm run build` no backend
+  - `npm run build` em `apps/web`
+  - teste e2e de atuadores passando
+- pendencia imediata:
+  - aplicar `npx prisma migrate deploy` no banco conectado ao ambiente desejado
+- restricao importante:
+  - ainda nao existem hardwares fisicos disponiveis
+  - continuidade deve priorizar simulacao, contratos de API, dashboard e operacao manual

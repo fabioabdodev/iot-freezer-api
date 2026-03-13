@@ -20,6 +20,7 @@ import { ptBR } from 'date-fns/locale';
 import Image from 'next/image';
 import { DeviceForm } from '@/components/device-form';
 import { DeviceHistoryPanel } from '@/components/device-history-panel';
+import { ActuationPanel } from '@/components/actuation-panel';
 import { AlertRulesPanel } from '@/components/alert-rules-panel';
 import { SimulationLabPanel } from '@/components/simulation-lab-panel';
 import { Badge } from '@/components/ui/badge';
@@ -594,6 +595,14 @@ function DashboardContent() {
 
       <div className="mt-6">
         <AlertRulesPanel
+          clientId={clientId}
+          authToken={authToken}
+          devices={devices}
+        />
+      </div>
+
+      <div className="mt-6">
+        <ActuationPanel
           clientId={clientId}
           authToken={authToken}
           devices={devices}
