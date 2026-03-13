@@ -230,6 +230,30 @@ async function seedUsers() {
   }
 }
 
+async function seedClientModules() {
+  const modules = [
+    { clientId: 'virtuagil', moduleKey: 'temperature', enabled: true },
+    { clientId: 'virtuagil', moduleKey: 'actuation', enabled: true },
+    { clientId: 'cliente_teste', moduleKey: 'temperature', enabled: true },
+    { clientId: 'cliente_teste', moduleKey: 'actuation', enabled: false },
+  ];
+
+  for (const module of modules) {
+    await prisma.clientModule.upsert({
+      where: {
+        clientId_moduleKey: {
+          clientId: module.clientId,
+          moduleKey: module.moduleKey,
+        },
+      },
+      update: {
+        enabled: module.enabled,
+      },
+      create: module,
+    });
+  }
+}
+
 async function seedActuators() {
   const actuators = [
     {
@@ -327,6 +351,7 @@ async function main() {
   console.log('[seed] iniciando carga de dados demo...');
 
   await seedClients();
+  await seedClientModules();
   await seedDevices();
   await seedAlertRules();
   await seedUsers();

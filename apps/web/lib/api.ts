@@ -8,6 +8,7 @@ import {
 } from '@/types/actuator';
 import { AuthSession, AuthUser, LoginInput } from '@/types/auth';
 import { UserInput, UserSummary } from '@/types/user';
+import { ClientModule } from '@/types/client-module';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
@@ -509,4 +510,51 @@ export async function deleteUser(
   }
 
   return response.json() as Promise<UserSummary>;
+}
+
+export async function fetchClientModules(
+  clientId: string,
+  authToken?: string,
+): Promise<ClientModule[]> {
+  const query = new URLSearchParams();
+  query.set('clientId', clientId);
+
+  const response = await fetch(`${API_BASE_URL}/client-modules?${query.toString()}`, {
+    cache: 'no-store',
+    headers: buildAuthHeaders(authToken),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao carregar modulos do cliente'),
+    );
+  }
+
+  return response.json() as Promise<ClientModule[]>;
+}
+
+export async function upsertClientModule(
+  input: {
+    clientId: string;
+    moduleKey: 'temperature' | 'actuation';
+    enabled: boolean;
+  },
+  authToken?: string,
+): Promise<ClientModule> {
+  const response = await fetch(`${API_BASE_URL}/client-modules`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...buildAuthHeaders(authToken),
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao atualizar modulo do cliente'),
+    );
+  }
+
+  return response.json() as Promise<ClientModule>;
 }

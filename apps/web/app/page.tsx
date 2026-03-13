@@ -23,6 +23,7 @@ import { DeviceHistoryPanel } from '@/components/device-history-panel';
 import { ActuationPanel } from '@/components/actuation-panel';
 import { AlertRulesPanel } from '@/components/alert-rules-panel';
 import { SimulationLabPanel } from '@/components/simulation-lab-panel';
+import { ClientModulesPanel } from '@/components/client-modules-panel';
 import { UsersPanel } from '@/components/users-panel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ import { Panel } from '@/components/ui/panel';
 import { useAuth } from '@/lib/auth-context';
 import { useDeviceMutations } from '@/hooks/use-device-mutations';
 import { useDevices } from '@/hooks/use-devices';
+import { useClientModules } from '@/hooks/use-client-modules';
 
 function statusClass(isOffline: boolean) {
   return isOffline
@@ -107,9 +109,23 @@ function DashboardContent() {
     () => queryClientId.trim() || undefined,
     [queryClientId],
   );
+  const scopedClientId = clientId ?? user?.clientId ?? undefined;
+  const {
+    data: clientModulesData,
+    isLoading: isLoadingClientModules,
+  } = useClientModules(scopedClientId, authToken);
+  const clientModules = clientModulesData ?? [];
+  const temperatureEnabled =
+    scopedClientId == null
+      ? true
+      : clientModules.find((module) => module.moduleKey === 'temperature')?.enabled ?? false;
+  const actuationEnabled =
+    scopedClientId == null
+      ? true
+      : clientModules.find((module) => module.moduleKey === 'actuation')?.enabled ?? false;
 
   const { data, isLoading, isError, error, refetch } = useDevices(
-    clientId,
+    scopedClientId,
     50,
     authToken,
   );
@@ -119,7 +135,7 @@ function DashboardContent() {
   const editingDevice = devices.find((d) => d.id === editingDeviceId) ?? null;
 
   const { createMutation, updateMutation, deleteMutation } = useDeviceMutations(
-    clientId,
+    scopedClientId,
     authToken,
   );
 
@@ -390,7 +406,7 @@ function DashboardContent() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Badge>clientId: {clientId ?? 'todos'}</Badge>
+            <Badge>clientId: {scopedClientId ?? 'todos'}</Badge>
             <Button
               onClick={() => {
                 void refetch();
@@ -417,17 +433,17 @@ function DashboardContent() {
           </div>
         </div>
 
-        {formMode === 'create' ? (
+        {formMode === 'create' && temperatureEnabled ? (
           <div className="mb-5">
             <DeviceForm
               mode="create"
-              clientId={clientId}
+              clientId={scopedClientId}
               loading={createMutation.isPending}
               onCancel={() => setFormMode('closed')}
               onSubmit={async (values) => {
                 await createMutation.mutateAsync({
                   ...values,
-                  clientId: values.clientId ?? clientId,
+                  clientId: values.clientId ?? scopedClientId,
                 });
                 setFormMode('closed');
               }}
@@ -435,11 +451,11 @@ function DashboardContent() {
           </div>
         ) : null}
 
-        {formMode === 'edit' && editingDevice ? (
+        {formMode === 'edit' && editingDevice && temperatureEnabled ? (
           <div className="mb-5">
             <DeviceForm
               mode="edit"
-              clientId={clientId}
+              clientId={scopedClientId}
               device={editingDevice}
               loading={updateMutation.isPending}
               onCancel={() => {
@@ -488,7 +504,7 @@ function DashboardContent() {
           </Feedback>
         ) : null}
 
-        {!isLoading && devices.length > 0 ? (
+        {!isLoading && temperatureEnabled && devices.length > 0 ? (
           <div className="space-y-4">
             <DataTableWrapper>
               <DataTable>
@@ -629,43 +645,68 @@ function DashboardContent() {
             {selectedDevice ? (
               <DeviceHistoryPanel
                 device={selectedDevice}
-                clientId={clientId}
+                clientId={scopedClientId}
                 authToken={authToken}
               />
             ) : null}
           </div>
         ) : null}
-        {!isLoading && !isError && devices.length === 0 ? (
+        {!isLoading && !isError && temperatureEnabled && devices.length === 0 ? (
           <Feedback>Sem dispositivos para este clientId.</Feedback>
+        ) : null}
+        {!isLoadingClientModules && !temperatureEnabled ? (
+          <Feedback>
+            O modulo `temperatura` nao esta habilitado para este cliente.
+          </Feedback>
         ) : null}
       </Panel>
 
-      <div className="mt-6">
-        <AlertRulesPanel
-          clientId={clientId}
-          authToken={authToken}
-          devices={devices}
-        />
-      </div>
+      {temperatureEnabled ? (
+        <div className="mt-6">
+          <AlertRulesPanel
+            clientId={scopedClientId}
+            authToken={authToken}
+            devices={devices}
+          />
+        </div>
+      ) : null}
 
-      <div className="mt-6">
-        <ActuationPanel
-          clientId={clientId}
-          authToken={authToken}
-          devices={devices}
-        />
-      </div>
+      {actuationEnabled ? (
+        <div className="mt-6">
+          <ActuationPanel
+            clientId={scopedClientId}
+            authToken={authToken}
+            devices={devices}
+          />
+        </div>
+      ) : (
+        <div className="mt-6">
+          <Panel className="animate-fade-up p-5 [animation-delay:300ms]">
+            <Feedback>
+              O modulo `acionamento` nao esta habilitado para este cliente.
+            </Feedback>
+          </Panel>
+        </div>
+      )}
 
       <div className="mt-6">
         <UsersPanel
-          clientId={clientId ?? user?.clientId ?? undefined}
+          clientId={scopedClientId}
           authToken={authToken}
           currentUser={user}
         />
       </div>
 
       <div className="mt-6">
-        <SimulationLabPanel clientId={clientId} />
+        <ClientModulesPanel
+          clientId={scopedClientId}
+          authToken={authToken}
+          currentUser={user}
+        />
+      </div>
+
+      <div className="mt-6">
+        <SimulationLabPanel clientId={scopedClientId} />
       </div>
     </main>
   );

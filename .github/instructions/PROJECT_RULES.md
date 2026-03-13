@@ -32,6 +32,7 @@ Funcionalidades ja implementadas:
    - actuators
    - actuation commands
    - auth de usuarios
+   - modulos habilitados por cliente
 6. Multi-tenant basico
    - isolamento por `clientId`
 
@@ -230,12 +231,17 @@ Estado em 13/03/2026:
   - usuarios agora possuem `phone`, `isActive` e `lastLoginAt`
   - backend ja possui CRUD basico em `/users`
   - dashboard ja possui painel inicial de gestao de usuarios por cliente
+- modulos por cliente:
+  - backend ja possui `/client-modules`
+  - seed define modulos habilitados por cliente demo
+  - dashboard ja esconde/exibe `temperatura` e `acionamento` conforme contratacao
 - validacoes concluidas localmente:
   - `npm run build` no backend
   - `npm run build` em `apps/web`
   - teste e2e de auth passando
   - teste e2e de atuadores passando
   - teste e2e de usuarios passando
+  - teste e2e de client-modules passando
 - pendencia imediata:
   - aplicar `npx prisma migrate deploy` no banco conectado ao ambiente desejado
   - confirmar no banco real se as tabelas `Actuator` e `ActuationCommand` foram criadas

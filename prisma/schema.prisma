@@ -48,6 +48,7 @@ model Client {
   actuators Actuator[]
   actuationCommands ActuationCommand[]
   users     User[]
+  modules   ClientModule[]
 }
 
 model AlertRule {
@@ -137,5 +138,18 @@ model User {
   updatedAt    DateTime @updatedAt
   client       Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
+  @@index([clientId])
+}
+
+model ClientModule {
+  id        String   @id @default(uuid())
+  clientId  String
+  moduleKey String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, moduleKey])
   @@index([clientId])
 }
