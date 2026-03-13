@@ -34,7 +34,7 @@ Funcionalidades ja implementadas:
 
 ## Estado atual do modulo temperatura
 
-O modulo `temperatura` esta em estado de quase conclusao.
+O modulo `temperatura` esta funcionalmente concluido e operacionalmente validado.
 
 Ja foi validado:
 
@@ -46,12 +46,16 @@ Ja foi validado:
 - online/offline
 - filtro por cliente
 - feedback principal do dashboard
-- integracao da API com webhook do n8n ate a criacao da execucao
+- webhook de temperatura ponta a ponta
+- webhook de offline ponta a ponta
+- n8n processando execucoes apos ajuste de Redis
+- API em producao usando Supabase com session pooler
 
 Pendencias principais restantes:
 
-- estabilizacao do processamento do `n8n` com Redis
-- estabilizacao do deploy automatico quando houver falha intermitente de SSH/SCP
+- reduzir ruido operacional do deploy em Swarm
+- revisar a imagem da API para incluir OpenSSL e reduzir warnings do Prisma
+- organizar o inicio do modulo `acionamento`
 
 ## O que ainda nao entrou por completo
 
@@ -111,6 +115,11 @@ Se `lastSeen` estiver alem do cutoff:
 - registrar `offlineSince`
 - disparar alerta uma unica vez na transicao
 
+Importante:
+
+- o alerta de offline e disparado apenas na transicao `online -> offline`
+- se o device ja estiver offline, novos ticks do monitor nao reenfileiram o mesmo alerta
+
 ### Temperatura fora da faixa
 
 Quando existir regra habilitada:
@@ -129,3 +138,21 @@ Quando existir regra habilitada:
 ## Direcao de evolucao
 
 Ver `.github/instructions/ROADMAP.md` para a sequencia de evolucao.
+
+## Registro operacional recente
+
+Correções validadas em produção:
+
+- stack do `n8n` passou a usar `QUEUE_BULL_REDIS_HOST=redis_redis`
+- `N8N_NODE_PATH` do `n8n` foi corrigido para `/home/node/.n8n/nodes`
+- `N8N_TEMPERATURE_ALERT_WEBHOOK_URL` foi corrigida para `https://webhookworkflow.virtuagil.com.br/webhook/temperature-alert`
+- `N8N_OFFLINE_WEBHOOK_URL` foi corrigida para `https://webhookworkflow.virtuagil.com.br/webhook/device-offline`
+- `DATABASE_URL` da API em produção foi migrada da conexão direta IPv6 do Supabase para o `session pooler`
+
+Observação importante para continuidade:
+
+- a stack `iot-monitor` so carrega corretamente as variaveis da API quando o deploy e feito no mesmo shell com:
+  - `set -a`
+  - `. ./.env.prod`
+  - `set +a`
+  - `docker stack deploy -c deploy/swarm/stack.prod.yml iot-monitor --with-registry-auth`

@@ -46,6 +46,11 @@ Responsavel por:
 - atualizar estado do device
 - expor endpoints para dashboard e administracao
 
+Observacao operacional importante:
+
+- em produção, o Prisma deve usar `DATABASE_URL` do Supabase via `session pooler`
+- a conexão direta IPv6 do Supabase nao foi adequada para a API containerizada nessa VPS
+
 ### Dashboard web
 
 Responsavel por:
@@ -73,6 +78,7 @@ Estado atual:
 - a fila da API ainda e em memoria local
 - existe previsao de migracao futura para Redis
 - o ambiente ja possui Redis por causa do n8n
+- o n8n usa Redis proprio na mesma VPS e ja foi ajustado para o host correto `redis_redis`
 
 ## Modulos do backend
 
@@ -133,3 +139,8 @@ Dominios atuais:
 4. simular offline
 5. simular temperatura fora da faixa
 6. confirmar chegada do webhook no n8n
+
+Estado validado recentemente:
+
+- leitura fora da faixa chegando ao workflow `Alerta de Temperatura`
+- transicao `online -> offline` chegando ao workflow `Alerta de Offline`

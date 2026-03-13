@@ -55,12 +55,15 @@ applyTo: '**'
 - mensagens de erro mais claras
 - testes ampliados para cooldown e tolerance
 - webhook de offline implementado
+- webhook de temperatura validado ponta a ponta em producao
+- webhook de offline validado ponta a ponta em producao
+- API estabilizada com Supabase `session pooler`
+- stack do n8n ajustada para Redis correto
 
 Estado:
 
-- quase concluido
-- pendente de estabilizacao operacional do `n8n` + Redis
-- pendente de estabilizacao definitiva do deploy automatizado
+- concluido no escopo funcional atual
+- pendente apenas de refinamentos operacionais e observabilidade
 
 Referencia complementar:
 
@@ -75,6 +78,11 @@ Escopo inicial sugerido:
 - exibir estado atual
 - registrar historico basico de comandos
 - caso inicial sugerido: sauna
+
+Proximo ponto de continuidade:
+
+- modelar entidades e fluxos do modulo `acionamento`
+- manter o modulo `temperatura` apenas em manutencao corretiva
 
 ## Proximos passos recomendados
 

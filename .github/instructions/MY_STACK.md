@@ -30,6 +30,24 @@ Stack disponivel na infraestrutura:
 - Redis hoje apoia principalmente os fluxos do n8n.
 - Redis pode ser reaproveitado no futuro pela API para fila e cache compartilhados.
 
+## Ajustes operacionais recentes
+
+- o `n8n` em producao estava apontando para `QUEUE_BULL_REDIS_HOST=redis`, mas o host correto na rede era `redis_redis`
+- o `n8n` tambem tinha `N8N_NODE_PATH` incorreto em alguns servicos e foi ajustado para `/home/node/.n8n/nodes`
+- a API em produção precisou migrar da conexão direta `db.<project>.supabase.co:5432` para o host do `session pooler`
+- a conexão direta do Supabase era `Not IPv4 compatible` e falhava dentro do container da API
+- a string final correta da API usa `aws-1-sa-east-1.pooler.supabase.com:5432`
+
+## Regra pratica de deploy da API
+
+Na VPS, antes de executar `docker stack deploy`, exportar o `.env.prod` no shell atual:
+
+- `set -a`
+- `. ./.env.prod`
+- `set +a`
+
+Sem isso, o Swarm pode aplicar a stack com variaveis vazias no servico `iot-monitor_api`.
+
 ## Regras de deploy
 
 - Aplicacoes devem ser containerizadas com Docker.

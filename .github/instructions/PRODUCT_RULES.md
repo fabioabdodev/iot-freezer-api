@@ -22,6 +22,7 @@ O MVP expandido ja entrega:
 - alerta por temperatura
 - integracao por webhook com n8n
 - integracao operacional com Evolution
+- webhooks de temperatura e offline validados em produção
 
 ## Regras de produto
 
@@ -60,6 +61,10 @@ Proximo modulo sugerido:
 Regra de evolucao:
 
 - nao abrir o proximo modulo antes de aceitar conscientemente o estado do modulo atual
+
+Estado atual dessa regra:
+
+- o modulo `temperatura` ja pode ser tratado como encerrado para abrir o modulo `acionamento`
 
 ## Evolucao esperada
 
