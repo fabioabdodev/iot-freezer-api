@@ -160,6 +160,7 @@ Notas praticas:
 - o dump e salvo por padrao em `backups/db`
 - o arquivo deve ser copiado para fora da VPS principal
 - backup sem teste de restauracao nao deve ser tratado como confiavel
+- o `pg_dump` precisa ter a mesma versao principal do PostgreSQL do servidor ou superior compativel; se o Supabase estiver em PostgreSQL 17, prefira `pg_dump` 17
 
 Guia interno complementar:
 

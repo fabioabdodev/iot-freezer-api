@@ -166,13 +166,17 @@ function main() {
   }
 
   const result = spawnSync(pgDumpBinary, pgDumpArgs, {
-    stdio: 'inherit',
+    stdio: 'pipe',
+    encoding: 'utf8',
     env: {
       ...process.env,
       PGPASSWORD: decodeURIComponent(url.password),
       PGSSLMODE: url.searchParams.get('sslmode') || process.env.PGSSLMODE || 'require',
     },
   });
+
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
 
   if (result.error) {
     throw new Error(
@@ -181,6 +185,12 @@ function main() {
   }
 
   if (result.status !== 0) {
+    const stderr = result.stderr ?? '';
+    if (stderr.includes('server version mismatch')) {
+      throw new Error(
+        'O pg_dump local e mais antigo do que o PostgreSQL do Supabase. Instale um cliente PostgreSQL da mesma versao principal do servidor (neste caso, 17) ou rode o backup em um ambiente que tenha pg_dump 17.',
+      );
+    }
     throw new Error(`pg_dump encerrou com codigo ${result.status}.`);
   }
 

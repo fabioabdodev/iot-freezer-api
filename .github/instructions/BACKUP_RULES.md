@@ -89,6 +89,8 @@ Observacoes:
 - o script gera arquivo `.dump` em `backups/db`
 - o formato e compativel com `pg_restore`
 - preferir `DIRECT_DATABASE_URL` para backup
+- o `pg_dump` local precisa acompanhar a versao principal do PostgreSQL remoto
+- se o Supabase estiver em PostgreSQL 17, o ambiente de backup tambem deve usar `pg_dump` 17
 
 ## Restore minimo esperado
 
