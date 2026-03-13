@@ -14,12 +14,16 @@ describe('Auth (e2e)', () => {
     const authServiceForSeed = new AuthService(
       {} as PrismaService,
       {
-        get: jest.fn((key: string) => {
-          if (key === 'AUTH_SECRET') return 'super-secret-auth-key-123';
-          if (key === 'AUTH_TOKEN_TTL_HOURS') return 24;
-          return undefined;
-        }),
-      } as any,
+            get: jest.fn((key: string) => {
+              if (key === 'AUTH_SECRET') return 'super-secret-auth-key-123';
+              if (key === 'AUTH_TOKEN_TTL_HOURS') return 24;
+              if (key === 'AUTH_LOGIN_RATE_LIMIT_WINDOW_SECONDS') return 60;
+              if (key === 'AUTH_LOGIN_RATE_LIMIT_MAX_ATTEMPTS') return 2;
+              if (key === 'AUTH_LOGIN_RATE_LIMIT_MAX_TRACKED_KEYS') return 100;
+              if (key === 'AUTH_LOGIN_LOCK_MINUTES') return 10;
+              return undefined;
+            }),
+          } as any,
     );
 
     const passwordHash = authServiceForSeed.hashPassword('secret123');
@@ -67,6 +71,10 @@ describe('Auth (e2e)', () => {
             get: jest.fn((key: string) => {
               if (key === 'AUTH_SECRET') return 'super-secret-auth-key-123';
               if (key === 'AUTH_TOKEN_TTL_HOURS') return 24;
+              if (key === 'AUTH_LOGIN_RATE_LIMIT_WINDOW_SECONDS') return 60;
+              if (key === 'AUTH_LOGIN_RATE_LIMIT_MAX_ATTEMPTS') return 2;
+              if (key === 'AUTH_LOGIN_RATE_LIMIT_MAX_TRACKED_KEYS') return 100;
+              if (key === 'AUTH_LOGIN_LOCK_MINUTES') return 10;
               return undefined;
             }),
           },
@@ -138,5 +146,34 @@ describe('Auth (e2e)', () => {
           }),
         );
       });
+  });
+
+  it('POST /auth/login should rate limit repeated invalid attempts for same email and ip', async () => {
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .set('x-forwarded-for', '203.0.113.10')
+      .send({
+        email: 'operator@virtuagil.com.br',
+        password: 'wrong-password',
+      })
+      .expect(401);
+
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .set('x-forwarded-for', '203.0.113.10')
+      .send({
+        email: 'operator@virtuagil.com.br',
+        password: 'wrong-password',
+      })
+      .expect(401);
+
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .set('x-forwarded-for', '203.0.113.10')
+      .send({
+        email: 'operator@virtuagil.com.br',
+        password: 'wrong-password',
+      })
+      .expect(429);
   });
 });

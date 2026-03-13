@@ -19,4 +19,5 @@ export type AuthSession = {
 export type LoginInput = {
   email: string;
   password: string;
+  turnstileToken?: string;
 };

@@ -33,6 +33,7 @@ Funcionalidades ja implementadas:
    - actuation commands
    - auth de usuarios
    - autorizacao por sessao, role e modulo contratado
+   - protecao de login por rate limit
    - modulos habilitados por cliente
 6. Multi-tenant basico
    - isolamento por `clientId` no backend e no dashboard
@@ -179,6 +180,7 @@ O acesso administrativo e operacional agora depende de sessao autenticada.
 Regras atuais:
 
 - `POST /auth/login` emite token para usuarios ativos
+- `POST /auth/login` agora aplica limite por e-mail + IP e bloqueio temporario
 - `GET /auth/me` restaura a sessao do frontend
 - rotas administrativas usam sessao autenticada
 - rotas de `users`, `clients` e `client-modules` exigem role `admin`
@@ -249,6 +251,8 @@ Estado em 13/03/2026:
   - dashboard ja possui painel inicial de gestao de usuarios por cliente
   - backend agora protege rotas por sessao autenticada, role e modulo contratado
   - `clientId` do usuario autenticado agora limita consultas e mutacoes sensiveis
+  - login agora usa rate limit e bloqueio temporario contra brute force
+  - backend ja esta preparado para `Cloudflare Turnstile` quando `TURNSTILE_SECRET_KEY` for configurada
 - modulos por cliente:
   - backend ja possui `/client-modules`
   - seed define modulos habilitados por cliente demo

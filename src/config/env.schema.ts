@@ -8,6 +8,14 @@ export const envSchema = z.object({
   DATABASE_URL: z.string().min(1, 'DATABASE_URL e obrigatoria'),
   AUTH_SECRET: z.string().min(16, 'AUTH_SECRET deve ter pelo menos 16 caracteres'),
   AUTH_TOKEN_TTL_HOURS: z.coerce.number().default(168),
+  AUTH_LOGIN_RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().default(300),
+  AUTH_LOGIN_RATE_LIMIT_MAX_ATTEMPTS: z.coerce.number().default(5),
+  AUTH_LOGIN_RATE_LIMIT_MAX_TRACKED_KEYS: z.coerce.number().default(10000),
+  AUTH_LOGIN_LOCK_MINUTES: z.coerce.number().default(15),
+  TURNSTILE_SECRET_KEY: z.string().optional(),
+  TURNSTILE_VERIFY_URL: z.string().url().default(
+    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+  ),
 
   DEVICE_API_KEY: z.string().min(1, 'DEVICE_API_KEY e obrigatoria').optional(),
 

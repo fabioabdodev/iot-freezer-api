@@ -21,6 +21,7 @@ Backend em NestJS para monitoramento de dispositivos IoT, com ingestão de tempe
 - Leitura normalizada e agregada por resolução (`/readings`)
 - Gestão de clientes (`/clients`)
 - Autenticacao de usuarios (`/auth`)
+- Protecao de login por rate limit e bloqueio temporario
 - Regras de alerta (`/alert-rules`)
 - Monitoramento offline + alerta por temperatura
 - Base multi-tenant (`clientId`)
@@ -197,6 +198,13 @@ Payload:
 
 - `POST /auth/login`
 - `GET /auth/me`
+
+Protecoes atuais do login:
+
+- limite de tentativas por combinacao de e-mail + IP
+- bloqueio temporario apos excesso de tentativas invalidas
+- uso de `CF-Connecting-IP` quando a API estiver atras do Cloudflare
+- suporte opcional a `Cloudflare Turnstile` quando `TURNSTILE_SECRET_KEY` estiver configurada
 
 ### Alert Rules
 
@@ -439,6 +447,14 @@ Observação: o frontend usa `NEXT_PUBLIC_API_BASE_URL` no build da imagem web. 
 
 - `PORT`
 - `DATABASE_URL`
+- `AUTH_SECRET`
+- `AUTH_TOKEN_TTL_HOURS`
+- `AUTH_LOGIN_RATE_LIMIT_WINDOW_SECONDS`
+- `AUTH_LOGIN_RATE_LIMIT_MAX_ATTEMPTS`
+- `AUTH_LOGIN_RATE_LIMIT_MAX_TRACKED_KEYS`
+- `AUTH_LOGIN_LOCK_MINUTES`
+- `TURNSTILE_SECRET_KEY`
+- `TURNSTILE_VERIFY_URL`
 - `DEVICE_API_KEY`
 - `DEVICE_OFFLINE_MINUTES`
 - `MONITOR_INTERVAL_SECONDS`
@@ -458,6 +474,23 @@ Observação: o frontend usa `NEXT_PUBLIC_API_BASE_URL` no build da imagem web. 
 - Backend e frontend devem rodar como serviços separados.
 - Não versionar segredos (`.env` já está no `.gitignore`).
 - Preferir deploy containerizado (Docker/Swarm).
+- Se usar Cloudflare proxy, manter `SSL/TLS = Full (strict)`.
+- Se ativar `Cloudflare Turnstile`, configure a chave publica no frontend e a chave secreta na API.
+
+## Protecao recomendada para login
+
+Ordem sugerida para endurecer o acesso sem piorar muito a experiencia:
+
+1. rate limit e bloqueio temporario no backend
+2. logs de tentativa de login
+3. `Cloudflare Turnstile` no frontend e validacao no backend
+
+Quando for ativar o Turnstile:
+
+1. crie o widget no Cloudflare
+2. configure a chave secreta em `TURNSTILE_SECRET_KEY` na API
+3. configure a chave publica no frontend como `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+4. envie o token do Turnstile em `POST /auth/login` no campo `turnstileToken`
 
 ## Checklist de pós-deploy
 
