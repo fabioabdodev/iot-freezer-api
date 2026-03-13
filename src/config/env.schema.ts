@@ -6,6 +6,8 @@ export const envSchema = z.object({
   CORS_ORIGINS: z.string().optional(),
 
   DATABASE_URL: z.string().min(1, 'DATABASE_URL e obrigatoria'),
+  AUTH_SECRET: z.string().min(16, 'AUTH_SECRET deve ter pelo menos 16 caracteres'),
+  AUTH_TOKEN_TTL_HOURS: z.coerce.number().default(168),
 
   DEVICE_API_KEY: z.string().min(1, 'DEVICE_API_KEY e obrigatoria').optional(),
 

@@ -20,6 +20,7 @@ Backend em NestJS para monitoramento de dispositivos IoT, com ingestão de tempe
 - Dashboard backend (`GET /devices` e histórico)
 - Leitura normalizada e agregada por resolução (`/readings`)
 - Gestão de clientes (`/clients`)
+- Autenticacao de usuarios (`/auth`)
 - Regras de alerta (`/alert-rules`)
 - Monitoramento offline + alerta por temperatura
 - Base multi-tenant (`clientId`)
@@ -192,6 +193,11 @@ Payload:
 - `PATCH /clients/:id`
 - `DELETE /clients/:id`
 
+### Auth
+
+- `POST /auth/login`
+- `GET /auth/me`
+
 ### Alert Rules
 
 - `POST /alert-rules`
@@ -292,9 +298,15 @@ O seed e idempotente:
 
 - atualiza clientes e devices demo existentes
 - recria configuracao esperada das regras
+- cria usuarios demo para autenticacao
 - cria atuadores demo do modulo `acionamento`
 - cria historico inicial de comandos quando ainda nao existir
 - so cria historico de temperatura se o device ainda nao tiver leituras
+
+Usuarios demo criados pelo seed:
+
+- `admin@virtuagil.com.br` / `virtuagil123`
+- `operator@virtuagil.com.br` / `operador123`
 
 ## Verificacao do modulo acionamento
 

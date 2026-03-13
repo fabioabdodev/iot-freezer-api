@@ -47,6 +47,7 @@ model Client {
   alertRules AlertRule[]
   actuators Actuator[]
   actuationCommands ActuationCommand[]
+  users     User[]
 }
 
 model AlertRule {
@@ -120,4 +121,18 @@ model ActuationCommand {
 
   @@index([actuatorId, executedAt])
   @@index([clientId, executedAt])
+}
+
+model User {
+  id           String   @id @default(uuid())
+  clientId     String?
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("operator")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  client       Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  @@index([clientId])
 }

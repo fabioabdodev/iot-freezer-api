@@ -6,6 +6,7 @@ import {
   ActuatorInput,
   ActuatorSummary,
 } from '@/types/actuator';
+import { AuthSession, AuthUser, LoginInput } from '@/types/auth';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
@@ -398,4 +399,37 @@ export async function fetchActuatorCommands(
   }
 
   return response.json() as Promise<ActuationCommand[]>;
+}
+
+export async function loginUser(input: LoginInput): Promise<AuthSession> {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao autenticar usuario'),
+    );
+  }
+
+  return response.json() as Promise<AuthSession>;
+}
+
+export async function fetchCurrentUser(authToken: string): Promise<AuthUser> {
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    cache: 'no-store',
+    headers: buildAuthHeaders(authToken),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao validar sessao atual'),
+    );
+  }
+
+  return response.json() as Promise<AuthUser>;
 }

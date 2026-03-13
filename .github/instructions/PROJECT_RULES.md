@@ -31,6 +31,7 @@ Funcionalidades ja implementadas:
    - dashboard web
    - actuators
    - actuation commands
+   - auth de usuarios
 6. Multi-tenant basico
    - isolamento por `clientId`
 
@@ -219,10 +220,17 @@ Estado em 13/03/2026:
   - laboratorio web possui comandos prontos para validar schema, cadastro, comando e historico do `acionamento`
 - base de frontend atual:
   - `React Query` segue como camada principal para dados remotos
-  - `Context API` foi introduzido apenas para sessao/token do frontend
+  - `Context API` foi introduzido para sessao/token do frontend
+  - o contexto de auth ja expoe `user`, `isAuthenticated`, `login()` e `logout()`
+- auth atual:
+  - backend ja possui `POST /auth/login` e `GET /auth/me`
+  - usuarios demo sao criados pelo seed
+  - protecao obrigatoria das rotas administrativas ainda e proxima etapa
+  - frontend ja consome login real e restaura sessao via `GET /auth/me`
 - validacoes concluidas localmente:
   - `npm run build` no backend
   - `npm run build` em `apps/web`
+  - teste e2e de auth passando
   - teste e2e de atuadores passando
 - pendencia imediata:
   - aplicar `npx prisma migrate deploy` no banco conectado ao ambiente desejado

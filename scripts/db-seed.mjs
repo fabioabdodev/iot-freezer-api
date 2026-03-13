@@ -1,9 +1,16 @@
 #!/usr/bin/env node
 
 import { PrismaClient } from '@prisma/client';
+import { randomBytes, scryptSync } from 'crypto';
 
 const prisma = new PrismaClient();
 const args = new Set(process.argv.slice(2));
+
+function hashPassword(password) {
+  const salt = randomBytes(16).toString('hex');
+  const hash = scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+}
 
 function printHelp() {
   console.log(`
@@ -180,6 +187,43 @@ async function seedTemperatureHistory() {
   }
 }
 
+async function seedUsers() {
+  const users = [
+    {
+      email: 'admin@virtuagil.com.br',
+      name: 'Administrador Virtuagil',
+      clientId: 'virtuagil',
+      role: 'admin',
+      password: 'virtuagil123',
+    },
+    {
+      email: 'operator@virtuagil.com.br',
+      name: 'Operador Virtuagil',
+      clientId: 'virtuagil',
+      role: 'operator',
+      password: 'operador123',
+    },
+  ];
+
+  for (const user of users) {
+    await prisma.user.upsert({
+      where: { email: user.email },
+      update: {
+        clientId: user.clientId,
+        name: user.name,
+        role: user.role,
+      },
+      create: {
+        clientId: user.clientId,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        passwordHash: hashPassword(user.password),
+      },
+    });
+  }
+}
+
 async function seedActuators() {
   const actuators = [
     {
@@ -269,7 +313,7 @@ async function main() {
 
   if (args.has('--dry-run')) {
     console.log(
-      '[seed] dry-run: seriam criados/atualizados 2 clients, 3 devices, 3 alert-rules, 2 actuators, 3 actuation-commands e 24 leituras por device sem historico.',
+      '[seed] dry-run: seriam criados/atualizados 2 clients, 3 devices, 3 alert-rules, 2 users, 2 actuators, 3 actuation-commands e 24 leituras por device sem historico.',
     );
     return;
   }
@@ -279,6 +323,7 @@ async function main() {
   await seedClients();
   await seedDevices();
   await seedAlertRules();
+  await seedUsers();
   await seedTemperatureHistory();
   await seedActuators();
   await seedActuationCommands();

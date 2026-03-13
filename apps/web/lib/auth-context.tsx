@@ -8,43 +8,86 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { fetchCurrentUser, loginUser } from '@/lib/api';
+import { AuthUser } from '@/types/auth';
 
 const TOKEN_STORAGE_KEY = 'iot_web_auth_token';
+const USER_STORAGE_KEY = 'iot_web_auth_user';
 
 type AuthContextValue = {
   authToken: string;
   isReady: boolean;
-  saveToken: (token: string) => void;
-  clearToken: () => void;
+  isAuthenticated: boolean;
+  user: AuthUser | null;
+  login: (input: { email: string; password: string }) => Promise<void>;
+  logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [authToken, setAuthToken] = useState('');
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const savedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY) ?? '';
-    setAuthToken(savedToken);
-    setIsReady(true);
+    async function restoreSession() {
+      const savedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY) ?? '';
+      const savedUser = window.localStorage.getItem(USER_STORAGE_KEY);
+
+      if (!savedToken) {
+        setIsReady(true);
+        return;
+      }
+
+      setAuthToken(savedToken);
+
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser) as AuthUser);
+        } catch {
+          window.localStorage.removeItem(USER_STORAGE_KEY);
+        }
+      }
+
+      try {
+        const currentUser = await fetchCurrentUser(savedToken);
+        setUser(currentUser);
+        window.localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(currentUser));
+      } catch {
+        window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+        window.localStorage.removeItem(USER_STORAGE_KEY);
+        setAuthToken('');
+        setUser(null);
+      } finally {
+        setIsReady(true);
+      }
+    }
+
+    void restoreSession();
   }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       authToken,
       isReady,
-      saveToken: (token: string) => {
-        const normalizedToken = token.trim();
-        window.localStorage.setItem(TOKEN_STORAGE_KEY, normalizedToken);
-        setAuthToken(normalizedToken);
+      isAuthenticated: Boolean(authToken),
+      user,
+      login: async ({ email, password }) => {
+        const session = await loginUser({ email, password });
+        window.localStorage.setItem(TOKEN_STORAGE_KEY, session.token);
+        window.localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(session.user));
+        setAuthToken(session.token);
+        setUser(session.user);
       },
-      clearToken: () => {
+      logout: () => {
         window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+        window.localStorage.removeItem(USER_STORAGE_KEY);
         setAuthToken('');
+        setUser(null);
       },
     }),
-    [authToken, isReady],
+    [authToken, isReady, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

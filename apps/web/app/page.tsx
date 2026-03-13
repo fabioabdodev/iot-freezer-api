@@ -74,8 +74,18 @@ function DashboardContent() {
   const queryClientId = searchParams.get('clientId') ?? '';
 
   const [clientIdDraft, setClientIdDraft] = useState(queryClientId);
-  const [authTokenDraft, setAuthTokenDraft] = useState('');
-  const { authToken, saveToken: persistToken, clearToken: removeToken } = useAuth();
+  const [authEmailDraft, setAuthEmailDraft] = useState('operator@virtuagil.com.br');
+  const [authPasswordDraft, setAuthPasswordDraft] = useState('operador123');
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const {
+    authToken,
+    isReady,
+    isAuthenticated,
+    user,
+    login,
+    logout,
+  } = useAuth();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [formMode, setFormMode] = useState<'closed' | 'create' | 'edit'>(
     'closed',
@@ -90,10 +100,6 @@ function DashboardContent() {
     // Mantem o campo de filtro sincronizado quando a URL muda por navegacao ou refresh.
     setClientIdDraft(queryClientId);
   }, [queryClientId]);
-
-  useEffect(() => {
-    setAuthTokenDraft(authToken);
-  }, [authToken]);
 
   // String vazia nao deve ser enviada para a API como clientId valido.
   const clientId = useMemo(
@@ -134,16 +140,29 @@ function DashboardContent() {
     router.replace(query ? `/?${query}` : '/');
   }
 
-  function saveToken() {
-    // Ao salvar, ja refazemos a busca para refletir o novo contexto de autorizacao.
-    const nextToken = authTokenDraft.trim();
-    persistToken(nextToken);
-    void refetch();
+  async function handleLogin() {
+    setAuthError(null);
+    setIsAuthenticating(true);
+
+    try {
+      await login({
+        email: authEmailDraft.trim(),
+        password: authPasswordDraft,
+      });
+      void refetch();
+    } catch (error) {
+      setAuthError(
+        error instanceof Error ? error.message : 'Falha ao autenticar usuario.',
+      );
+    } finally {
+      setIsAuthenticating(false);
+    }
   }
 
   function clearToken() {
-    removeToken();
-    setAuthTokenDraft('');
+    logout();
+    setAuthPasswordDraft('');
+    setAuthError(null);
     void refetch();
   }
 
@@ -247,11 +266,25 @@ function DashboardContent() {
             </div>
             <Badge>
               <KeyRound className="h-3.5 w-3.5 text-accent" />
-              Sessao local
+              {isAuthenticated ? 'Sessao ativa' : 'Sessao local'}
             </Badge>
           </div>
 
           <div className="space-y-3">
+            <div className="rounded-2xl border border-line/70 bg-bg/30 px-4 py-3 text-sm text-muted">
+              {!isReady ? (
+                'Validando sessao local...'
+              ) : isAuthenticated ? (
+                <>
+                  Conectado como <strong className="text-ink">{user?.name}</strong>{' '}
+                  ({user?.role}) em{' '}
+                  <strong className="text-ink">{user?.email}</strong>.
+                </>
+              ) : (
+                'Entre com um usuario da plataforma para persistir a sessao no frontend.'
+              )}
+            </div>
+
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Input
                 value={clientIdDraft}
@@ -267,20 +300,39 @@ function DashboardContent() {
               <div className="relative w-full">
                 <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
                 <Input
-                  type="password"
-                  value={authTokenDraft}
-                  onChange={(event) => setAuthTokenDraft(event.target.value)}
-                  placeholder="Token (opcional)"
+                  type="email"
+                  value={authEmailDraft}
+                  onChange={(event) => setAuthEmailDraft(event.target.value)}
+                  placeholder="E-mail"
                   className="pl-11"
                 />
               </div>
-              <Button onClick={saveToken} variant="secondary" className="min-w-[110px]">
-                Salvar
+              <div className="relative w-full">
+                <Input
+                  type="password"
+                  value={authPasswordDraft}
+                  onChange={(event) => setAuthPasswordDraft(event.target.value)}
+                  placeholder="Senha"
+                />
+              </div>
+              <Button
+                onClick={() => {
+                  void handleLogin();
+                }}
+                variant="secondary"
+                className="min-w-[110px]"
+                loading={isAuthenticating}
+              >
+                {isAuthenticated ? 'Trocar' : 'Entrar'}
               </Button>
               <Button onClick={clearToken} variant="secondary" className="min-w-[110px]">
-                Limpar
+                Sair
               </Button>
             </div>
+
+            {authError ? (
+              <Feedback variant="danger">{authError}</Feedback>
+            ) : null}
           </div>
         </Panel>
       </Panel>
