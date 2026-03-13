@@ -317,3 +317,4 @@ Estado em 13/03/2026:
   - em 13/03/2026 a migration `20260313170000_expand_clients_business_profile` foi aplicada ao banco real por `prisma db execute` e registrada manualmente em `_prisma_migrations` via `psql`, porque `prisma migrate deploy` continuou batendo no advisory lock
   - em 13/03/2026 `npm run db:seed` foi executado novamente com sucesso apos essa migration
   - em 13/03/2026 os clientes `virtuagil` e `cliente_teste` foram confirmados no Supabase com `document`, `phone`, `billingEmail` e `status` populados
+  - em 13/03/2026 foi revisado o GitHub Actions atual: `ci.yml` nao roda migrations e `deploy.yml` nao roda `prisma migrate deploy`, entao o advisory lock do Prisma nao parece vir do workflow atual por si so

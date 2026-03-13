@@ -32,6 +32,14 @@ O projeto usa GitHub Actions com dois workflows:
   - build e push das imagens `api` e `web` para GHCR
   - deploy da stack no Swarm
 
+Observacao importante validada em 13/03/2026:
+
+- os workflows atuais nao executam `npx prisma migrate deploy`
+- `ci.yml` roda apenas `npx prisma generate --no-engine`, build e testes
+- `deploy.yml` faz apenas build/push de imagens e `docker stack deploy` via SSH
+- portanto, conflitos recentes de `pg_advisory_lock` do Prisma nao parecem nascer do workflow atual do GitHub Actions por si so
+- se migrations forem automatizadas no futuro, criar um passo dedicado e unico para isso
+
 ## Deploy atual
 
 Ambiente de producao:
