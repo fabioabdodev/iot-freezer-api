@@ -84,13 +84,14 @@ Estado atual:
 - backend inicial implementado
 - dashboard inicial implementado
 - fluxo atual e manual/simulado, sem hardware fisico
-- migration criada e pendente de aplicacao no banco real
+- migration validada no banco real
+- fluxo manual ponta a ponta validado no banco real
+- dashboard com refinamentos operacionais e blocos de prontidao/atividade
 
 Proximo ponto de continuidade:
 
-- aplicar migration do modulo `acionamento`
-- validar fluxo manual ponta a ponta em ambiente integrado
-- adicionar refinamentos operacionais no dashboard do `acionamento`
+- consolidar testes manuais e roteiro de demonstracao do modulo `acionamento`
+- manter refinamentos operacionais focados em UX e demonstracao comercial
 - manter o modulo `temperatura` apenas em manutencao corretiva
 
 ## Proximos passos recomendados
