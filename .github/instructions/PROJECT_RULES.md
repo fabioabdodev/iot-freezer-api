@@ -210,6 +210,7 @@ Correcoes validadas em producao:
 - `N8N_TEMPERATURE_ALERT_WEBHOOK_URL` foi corrigida para `https://webhookworkflow.virtuagil.com.br/webhook/temperature-alert`
 - `N8N_OFFLINE_WEBHOOK_URL` foi corrigida para `https://webhookworkflow.virtuagil.com.br/webhook/device-offline`
 - `DATABASE_URL` da API em producao foi migrada da conexao direta IPv6 do Supabase para o `session pooler`
+- migrations e verificacoes administrativas agora devem preferir `DIRECT_DATABASE_URL` quando o ambiente usar pooler no `DATABASE_URL`
 - Cloudflare configurado no plano `Free`
 - `monitor.virtuagil.com.br` validado com proxy ativo no Cloudflare
 - `virtuagil.com.br` testado com proxy ativo, mas retornou erro `526 Invalid SSL certificate` por ainda nao existir origem HTTPS valida para esse host
@@ -278,6 +279,7 @@ Estado em 13/03/2026:
   - teste e2e de clients passando
 - pendencia imediata:
   - aplicar `npx prisma migrate deploy` no banco conectado ao ambiente desejado
+  - configurar `DIRECT_DATABASE_URL` no ambiente local/producao para rodar migrations sem depender do pooler
   - confirmar no banco real se as tabelas `Actuator` e `ActuationCommand` foram criadas
   - usar `npm run db:verify-actuation` como verificacao rapida apos a migration
   - usar o checklist do README para validar criacao, comando e historico no ambiente integrado

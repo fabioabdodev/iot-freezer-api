@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+if (process.env.DIRECT_DATABASE_URL?.trim()) {
+  process.env.DATABASE_URL = process.env.DIRECT_DATABASE_URL.trim();
+}
+
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -14,7 +18,7 @@ Uso:
   npm run db:verify-actuation
 
 O que o script verifica:
-  - conectividade com o banco configurado em DATABASE_URL
+  - conectividade com o banco configurado em DIRECT_DATABASE_URL ou DATABASE_URL
   - existencia da migration ${expectedMigration}
   - existencia das tabelas Actuator e ActuationCommand
 
@@ -59,7 +63,9 @@ async function main() {
     return;
   }
 
-  console.log('[verify-actuation] verificando banco configurado em DATABASE_URL...');
+  console.log(
+    `[verify-actuation] verificando banco configurado em ${process.env.DIRECT_DATABASE_URL ? 'DIRECT_DATABASE_URL' : 'DATABASE_URL'}...`,
+  );
 
   const migrationApplied = await migrationExists(expectedMigration);
   const actuatorTable = await tableExists('Actuator');

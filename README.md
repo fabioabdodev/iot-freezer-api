@@ -68,6 +68,7 @@ Observacao de infraestrutura:
 
 - hoje o `Redis` apoia principalmente os fluxos do `n8n`
 - no medio prazo ele tambem pode ser reaproveitado pela API para fila de alertas e cache compartilhado
+- quando o Supabase estiver usando pooler no `DATABASE_URL`, migrations devem usar a conexao direta em `DIRECT_DATABASE_URL`
 
 ## Requisitos
 
@@ -89,7 +90,7 @@ npm ci
 cp .env.example .env
 ```
 
-3. Ajuste variáveis em `.env` (principalmente `DATABASE_URL` e webhooks).
+3. Ajuste variáveis em `.env` (principalmente `DATABASE_URL`, `DIRECT_DATABASE_URL` e webhooks).
 
 Observação importante: se a senha do banco tiver caracteres especiais (`@`, `:`, `/`, etc.), faça URL encode.
 Exemplo: `@` vira `%40`.
@@ -105,6 +106,12 @@ npx prisma generate
 ```bash
 npx prisma migrate deploy
 ```
+
+Observacao importante para Supabase:
+
+- `DATABASE_URL` pode continuar apontando para o pooler usado pela aplicacao
+- `DIRECT_DATABASE_URL` deve apontar para a conexao direta do banco
+- migrations e verificacoes administrativas devem preferir `DIRECT_DATABASE_URL`
 
 6. Opcionalmente confirme se o modulo `acionamento` entrou no banco:
 
@@ -467,6 +474,7 @@ Observação: o frontend usa `NEXT_PUBLIC_API_BASE_URL` no build da imagem web. 
 
 - `PORT`
 - `DATABASE_URL`
+- `DIRECT_DATABASE_URL`
 - `AUTH_SECRET`
 - `AUTH_TOKEN_TTL_HOURS`
 - `AUTH_LOGIN_RATE_LIMIT_WINDOW_SECONDS`

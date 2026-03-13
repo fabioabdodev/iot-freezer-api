@@ -6,6 +6,7 @@ export const envSchema = z.object({
   CORS_ORIGINS: z.string().optional(),
 
   DATABASE_URL: z.string().min(1, 'DATABASE_URL e obrigatoria'),
+  DIRECT_DATABASE_URL: z.string().optional(),
   AUTH_SECRET: z.string().min(16, 'AUTH_SECRET deve ter pelo menos 16 caracteres'),
   AUTH_TOKEN_TTL_HOURS: z.coerce.number().default(168),
   AUTH_LOGIN_RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().default(300),
