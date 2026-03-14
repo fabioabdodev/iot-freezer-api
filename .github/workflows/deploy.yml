@@ -141,6 +141,7 @@ jobs:
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
             docker pull "${API_IMAGE}"
             docker pull "${WEB_IMAGE}"
+            docker run --rm --env-file .env.prod "${API_IMAGE}" npx prisma migrate deploy
             docker stack deploy -c deploy/swarm/stack.prod.yml iot-monitor --with-registry-auth
             docker service ls | grep iot-monitor
 

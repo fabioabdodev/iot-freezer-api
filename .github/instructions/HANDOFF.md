@@ -55,6 +55,10 @@ Identidade tecnica atual escolhida:
   - execucao automatica por janela semanal
   - auditoria em create/update/delete
   - dashboard com painel de rotinas para admin do cliente
+- fluxo de migration em producao preparado:
+  - imagem da API passou a carregar `prisma` CLI no container final
+  - workflow SSH roda `npx prisma migrate deploy` antes do `docker stack deploy`
+  - passo manual para Portainer documentado em `.github/instructions/PRODUCTION_MIGRATIONS.md`
 - regra-mae de produto consolidada:
   - a plataforma cria a estrutura inicial do cliente
   - o admin do cliente pode ajustar regras operacionais autorizadas
@@ -110,6 +114,7 @@ Resultado esperado no ponto atual:
 - evoluir o produto para refletir a politica de acesso registrada em `.github/instructions/ACCESS_POLICY.md`
 - planejar trilha de auditoria para alteracoes de faixa de temperatura e regras de alerta antes de liberar mais autonomia operacional ao cliente
 - aplicar a migration `20260314183000_create_audit_logs` no banco real antes de usar a nova auditoria em producao
+- aplicar as migrations em producao seguindo `.github/instructions/PRODUCTION_MIGRATIONS.md`
 - decidir se a proxima etapa de permissao vai incluir:
   - tela de consulta de auditoria no monitor web
 - alinhar o `README.md` quando o arquivo for normalizado para UTF-8, porque o patch seguro nao conseguiu editar esse arquivo na etapa anterior
@@ -184,6 +189,9 @@ Estado aplicado em codigo nesta etapa:
   - admin do cliente pode criar, editar, pausar, ativar e excluir rotinas do proprio tenant
   - um cron no backend aplica `on/off` automaticamente conforme dia, horario e timezone
   - create, update e delete de rotinas geram auditoria
+- `producao`:
+  - deploy via SSH passou a executar `prisma migrate deploy` antes do rollout
+  - cenarios com Portainer webhook exigem migration manual previa
 
 Validacao executada nesta etapa:
 
