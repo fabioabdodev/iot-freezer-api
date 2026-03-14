@@ -21,6 +21,7 @@ Identidade tecnica atual escolhida:
 - suites e2e antigas alinhadas ao fluxo atual de autenticacao por sessao
 - rebranding tecnico iniciado no backend, frontend, deploy e documentacao principal
 - `.vscode/mcp.json` preparado para o projeto com `supabase`, `context7`, `filesystem`, `git` e `shell`
+- deploy swarm revisado para injetar variaveis obrigatorias de auth, cors e log na API
 
 ## Validacao feita
 
@@ -28,12 +29,16 @@ Comando executado com sucesso:
 
 ```bash
 npm run test:e2e -- --runInBand
+npm run build
+cd apps/web && npm run build
 ```
 
 Resultado esperado no ponto atual:
 
 - `13/13` suites passando
 - `39/39` testes passando
+- build do backend concluido com sucesso
+- build do frontend concluido com sucesso
 
 ## Arquivos alterados nesta etapa
 
@@ -59,6 +64,7 @@ Resultado esperado no ponto atual:
 - confirmar publicacao das novas imagens no GHCR com o namespace novo
 - decidir se a pasta local do repositorio tambem sera renomeada
 - configurar no ambiente do projeto `SUPABASE_PROJECT_REF` e `CONTEXT7_API_KEY` quando o uso de MCP no VS Code for desejado
+- atualizar o `.env.prod` real da VPS com as chaves novas/obrigatorias que agora estao documentadas em `deploy/swarm/.env.prod.example`
 
 ## Escopo local ignorado
 
