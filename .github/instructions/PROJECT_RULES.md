@@ -191,6 +191,15 @@ Regras atuais:
 - o backend faz scoping por `clientId` do usuario autenticado
 - admin de cliente atua apenas dentro do proprio tenant
 - admin de plataforma e representado por usuario com `clientId = null`
+- direcao de produto aprovada:
+  - administrador da plataforma tem acesso total a todos os tenants e pode monitorar tudo
+  - administrador do cliente pode monitorar o proprio tenant
+  - administrador do cliente deve evoluir para poder alterar regras operacionais do proprio tenant
+  - operador deve monitorar, mas nao alterar parametros criticos
+- separar responsabilidade de estrutura e operacao:
+  - estrutura fica com a plataforma
+  - parametros operacionais do negocio ficam com o cliente
+- alteracoes criticas de temperatura e alerta devem evoluir com trilha de auditoria
 - dados comerciais do cliente permanecem enxutos e manuais:
   - `name`
   - `document`
@@ -212,6 +221,8 @@ Regras atuais:
 ## Direcao de evolucao
 
 Ver `.github/instructions/ROADMAP.md` para a sequencia de evolucao.
+
+Ver tambem `.github/instructions/ACCESS_POLICY.md` para a politica alvo de acessos e responsabilidade operacional.
 
 ## Ferramenta preferida para teste manual rapido
 

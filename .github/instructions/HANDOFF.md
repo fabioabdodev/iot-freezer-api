@@ -25,6 +25,10 @@ Identidade tecnica atual escolhida:
 - endpoint de runtime IoT para acionamento adicionado em `GET /iot/actuators?deviceId=...`
 - endpoint de confirmacao do hardware adicionado em `POST /iot/actuators/:id/ack`
 - escopo de firmware/hardware separado em `iot-virtuagil-firmware/`
+- politica de acesso definida:
+  - administrador da plataforma com acesso total e monitoramento completo
+  - administrador do cliente com monitoramento do proprio tenant
+  - direcao aprovada para cliente administrar regras operacionais com auditoria futura
 
 ## Validacao feita
 
@@ -71,6 +75,8 @@ Resultado esperado no ponto atual:
 - configurar no ambiente do projeto `SUPABASE_PROJECT_REF` e `CONTEXT7_API_KEY` quando o uso de MCP no VS Code for desejado
 - atualizar o `.env.prod` real da VPS com as chaves novas/obrigatorias que agora estao documentadas em `deploy/swarm/.env.prod.example`
 - alinhar qualquer evolucao de firmware em `iot-virtuagil-firmware/`, nao mais dentro deste repositorio
+- evoluir o produto para refletir a politica de acesso registrada em `.github/instructions/ACCESS_POLICY.md`
+- planejar trilha de auditoria para alteracoes de faixa de temperatura e regras de alerta antes de liberar mais autonomia operacional ao cliente
 
 ## Escopo local ignorado
 
@@ -98,3 +104,14 @@ Ao encerrar cada bloco relevante:
 1. atualizar este arquivo com o novo ponto de parada
 2. rodar a validacao minima pertinente
 3. criar commit com mensagem objetiva
+
+## Politica de acesso aprovada
+
+Direcao validada neste momento:
+
+- o administrador da plataforma deve ter acesso total a tudo
+- o administrador da plataforma tambem deve poder monitorar qualquer cliente
+- o administrador do cliente deve poder monitorar o proprio tenant
+- o administrador do cliente deve evoluir para poder alterar regras de temperatura e alerta do proprio tenant
+- o operador deve permanecer focado em monitoramento
+- qualquer ampliacao de autonomia operacional do cliente deve vir acompanhada de auditoria

@@ -32,6 +32,11 @@ O MVP expandido ja entrega:
 - o dashboard deve focar em operacao rapida e leitura clara
 - a base deve continuar preparada para novos sensores e atuadores
 - a evolucao deve ocorrer modulo por modulo
+- a plataforma deve separar claramente administracao estrutural e parametrizacao operacional
+- o administrador da plataforma deve manter acesso total a todos os clientes
+- o administrador do cliente deve poder monitorar o proprio tenant
+- o administrador do cliente deve evoluir para assumir a autoria das regras operacionais do proprio negocio
+- alteracoes criticas de regra devem ser auditaveis
 
 ## Integracao de alertas
 
