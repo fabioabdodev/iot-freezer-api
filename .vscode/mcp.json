@@ -1,0 +1,41 @@
+{
+  "mcp": {
+    "servers": {
+      "supabase": {
+        "type": "http",
+        "url": "https://mcp.supabase.com/mcp?project_ref=${env:SUPABASE_PROJECT_REF}"
+      },
+      "context7": {
+        "type": "stdio",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@upstash/context7-mcp",
+          "--api-key",
+          "${env:CONTEXT7_API_KEY}"
+        ]
+      },
+      "filesystem": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem"
+        ]
+      },
+      "git": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-git"
+        ]
+      },
+      "shell": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-shell"
+        ]
+      }
+    }
+  }
+}

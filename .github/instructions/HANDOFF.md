@@ -20,6 +20,7 @@ Identidade tecnica atual escolhida:
 - correcao aplicada no `PATCH /devices/:id` para nao mascarar conflito de `clientId`
 - suites e2e antigas alinhadas ao fluxo atual de autenticacao por sessao
 - rebranding tecnico iniciado no backend, frontend, deploy e documentacao principal
+- `.vscode/mcp.json` preparado para o projeto com `supabase`, `context7`, `filesystem`, `git` e `shell`
 
 ## Validacao feita
 
@@ -57,6 +58,7 @@ Resultado esperado no ponto atual:
 - mover ou recriar `.env.prod` no novo caminho da VPS
 - confirmar publicacao das novas imagens no GHCR com o namespace novo
 - decidir se a pasta local do repositorio tambem sera renomeada
+- configurar no ambiente do projeto `SUPABASE_PROJECT_REF` e `CONTEXT7_API_KEY` quando o uso de MCP no VS Code for desejado
 
 ## Escopo local ignorado
 
