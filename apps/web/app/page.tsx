@@ -82,8 +82,8 @@ function DashboardContent() {
   const queryClientId = searchParams.get('clientId') ?? '';
 
   const [clientIdDraft, setClientIdDraft] = useState(queryClientId);
-  const [authEmailDraft, setAuthEmailDraft] = useState('operator@virtuagil.com.br');
-  const [authPasswordDraft, setAuthPasswordDraft] = useState('operador123');
+  const [authEmailDraft, setAuthEmailDraft] = useState('plataforma@virtuagil.com.br');
+  const [authPasswordDraft, setAuthPasswordDraft] = useState('plataforma123');
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const {

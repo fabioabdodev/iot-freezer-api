@@ -34,6 +34,8 @@ Identidade tecnica atual escolhida:
   - client admin passou a editar apenas faixa de temperatura dos devices
   - operator ficou em modo monitoramento para regras e modulos
   - trilha inicial de auditoria foi criada para mudancas criticas
+- seed demo atualizado para incluir um admin global real da plataforma:
+  - `plataforma@virtuagil.com.br`
 
 ## Validacao feita
 

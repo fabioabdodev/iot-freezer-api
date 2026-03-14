@@ -46,8 +46,8 @@ npm run db:verify-actuation
 
 ```json
 {
-  "email": "admin@virtuagil.com.br",
-  "password": "virtuagil123"
+  "email": "plataforma@virtuagil.com.br",
+  "password": "plataforma123"
 }
 ```
 
@@ -60,6 +60,12 @@ Esperado:
 Guardar:
 
 - token para usar como `Bearer`
+
+Credenciais demo uteis:
+
+- admin global: `plataforma@virtuagil.com.br` / `plataforma123`
+- admin do tenant `virtuagil`: `admin@virtuagil.com.br` / `virtuagil123`
+- operador do tenant `virtuagil`: `operator@virtuagil.com.br` / `operador123`
 
 ### Sessao atual
 

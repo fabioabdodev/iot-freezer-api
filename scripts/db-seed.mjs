@@ -213,6 +213,14 @@ async function seedTemperatureHistory() {
 async function seedUsers() {
   const users = [
     {
+      email: 'plataforma@virtuagil.com.br',
+      name: 'Administrador da Plataforma',
+      clientId: null,
+      role: 'admin',
+      phone: '31988880000',
+      password: 'plataforma123',
+    },
+    {
       email: 'admin@virtuagil.com.br',
       name: 'Administrador Virtuagil',
       clientId: 'virtuagil',
@@ -366,7 +374,7 @@ async function main() {
 
   if (args.has('--dry-run')) {
     console.log(
-      '[seed] dry-run: seriam criados/atualizados 2 clients com dados comerciais minimos, 3 devices, 3 alert-rules, 2 users, 2 actuators, 3 actuation-commands e 24 leituras por device sem historico.',
+      '[seed] dry-run: seriam criados/atualizados 2 clients com dados comerciais minimos, 3 devices, 3 alert-rules, 3 users, 2 actuators, 3 actuation-commands e 24 leituras por device sem historico.',
     );
     return;
   }
