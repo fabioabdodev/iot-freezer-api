@@ -452,6 +452,15 @@ mkdir -p /opt/iot-freezer-api/deploy/swarm
 
 4. Criar `/opt/iot-freezer-api/.env.prod` com base em `deploy/swarm/.env.prod.example`.
 
+Campos importantes desse arquivo:
+
+- `API_IMAGE`
+- `WEB_IMAGE`
+- `APP_RELEASE`
+- `APP_BUILD_TIME`
+
+No deploy automatizado via GitHub Actions, `API_IMAGE`, `WEB_IMAGE`, `APP_RELEASE` e `APP_BUILD_TIME` sao sobrescritos dinamicamente para refletir a release recem-publicada.
+
 ### 2. Segredos do GitHub Actions
 
 Configurar em `Settings > Secrets and variables > Actions`:
@@ -503,10 +512,18 @@ Push na branch `main` (ou `workflow_dispatch`) dispara:
 1. Build + push de imagens para GHCR:
    - `ghcr.io/fabioabdodev/iot-freezer-api/api:latest`
    - `ghcr.io/fabioabdodev/iot-freezer-api/web:latest`
-2. Se `PORTAINER_WEBHOOK_URL` estiver vazio: cópia do `stack.prod.yml` para VPS e `docker stack deploy` no Swarm.
+   - `ghcr.io/fabioabdodev/iot-freezer-api/api:sha-xxxxxxx`
+   - `ghcr.io/fabioabdodev/iot-freezer-api/web:sha-xxxxxxx`
+2. Se `PORTAINER_WEBHOOK_URL` estiver vazio: cópia do `stack.prod.yml` para VPS e `docker stack deploy` no Swarm, com `API_IMAGE` e `WEB_IMAGE` apontando para a tag curta do commit.
 3. Se `PORTAINER_WEBHOOK_URL` estiver configurado: GitHub Actions chama o webhook do Portainer para atualizar a stack.
 
 Observação: o frontend usa `NEXT_PUBLIC_API_BASE_URL` no build da imagem web. O workflow já publica a imagem com `https://api-monitor.virtuagil.com.br` embutido no bundle.
+
+Observacao operacional importante:
+
+- o build continua publicando `latest`, mas o deploy agora deve usar a tag `sha-xxxxxxx` da release
+- isso reduz o risco de pipeline verde com a producao ainda servindo uma imagem antiga reaproveitada como `latest`
+- depois do deploy, consulte `GET /health` para confirmar `release`, `buildTime` e `features` publicados
 
 ## Variáveis de ambiente (resumo)
 

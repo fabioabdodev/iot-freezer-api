@@ -12,6 +12,8 @@ permissions:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAMESPACE: ghcr.io/fabioabdodev/iot-freezer-api
+  API_IMAGE_NAME: ghcr.io/fabioabdodev/iot-freezer-api/api
+  WEB_IMAGE_NAME: ghcr.io/fabioabdodev/iot-freezer-api/web
 
 jobs:
   build-and-push:
@@ -114,10 +116,15 @@ jobs:
             . ./.env.prod
             set +a
 
+            export IMAGE_TAG="sha-${GITHUB_SHA::7}"
+            export API_IMAGE="${{ env.API_IMAGE_NAME }}:${IMAGE_TAG}"
+            export WEB_IMAGE="${{ env.WEB_IMAGE_NAME }}:${IMAGE_TAG}"
             export APP_RELEASE="${{ github.sha }}"
             export APP_BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+            docker pull "${API_IMAGE}"
+            docker pull "${WEB_IMAGE}"
             docker stack deploy -c deploy/swarm/stack.prod.yml iot-monitor --with-registry-auth
             docker service ls | grep iot-monitor
 

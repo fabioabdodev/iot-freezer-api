@@ -54,12 +54,15 @@ Fluxo padrao:
 
 1. push para `main`
 2. GitHub Actions publica as imagens
-3. workflow faz `docker stack deploy` por SSH
+3. workflow faz `docker stack deploy` por SSH usando tags imutaveis por release (`sha-xxxxxxx`)
 
 Observacao:
 
 - no Portainer Community Edition, webhook de stack nao e o fluxo padrao
 - o caminho principal deste projeto e deploy por SSH
+- a stack agora aceita `API_IMAGE` e `WEB_IMAGE`
+- o workflow exporta essas variaveis com a tag curta do commit antes do `docker stack deploy`
+- isso reduz o risco de pipeline verde com Swarm ainda reaproveitando uma imagem antiga marcada como `latest`
 
 ## Regras de seguranca
 
