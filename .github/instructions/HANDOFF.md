@@ -24,6 +24,7 @@ Identidade tecnica atual escolhida:
 - deploy swarm revisado para injetar variaveis obrigatorias de auth, cors e log na API
 - endpoint de runtime IoT para acionamento adicionado em `GET /iot/actuators?deviceId=...`
 - endpoint de confirmacao do hardware adicionado em `POST /iot/actuators/:id/ack`
+- checklist de bancada criado em `.github/instructions/CHECKLIST_BANCADA_HARDWARE.md`
 
 ## Validacao feita
 
