@@ -10,6 +10,7 @@ import { AuthSession, AuthUser, LoginInput } from '@/types/auth';
 import { UserInput, UserSummary } from '@/types/user';
 import { ClientModule } from '@/types/client-module';
 import { ClientInput, ClientSummary, CreateClientInput } from '@/types/client';
+import { AuditLogEntry } from '@/types/audit-log';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
@@ -673,4 +674,33 @@ export async function upsertClientModule(
   }
 
   return response.json() as Promise<ClientModule>;
+}
+
+export async function fetchAuditLogs(
+  filters: {
+    clientId?: string;
+    entityType?: string;
+    entityId?: string;
+    limit?: number;
+  },
+  authToken?: string,
+): Promise<AuditLogEntry[]> {
+  const query = new URLSearchParams();
+  if (filters.clientId) query.set('clientId', filters.clientId);
+  if (filters.entityType) query.set('entityType', filters.entityType);
+  if (filters.entityId) query.set('entityId', filters.entityId);
+  if (filters.limit) query.set('limit', String(filters.limit));
+
+  const response = await fetch(`${API_BASE_URL}/audit-logs?${query.toString()}`, {
+    cache: 'no-store',
+    headers: buildAuthHeaders(authToken),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao carregar auditoria'),
+    );
+  }
+
+  return response.json() as Promise<AuditLogEntry[]>;
 }

@@ -26,6 +26,7 @@ import { SimulationLabPanel } from '@/components/simulation-lab-panel';
 import { ClientModulesPanel } from '@/components/client-modules-panel';
 import { ClientProfilePanel } from '@/components/client-profile-panel';
 import { ClientsPanel } from '@/components/clients-panel';
+import { AuditLogPanel } from '@/components/audit-log-panel';
 import { SetupGuideCard } from '@/components/setup-guide-card';
 import { UsersPanel } from '@/components/users-panel';
 import { CommercialReadinessPanel } from '@/components/commercial-readiness-panel';
@@ -845,6 +846,13 @@ function DashboardContent() {
       <div className="mt-6">
         <SimulationLabPanel clientId={scopedClientId} />
       </div>
+
+      <AuditLogPanel
+        clientId={scopedClientId}
+        authToken={authToken}
+        currentUser={user}
+        canView={isAdmin}
+      />
     </main>
   );
 }

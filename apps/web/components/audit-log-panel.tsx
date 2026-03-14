@@ -1,0 +1,135 @@
+'use client';
+
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { FileSearch, ShieldCheck } from 'lucide-react';
+import { useAuditLogs } from '@/hooks/use-audit-logs';
+import { AuthUser } from '@/types/auth';
+import { AccessNotice } from '@/components/ui/access-notice';
+import { Badge } from '@/components/ui/badge';
+import { Feedback } from '@/components/ui/feedback';
+import { Panel } from '@/components/ui/panel';
+
+type AuditLogPanelProps = {
+  clientId?: string;
+  authToken?: string;
+  currentUser: AuthUser | null;
+  canView: boolean;
+};
+
+function formatValue(value: unknown) {
+  if (value == null) return '-';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return '[valor complexo]';
+  }
+}
+
+export function AuditLogPanel({
+  clientId,
+  authToken,
+  currentUser,
+  canView,
+}: AuditLogPanelProps) {
+  const { data, isLoading, isError, error } = useAuditLogs(
+    { clientId, limit: 8 },
+    authToken,
+    canView,
+  );
+
+  if (!canView) {
+    return (
+      <AccessNotice
+        title="Auditoria"
+        description="A trilha de auditoria fica disponivel apenas para administradores."
+        badge={currentUser?.role ?? 'sem sessao'}
+        hint="Esse painel ajuda a atribuir alteracoes de faixa de temperatura e regras operacionais."
+      />
+    );
+  }
+
+  return (
+    <Panel className="mt-6 p-4 sm:p-5">
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-[0.18em] text-muted">
+            Governanca
+          </p>
+          <h2 className="mt-1 text-xl font-semibold">Auditoria recente</h2>
+          <p className="mt-2 max-w-3xl text-sm text-muted">
+            Mostra quem alterou parametros criticos para reforcar responsabilidade operacional.
+          </p>
+        </div>
+        <Badge>
+          <ShieldCheck className="h-3.5 w-3.5 text-accent" />
+          rastreabilidade
+        </Badge>
+      </div>
+
+      {isLoading ? <Feedback>Carregando auditoria...</Feedback> : null}
+      {isError ? (
+        <Feedback variant="danger">
+          {error?.message ?? 'Falha ao carregar auditoria.'}
+        </Feedback>
+      ) : null}
+
+      {!isLoading && !isError && (data?.length ?? 0) > 0 ? (
+        <div className="space-y-3">
+          {(data ?? []).map((entry) => (
+            <div
+              key={entry.id}
+              className="rounded-2xl border border-line/70 bg-bg/30 p-3"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-medium text-ink">
+                    {entry.entityType} / {entry.entityId}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {entry.action}
+                    {entry.fieldName ? ` - ${entry.fieldName}` : ''}
+                  </p>
+                </div>
+                <Badge>
+                  <FileSearch className="h-3.5 w-3.5 text-accent" />
+                  {formatDistanceToNow(new Date(entry.createdAt), {
+                    addSuffix: true,
+                    locale: ptBR,
+                  })}
+                </Badge>
+              </div>
+
+              <div className="mt-3 grid gap-2 text-sm md:grid-cols-2">
+                <div className="rounded-2xl border border-line/70 bg-card/30 p-3">
+                  <p className="text-xs uppercase tracking-[0.16em] text-muted">Antes</p>
+                  <p className="mt-2 break-words text-ink">
+                    {formatValue(entry.previousValue)}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-line/70 bg-card/30 p-3">
+                  <p className="text-xs uppercase tracking-[0.16em] text-muted">Depois</p>
+                  <p className="mt-2 break-words text-ink">
+                    {formatValue(entry.nextValue)}
+                  </p>
+                </div>
+              </div>
+
+              <p className="mt-3 text-xs text-muted">
+                Alterado por {entry.actorEmail ?? 'usuario nao identificado'}
+                {entry.actorRole ? ` (${entry.actorRole})` : ''}.
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {!isLoading && !isError && (data?.length ?? 0) === 0 ? (
+        <Feedback>Nenhuma alteracao auditada foi registrada ainda.</Feedback>
+      ) : null}
+    </Panel>
+  );
+}

@@ -88,6 +88,12 @@ Restricoes:
 
 Estrutura e operacao devem permanecer separadas.
 
+Regra-mae da plataforma:
+
+- a Virtuagil monta a estrutura inicial do cliente
+- o cliente opera e pode ajustar apenas as regras operacionais que a plataforma decidiu liberar
+- esse mesmo padrao deve ser repetido em todos os modulos atuais e futuros
+
 ### Estrutura
 
 Responsabilidade principal da plataforma:
@@ -105,6 +111,7 @@ Responsabilidade principal do cliente:
 - faixas de temperatura do proprio negocio
 - regras de alerta do proprio tenant
 - parametros operacionais que dependem da rotina real da operacao
+- qualquer outra regra operacional autorizada em modulos futuros
 
 ## Boa pratica adotada
 
@@ -114,6 +121,8 @@ Direcao de produto aprovada:
 - o cliente administra os parametros operacionais do proprio negocio
 - o administrador do cliente tambem pode monitorar o proprio tenant
 - o administrador da plataforma pode monitorar e editar tudo
+- ao cadastrar um novo cliente, a plataforma cria a base inicial e entrega a operacao pronta
+- depois disso, o administrador do cliente pode ajustar apenas as regras que foram autorizadas para aquele modulo
 
 Motivacao:
 
@@ -161,3 +170,22 @@ Estado desejado para evolucao:
 3. permitir que administrador do cliente altere regras de temperatura e alerta do proprio tenant
 4. impedir que operador altere parametros criticos
 5. adicionar trilha de auditoria antes de ampliar liberdade operacional do cliente
+
+## Regra-mae para modulos futuros
+
+Toda nova capacidade da plataforma deve responder a esta pergunta:
+
+- isso e estrutura da plataforma ou regra operacional do cliente?
+
+Padrao esperado:
+
+- estrutura continua com a plataforma
+- regra operacional autorizada pode ser ajustada pelo administrador do cliente
+- operador continua focado em acompanhamento e execucao do dia a dia
+- toda mudanca critica deve continuar auditavel
+
+Exemplos:
+
+- `temperatura`: faixa e limites de alerta podem ser autorizados para o cliente
+- `acionamento`: rotinas, agendas e regras operacionais podem ser autorizadas para o cliente
+- modulos futuros devem seguir a mesma separacao entre estrutura e operacao

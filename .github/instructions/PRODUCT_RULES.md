@@ -37,6 +37,10 @@ O MVP expandido ja entrega:
 - o administrador do cliente deve poder monitorar o proprio tenant
 - o administrador do cliente deve evoluir para assumir a autoria das regras operacionais do proprio negocio
 - alteracoes criticas de regra devem ser auditaveis
+- regra-mae do produto:
+  - a plataforma entrega a estrutura inicial do cliente
+  - o cliente pode ajustar apenas as regras operacionais que forem autorizadas
+  - esse padrao deve ser reaproveitado em todos os modulos da Virtuagil
 
 ## Integracao de alertas
 

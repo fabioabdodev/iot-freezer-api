@@ -41,6 +41,14 @@ Identidade tecnica atual escolhida:
   - criar cliente
   - excluir cliente
   - aplicar `clientId` no dashboard com um clique
+- auditoria agora possui consulta no backend e painel inicial no monitor web:
+  - endpoint `GET /audit-logs`
+  - escopo automatico por tenant para admin de cliente
+  - painel de auditoria visivel para administradores no dashboard
+- regra-mae de produto consolidada:
+  - a plataforma cria a estrutura inicial do cliente
+  - o admin do cliente pode ajustar regras operacionais autorizadas
+  - essa mesma logica deve valer para todos os modulos futuros
 
 ## Validacao feita
 
@@ -94,6 +102,10 @@ Resultado esperado no ponto atual:
   - client admin editando regras de alerta tambem no dashboard com update completo
   - tela de consulta de auditoria no monitor web
 - alinhar o `README.md` quando o arquivo for normalizado para UTF-8, porque o patch seguro nao conseguiu editar esse arquivo na etapa anterior
+- decidir se a auditoria tera filtros mais completos no frontend:
+  - por `entityType`
+  - por `entityId`
+  - por periodo
 
 ## Escopo local ignorado
 
@@ -132,6 +144,7 @@ Direcao validada neste momento:
 - o administrador do cliente deve evoluir para poder alterar regras de temperatura e alerta do proprio tenant
 - o operador deve permanecer focado em monitoramento
 - qualquer ampliacao de autonomia operacional do cliente deve vir acompanhada de auditoria
+- a mesma direcao deve ser tratada como regra-mae para todos os modulos da plataforma
 
 ## Implementacao mais recente
 
