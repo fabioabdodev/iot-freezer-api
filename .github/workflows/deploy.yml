@@ -18,10 +18,22 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.image_refs.outputs.image_tag }}
+      api_image: ${{ steps.image_refs.outputs.api_image }}
+      web_image: ${{ steps.image_refs.outputs.web_image }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Compute immutable image refs
+        id: image_refs
+        run: |
+          IMAGE_TAG="sha-$(printf '%.7s' "$GITHUB_SHA")"
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "api_image=${{ env.API_IMAGE_NAME }}:${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "web_image=${{ env.WEB_IMAGE_NAME }}:${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -60,7 +72,9 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ steps.meta_api.outputs.tags }}
+          tags: |
+            ${{ env.API_IMAGE_NAME }}:latest
+            ${{ steps.image_refs.outputs.api_image }}
           labels: ${{ steps.meta_api.outputs.labels }}
 
       - name: Build and push Web image
@@ -71,7 +85,9 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_BASE_URL=https://api-monitor.virtuagil.com.br
           push: true
-          tags: ${{ steps.meta_web.outputs.tags }}
+          tags: |
+            ${{ env.WEB_IMAGE_NAME }}:latest
+            ${{ steps.image_refs.outputs.web_image }}
           labels: ${{ steps.meta_web.outputs.labels }}
 
   deploy-swarm:
@@ -116,9 +132,9 @@ jobs:
             . ./.env.prod
             set +a
 
-            export IMAGE_TAG="sha-${GITHUB_SHA::7}"
-            export API_IMAGE="${{ env.API_IMAGE_NAME }}:${IMAGE_TAG}"
-            export WEB_IMAGE="${{ env.WEB_IMAGE_NAME }}:${IMAGE_TAG}"
+            export IMAGE_TAG="${{ needs.build-and-push.outputs.image_tag }}"
+            export API_IMAGE="${{ needs.build-and-push.outputs.api_image }}"
+            export WEB_IMAGE="${{ needs.build-and-push.outputs.web_image }}"
             export APP_RELEASE="${{ github.sha }}"
             export APP_BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
