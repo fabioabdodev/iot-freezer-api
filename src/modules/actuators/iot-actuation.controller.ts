@@ -1,13 +1,17 @@
 import {
+  Body,
   Controller,
   Get,
   Headers,
   Logger,
+  Param,
+  Post,
   Query,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ActuatorsService } from './actuators.service';
+import { AckActuationDto } from './dto/ack-actuation.dto';
 
 @Controller('iot/actuators')
 export class IotActuationController {
@@ -37,5 +41,23 @@ export class IotActuationController {
     }
 
     return this.actuatorsService.listForRuntime(deviceId);
+  }
+
+  @Post(':id/ack')
+  async acknowledgeCommand(
+    @Param('id') actuatorId: string,
+    @Headers('x-device-key') deviceKey: string | undefined,
+    @Body() body: AckActuationDto,
+  ) {
+    const expectedKey = this.configService.get<string>('DEVICE_API_KEY');
+
+    if (!expectedKey || !deviceKey || deviceKey !== expectedKey) {
+      this.logger.warn(
+        `Unauthorized actuation ack for actuatorId=${actuatorId}`,
+      );
+      throw new UnauthorizedException('Invalid device key');
+    }
+
+    return this.actuatorsService.acknowledgeRuntimeState(actuatorId, body);
   }
 }

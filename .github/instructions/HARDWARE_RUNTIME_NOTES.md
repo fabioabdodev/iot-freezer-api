@@ -45,22 +45,29 @@ Fluxo inicial sugerido:
 
 Ainda nao existe um endpoint de confirmacao explicita de comando executado.
 
+Atualizacao:
+
+- agora existe `POST /iot/actuators/:id/ack`
+- o hardware pode informar `appliedState`, `success` e `message`
+- a API atualiza o atuador e registra um item no historico com `source=device_ack`
+
 Hoje o sistema registra:
 
 - comando emitido pelo painel
 - estado atual persistido do atuador
+- confirmacao basica vinda do hardware via `ack`
 
 Mas ainda nao registra:
 
-- confirmacao do hardware
 - falha fisica ao executar
 - divergencia entre estado desejado e estado real
+- leitura eletrica real da saida
 
 ## Proximo passo possivel
 
-Se a bancada com ESP32 mostrar necessidade, criar depois:
+Se a bancada com ESP32 mostrar necessidade, evoluir depois:
 
-- `POST /iot/actuators/:id/ack`
+- `POST /iot/actuators/:id/ack` com mais campos ou semantica mais forte
 
 Campos candidatos:
 
@@ -68,4 +75,3 @@ Campos candidatos:
 - `executedAt`
 - `success`
 - `message`
-

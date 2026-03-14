@@ -358,4 +358,54 @@ describe('Actuators (e2e)', () => {
       .get('/iot/actuators?deviceId=device_a')
       .expect(401);
   });
+
+  it('should accept runtime ack from hardware and persist applied state', async () => {
+    await request(app.getHttpServer())
+      .post('/actuators')
+      .send({
+        id: 'relay_freezer',
+        clientId: 'client_a',
+        deviceId: 'device_a',
+        name: 'Rele freezer',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/iot/actuators/relay_freezer/ack')
+      .set('x-device-key', 'expected-key')
+      .send({
+        appliedState: 'on',
+        success: true,
+        message: 'rele acionado com sucesso',
+      })
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            ok: true,
+            success: true,
+            actuator: expect.objectContaining({
+              id: 'relay_freezer',
+              currentState: 'on',
+              lastCommandBy: 'device_ack',
+            }),
+            command: expect.objectContaining({
+              actuatorId: 'relay_freezer',
+              desiredState: 'on',
+              source: 'device_ack',
+              note: 'rele acionado com sucesso',
+            }),
+          }),
+        );
+      });
+  });
+
+  it('should reject runtime ack without valid x-device-key', async () => {
+    await request(app.getHttpServer())
+      .post('/iot/actuators/relay_freezer/ack')
+      .send({
+        appliedState: 'on',
+      })
+      .expect(401);
+  });
 });

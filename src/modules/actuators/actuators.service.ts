@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateActuatorDto } from './dto/create-actuator.dto';
 import { UpdateActuatorDto } from './dto/update-actuator.dto';
 import { CreateActuationCommandDto } from './dto/create-actuation-command.dto';
+import { AckActuationDto } from './dto/ack-actuation.dto';
 
 @Injectable()
 export class ActuatorsService {
@@ -147,6 +148,40 @@ export class ActuatorsService {
         lastCommandAt: now,
         lastCommandBy: dto.source ?? 'manual',
       },
+    };
+  }
+
+  async acknowledgeRuntimeState(actuatorId: string, dto: AckActuationDto) {
+    const actuator = await this.findOne(actuatorId);
+    const now = new Date();
+    const source = dto.success === false ? 'device_ack_failed' : 'device_ack';
+    const note = dto.message?.trim() || null;
+
+    const command = await this.prisma.actuationCommand.create({
+      data: {
+        actuatorId,
+        clientId: (actuator as any).clientId,
+        desiredState: dto.appliedState,
+        source,
+        note,
+        executedAt: now,
+      } as any,
+    });
+
+    const updatedActuator = await this.prisma.actuator.update({
+      where: { id: actuatorId },
+      data: {
+        currentState: dto.appliedState,
+        lastCommandAt: now,
+        lastCommandBy: source,
+      } as any,
+    });
+
+    return {
+      ok: true,
+      success: dto.success ?? true,
+      actuator: updatedActuator,
+      command,
     };
   }
 
