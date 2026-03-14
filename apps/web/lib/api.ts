@@ -3,6 +3,8 @@ import { AlertRule, AlertRuleInput } from '@/types/alert-rule';
 import {
   ActuationCommand,
   ActuationCommandInput,
+  ActuationSchedule,
+  ActuationScheduleInput,
   ActuatorInput,
   ActuatorSummary,
 } from '@/types/actuator';
@@ -453,6 +455,93 @@ export async function fetchRecentActuationCommands(
   }
 
   return response.json() as Promise<ActuationCommand[]>;
+}
+
+export async function fetchActuationSchedules(
+  clientId?: string,
+  authToken?: string,
+): Promise<ActuationSchedule[]> {
+  const query = new URLSearchParams();
+  if (clientId) query.set('clientId', clientId);
+
+  const response = await fetch(
+    `${API_BASE_URL}/actuators/schedules?${query.toString()}`,
+    {
+      cache: 'no-store',
+      headers: buildAuthHeaders(authToken),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao carregar rotinas de acionamento'),
+    );
+  }
+
+  return response.json() as Promise<ActuationSchedule[]>;
+}
+
+export async function createActuationSchedule(
+  input: ActuationScheduleInput,
+  authToken?: string,
+): Promise<ActuationSchedule> {
+  const response = await fetch(`${API_BASE_URL}/actuators/schedules`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...buildAuthHeaders(authToken),
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao criar rotina de acionamento'),
+    );
+  }
+
+  return response.json() as Promise<ActuationSchedule>;
+}
+
+export async function updateActuationSchedule(
+  id: string,
+  input: Partial<ActuationScheduleInput>,
+  authToken?: string,
+): Promise<ActuationSchedule> {
+  const response = await fetch(`${API_BASE_URL}/actuators/schedules/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...buildAuthHeaders(authToken),
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao atualizar rotina de acionamento'),
+    );
+  }
+
+  return response.json() as Promise<ActuationSchedule>;
+}
+
+export async function deleteActuationSchedule(
+  id: string,
+  authToken?: string,
+): Promise<ActuationSchedule> {
+  const response = await fetch(`${API_BASE_URL}/actuators/schedules/${id}`, {
+    method: 'DELETE',
+    headers: buildAuthHeaders(authToken),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao remover rotina de acionamento'),
+    );
+  }
+
+  return response.json() as Promise<ActuationSchedule>;
 }
 
 export async function loginUser(input: LoginInput): Promise<AuthSession> {

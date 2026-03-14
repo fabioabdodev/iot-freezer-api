@@ -54,6 +54,7 @@ model Client {
   alertRules        AlertRule[]
   actuators         Actuator[]
   actuationCommands ActuationCommand[]
+  actuationSchedules ActuationSchedule[]
   users             User[]
   modules           ClientModule[]
 }
@@ -111,6 +112,7 @@ model Actuator {
   client          Client             @relation(fields: [clientId], references: [id], onDelete: Cascade)
   device          Device?            @relation(fields: [deviceId], references: [id], onDelete: SetNull)
   commands        ActuationCommand[]
+  schedules       ActuationSchedule[]
 
   @@index([clientId])
   @@index([deviceId])
@@ -129,6 +131,26 @@ model ActuationCommand {
 
   @@index([actuatorId, executedAt])
   @@index([clientId, executedAt])
+}
+
+model ActuationSchedule {
+  id            String   @id @default(uuid())
+  clientId      String
+  actuatorId    String
+  name          String
+  weekdays      String[]
+  startMinutes  Int
+  endMinutes    Int
+  timezone      String   @default("America/Sao_Paulo")
+  enabled       Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  actuator      Actuator @relation(fields: [actuatorId], references: [id], onDelete: Cascade)
+  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([actuatorId])
+  @@index([enabled])
 }
 
 model User {

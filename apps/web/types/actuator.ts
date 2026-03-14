@@ -35,3 +35,28 @@ export type ActuationCommand = {
   executedAt: string;
   actuator?: ActuatorSummary;
 };
+
+export type ActuationSchedule = {
+  id: string;
+  clientId: string;
+  actuatorId: string;
+  name: string;
+  weekdays: Array<'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat'>;
+  startMinutes: number;
+  endMinutes: number;
+  timezone: string;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ActuationScheduleInput = {
+  clientId: string;
+  actuatorId: string;
+  name: string;
+  weekdays: Array<'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat'>;
+  startMinutes: number;
+  endMinutes: number;
+  timezone?: string;
+  enabled?: boolean;
+};

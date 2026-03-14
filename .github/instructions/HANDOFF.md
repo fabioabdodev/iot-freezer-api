@@ -50,6 +50,11 @@ Identidade tecnica atual escolhida:
   - ajustar cooldown
   - ajustar tolerancia
   - ativar e pausar regras
+- modulo `acionamento` ganhou rotinas recorrentes por tenant:
+  - CRUD em `GET/POST/PATCH/DELETE /actuators/schedules`
+  - execucao automatica por janela semanal
+  - auditoria em create/update/delete
+  - dashboard com painel de rotinas para admin do cliente
 - regra-mae de produto consolidada:
   - a plataforma cria a estrutura inicial do cliente
   - o admin do cliente pode ajustar regras operacionais autorizadas
@@ -64,6 +69,7 @@ npm run test:e2e -- --runInBand
 npm run build
 cd apps/web && npm run build
 npm run test:e2e -- --runInBand test/actuators.e2e-spec.ts
+npx prisma generate
 ```
 
 Resultado esperado no ponto atual:
@@ -73,6 +79,7 @@ Resultado esperado no ponto atual:
 - build do backend concluido com sucesso
 - build do frontend concluido com sucesso
 - suite de `actuators.e2e` com `9/9` testes passando apos incluir polling e `ack` de runtime IoT
+- suite de `actuators.e2e` com `11/11` testes passando apos incluir rotinas de acionamento
 
 ## Arquivos alterados nesta etapa
 
@@ -110,6 +117,7 @@ Resultado esperado no ponto atual:
   - por `entityType`
   - por `entityId`
   - por periodo
+- aplicar a migration `20260314195000_create_actuation_schedules` no banco real antes de usar rotinas automaticas em producao
 
 ## Escopo local ignorado
 
@@ -171,6 +179,11 @@ Estado aplicado em codigo nesta etapa:
   - escondeu acoes estruturais do client admin
   - manteve monitoramento
   - passou a exibir edicao operacional apenas onde faz sentido
+- `actuation schedules`:
+  - criacao estrutural de atuadores segue com o admin da plataforma
+  - admin do cliente pode criar, editar, pausar, ativar e excluir rotinas do proprio tenant
+  - um cron no backend aplica `on/off` automaticamente conforme dia, horario e timezone
+  - create, update e delete de rotinas geram auditoria
 
 Validacao executada nesta etapa:
 
@@ -180,4 +193,6 @@ npm run build
 npm test -- --runInBand src/modules/devices/devices.service.spec.ts src/modules/alert-rules/alert-rules.service.spec.ts
 npm run test:e2e -- --runInBand test/devices-tenant.e2e-spec.ts test/alert-rules.e2e-spec.ts test/client-modules.e2e-spec.ts test/devices-crud.e2e-spec.ts
 cd apps/web && npm run build
+npx prisma generate
+npm run test:e2e -- --runInBand test/actuators.e2e-spec.ts
 ```

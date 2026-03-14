@@ -128,6 +128,7 @@ function DashboardContent() {
   const canManageAlertRules = Boolean(scopedClientId && isAdmin);
   const canManageActuatorStructure = Boolean(scopedClientId && isPlatformAdmin);
   const canManageActuatorCommands = Boolean(scopedClientId && isAdmin);
+  const canManageActuatorSchedules = Boolean(scopedClientId && isAdmin);
   const {
     data: clientModulesData,
     isLoading: isLoadingClientModules,
@@ -784,6 +785,7 @@ function DashboardContent() {
             devices={devices}
             canManageCommands={canManageActuatorCommands}
             canManageStructure={canManageActuatorStructure}
+            canManageSchedules={canManageActuatorSchedules}
             onCreateDevice={() => {
               setEditingDeviceId(null);
               setFormMode('create');

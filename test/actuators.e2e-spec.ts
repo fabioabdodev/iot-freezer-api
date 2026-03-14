@@ -3,22 +3,38 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { ActuatorsController } from '../src/modules/actuators/actuators.controller';
 import { ActuatorsService } from '../src/modules/actuators/actuators.service';
+import { ActuationSchedulesService } from '../src/modules/actuators/actuation-schedules.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { ModuleAccessGuard, SessionAuthGuard } from '../src/modules/auth/auth.guards';
 import { IotActuationController } from '../src/modules/actuators/iot-actuation.controller';
 import { ConfigService } from '@nestjs/config';
+import { AuditTrailService } from '../src/infra/audit/audit-trail.service';
 
 describe('Actuators (e2e)', () => {
   let app: INestApplication;
+  let authUser: any;
 
   beforeEach(async () => {
     const clients = new Map<string, any>();
     const devices = new Map<string, any>();
     const actuators = new Map<string, any>();
+    const schedules = new Map<string, any>();
     const commands: Array<any> = [];
 
     clients.set('client_a', { id: 'client_a', name: 'Client A' });
     devices.set('device_a', { id: 'device_a', clientId: 'client_a' });
+    authUser = {
+      id: 'platform_admin',
+      clientId: null,
+      name: 'Platform Admin',
+      email: 'plataforma@virtuagil.com.br',
+      role: 'admin',
+      phone: null,
+      isActive: true,
+      lastLoginAt: null,
+      createdAt: new Date('2026-03-13T00:00:00.000Z'),
+      updatedAt: new Date('2026-03-13T00:00:00.000Z'),
+    };
 
     const fakePrisma = {
       client: {
@@ -74,6 +90,48 @@ describe('Actuators (e2e)', () => {
           return Promise.resolve(row);
         }),
       },
+      actuationSchedule: {
+        create: jest.fn(({ data }: any) => {
+          const row = {
+            id: `schedule_${schedules.size + 1}`,
+            ...data,
+            createdAt: new Date('2026-03-13T00:00:00.000Z'),
+            updatedAt: new Date('2026-03-13T00:00:00.000Z'),
+          };
+          schedules.set(row.id, row);
+          return Promise.resolve(row);
+        }),
+        findMany: jest.fn(({ where }: any = {}) => {
+          let rows = Array.from(schedules.values());
+          if (where?.clientId) rows = rows.filter((row) => row.clientId === where.clientId);
+          if (where?.actuatorId) rows = rows.filter((row) => row.actuatorId === where.actuatorId);
+          if (typeof where?.enabled === 'boolean') rows = rows.filter((row) => row.enabled === where.enabled);
+          return Promise.resolve(
+            rows.map((row) => ({
+              ...row,
+              actuator: actuators.get(row.actuatorId) ?? null,
+            })),
+          );
+        }),
+        findUnique: jest.fn(({ where }: any) =>
+          Promise.resolve(schedules.get(where.id) ?? null),
+        ),
+        update: jest.fn(({ where, data }: any) => {
+          const current = schedules.get(where.id);
+          const updated = {
+            ...current,
+            ...data,
+            updatedAt: new Date('2026-03-13T00:10:00.000Z'),
+          };
+          schedules.set(where.id, updated);
+          return Promise.resolve(updated);
+        }),
+        delete: jest.fn(({ where }: any) => {
+          const row = schedules.get(where.id);
+          schedules.delete(where.id);
+          return Promise.resolve(row);
+        }),
+      },
       actuationCommand: {
         create: jest.fn(({ data }: any) => {
           const row = {
@@ -109,7 +167,9 @@ describe('Actuators (e2e)', () => {
       controllers: [ActuatorsController, IotActuationController],
       providers: [
         ActuatorsService,
+        ActuationSchedulesService,
         { provide: PrismaService, useValue: fakePrisma },
+        { provide: AuditTrailService, useValue: { record: jest.fn() } },
         {
           provide: ConfigService,
           useValue: {
@@ -123,18 +183,7 @@ describe('Actuators (e2e)', () => {
       .overrideGuard(SessionAuthGuard)
       .useValue({
         canActivate: (context: any) => {
-          context.switchToHttp().getRequest().authUser = {
-            id: 'user_admin',
-            clientId: 'client_a',
-            name: 'Admin Client A',
-            email: 'admin@clienta.com.br',
-            role: 'admin',
-            phone: null,
-            isActive: true,
-            lastLoginAt: null,
-            createdAt: new Date('2026-03-13T00:00:00.000Z'),
-            updatedAt: new Date('2026-03-13T00:00:00.000Z'),
-          };
+          context.switchToHttp().getRequest().authUser = authUser;
           return true;
         },
       })
@@ -407,5 +456,110 @@ describe('Actuators (e2e)', () => {
         appliedState: 'on',
       })
       .expect(401);
+  });
+
+  it('should create and update actuation schedules for tenant admin', async () => {
+    await request(app.getHttpServer())
+      .post('/actuators')
+      .send({
+        id: 'sauna_main',
+        clientId: 'client_a',
+        deviceId: 'device_a',
+        name: 'Sauna principal',
+      })
+      .expect(201);
+
+    authUser = {
+      id: 'tenant_admin',
+      clientId: 'client_a',
+      name: 'Admin Client A',
+      email: 'admin@clienta.com.br',
+      role: 'admin',
+      phone: null,
+      isActive: true,
+      lastLoginAt: null,
+      createdAt: new Date('2026-03-13T00:00:00.000Z'),
+      updatedAt: new Date('2026-03-13T00:00:00.000Z'),
+    };
+
+    await request(app.getHttpServer())
+      .post('/actuators/schedules')
+      .send({
+        clientId: 'client_a',
+        actuatorId: 'sauna_main',
+        name: 'Sauna seg qua sex',
+        weekdays: ['mon', 'wed', 'fri'],
+        startMinutes: 960,
+        endMinutes: 1200,
+        timezone: 'America/Sao_Paulo',
+        enabled: true,
+      })
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            clientId: 'client_a',
+            actuatorId: 'sauna_main',
+            name: 'Sauna seg qua sex',
+            enabled: true,
+          }),
+        );
+      });
+
+    await request(app.getHttpServer())
+      .get('/actuators/schedules?clientId=client_a')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toHaveLength(1);
+        expect(res.body[0]).toEqual(
+          expect.objectContaining({
+            actuatorId: 'sauna_main',
+            startMinutes: 960,
+            endMinutes: 1200,
+          }),
+        );
+      });
+
+    const scheduleId = (await request(app.getHttpServer()).get('/actuators/schedules?clientId=client_a')).body[0].id;
+
+    await request(app.getHttpServer())
+      .patch(`/actuators/schedules/${scheduleId}`)
+      .send({
+        name: 'Sauna semana',
+        enabled: false,
+      })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            name: 'Sauna semana',
+            enabled: false,
+          }),
+        );
+      });
+  });
+
+  it('should reject actuator creation for tenant admin', async () => {
+    authUser = {
+      id: 'tenant_admin',
+      clientId: 'client_a',
+      name: 'Admin Client A',
+      email: 'admin@clienta.com.br',
+      role: 'admin',
+      phone: null,
+      isActive: true,
+      lastLoginAt: null,
+      createdAt: new Date('2026-03-13T00:00:00.000Z'),
+      updatedAt: new Date('2026-03-13T00:00:00.000Z'),
+    };
+
+    await request(app.getHttpServer())
+      .post('/actuators')
+      .send({
+        id: 'quadra_luzes',
+        clientId: 'client_a',
+        name: 'Luzes da quadra',
+      })
+      .expect(403);
   });
 });

@@ -20,6 +20,7 @@ import { Feedback } from '@/components/ui/feedback';
 import { Input, Select } from '@/components/ui/input';
 import { Panel } from '@/components/ui/panel';
 import { SetupGuideCard } from '@/components/setup-guide-card';
+import { ActuationSchedulesPanel } from '@/components/actuation-schedules-panel';
 
 const formSchema = z.object({
   id: z
@@ -49,6 +50,7 @@ type ActuationPanelProps = {
   onCreateDevice?: () => void;
   canManageCommands?: boolean;
   canManageStructure?: boolean;
+  canManageSchedules?: boolean;
 };
 
 function actuatorStateBadge(state: 'on' | 'off') {
@@ -64,6 +66,7 @@ export function ActuationPanel({
   onCreateDevice,
   canManageCommands = false,
   canManageStructure = false,
+  canManageSchedules = false,
 }: ActuationPanelProps) {
   const { data, isLoading, isError, error } = useActuators(clientId, authToken);
   const {
@@ -611,6 +614,13 @@ export function ActuationPanel({
               onPrimaryAction={!devices.length ? onCreateDevice : undefined}
             />
           ) : null}
+
+          <ActuationSchedulesPanel
+            clientId={clientId}
+            authToken={authToken}
+            actuators={actuators}
+            canManage={canManageSchedules}
+          />
         </>
       )}
     </Panel>
