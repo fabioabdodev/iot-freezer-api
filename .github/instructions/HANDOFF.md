@@ -36,6 +36,11 @@ Identidade tecnica atual escolhida:
   - trilha inicial de auditoria foi criada para mudancas criticas
 - seed demo atualizado para incluir um admin global real da plataforma:
   - `plataforma@virtuagil.com.br`
+- dashboard web agora possui painel de clientes para admin global:
+  - listar tenants
+  - criar cliente
+  - excluir cliente
+  - aplicar `clientId` no dashboard com um clique
 
 ## Validacao feita
 
@@ -88,6 +93,7 @@ Resultado esperado no ponto atual:
 - decidir se a proxima etapa de permissao vai incluir:
   - client admin editando regras de alerta tambem no dashboard com update completo
   - tela de consulta de auditoria no monitor web
+- alinhar o `README.md` quando o arquivo for normalizado para UTF-8, porque o patch seguro nao conseguiu editar esse arquivo na etapa anterior
 
 ## Escopo local ignorado
 

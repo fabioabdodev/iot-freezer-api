@@ -25,6 +25,7 @@ import { AlertRulesPanel } from '@/components/alert-rules-panel';
 import { SimulationLabPanel } from '@/components/simulation-lab-panel';
 import { ClientModulesPanel } from '@/components/client-modules-panel';
 import { ClientProfilePanel } from '@/components/client-profile-panel';
+import { ClientsPanel } from '@/components/clients-panel';
 import { SetupGuideCard } from '@/components/setup-guide-card';
 import { UsersPanel } from '@/components/users-panel';
 import { CommercialReadinessPanel } from '@/components/commercial-readiness-panel';
@@ -171,6 +172,13 @@ function DashboardContent() {
 
     const query = params.toString();
     router.replace(query ? `/?${query}` : '/');
+  }
+
+  function focusClient(nextClientId: string) {
+    setClientIdDraft(nextClientId);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('clientId', nextClientId);
+    router.replace(`/?${params.toString()}`);
   }
 
   async function handleLogin() {
@@ -369,6 +377,14 @@ function DashboardContent() {
           </div>
         </Panel>
       </Panel>
+
+      <ClientsPanel
+        authToken={authToken}
+        currentUser={user}
+        canManage={isPlatformAdmin}
+        selectedClientId={scopedClientId}
+        onSelectClient={focusClient}
+      />
 
       <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard

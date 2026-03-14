@@ -9,7 +9,7 @@ import {
 import { AuthSession, AuthUser, LoginInput } from '@/types/auth';
 import { UserInput, UserSummary } from '@/types/user';
 import { ClientModule } from '@/types/client-module';
-import { ClientInput, ClientSummary } from '@/types/client';
+import { ClientInput, ClientSummary, CreateClientInput } from '@/types/client';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
@@ -501,6 +501,39 @@ export async function fetchClient(
   return response.json() as Promise<ClientSummary>;
 }
 
+export async function fetchClients(authToken?: string): Promise<ClientSummary[]> {
+  const response = await fetch(`${API_BASE_URL}/clients`, {
+    cache: 'no-store',
+    headers: buildAuthHeaders(authToken),
+  });
+
+  if (!response.ok) {
+    throw new Error(await extractApiErrorMessage(response, 'Falha ao carregar clientes'));
+  }
+
+  return response.json() as Promise<ClientSummary[]>;
+}
+
+export async function createClient(
+  input: CreateClientInput,
+  authToken?: string,
+): Promise<ClientSummary> {
+  const response = await fetch(`${API_BASE_URL}/clients`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...buildAuthHeaders(authToken),
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(await extractApiErrorMessage(response, 'Falha ao criar cliente'));
+  }
+
+  return response.json() as Promise<ClientSummary>;
+}
+
 export async function updateClient(
   id: string,
   input: ClientInput,
@@ -517,6 +550,22 @@ export async function updateClient(
 
   if (!response.ok) {
     throw new Error(await extractApiErrorMessage(response, 'Falha ao atualizar cliente'));
+  }
+
+  return response.json() as Promise<ClientSummary>;
+}
+
+export async function deleteClient(
+  id: string,
+  authToken?: string,
+): Promise<ClientSummary> {
+  const response = await fetch(`${API_BASE_URL}/clients/${id}`, {
+    method: 'DELETE',
+    headers: buildAuthHeaders(authToken),
+  });
+
+  if (!response.ok) {
+    throw new Error(await extractApiErrorMessage(response, 'Falha ao remover cliente'));
   }
 
   return response.json() as Promise<ClientSummary>;

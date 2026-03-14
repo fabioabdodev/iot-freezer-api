@@ -20,3 +20,8 @@ export interface ClientInput {
   status?: ClientStatus;
   notes?: string;
 }
+
+export interface CreateClientInput extends ClientInput {
+  id: string;
+  name: string;
+}
