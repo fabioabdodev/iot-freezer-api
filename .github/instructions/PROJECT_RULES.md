@@ -64,8 +64,6 @@ Pendencias principais restantes:
 
 - reduzir ruido operacional do deploy em Swarm
 - revisar a imagem da API para incluir OpenSSL e reduzir warnings do Prisma
-- aplicar a migration do modulo `acionamento` no banco real
-- validar o fluxo manual de acionamento em ambiente integrado
 - manter o modulo `acionamento` em modo simulado ate a chegada do hardware
 
 ## O que ainda nao entrou por completo
@@ -236,6 +234,7 @@ Correcoes validadas em producao:
 - o endpoint `/health` agora deve expor `release`, `buildTime` e `features` para facilitar comparacao entre codigo atual e API realmente publicada
 - a stack de producao agora deve preferir `API_IMAGE` e `WEB_IMAGE` com tag imutavel por release em vez de depender apenas de `latest`
 - o projeto agora possui `npm run health:check:prod` para validacao rapida do `/health` publicado
+- em producao, a stack do Swarm e o `.env.prod` da VPS devem permanecer alinhados; variaveis no Portainer isoladamente nao garantem que o deploy por SSH use o mesmo conjunto
 - Cloudflare configurado no plano `Free`
 - `monitor.virtuagil.com.br` validado com proxy ativo no Cloudflare
 - `virtuagil.com.br` testado com proxy ativo, mas retornou erro `526 Invalid SSL certificate` por ainda nao existir origem HTTPS valida para esse host
@@ -253,7 +252,7 @@ Observacao importante para continuidade:
 
 ## Registro de continuidade para proximos agentes
 
-Estado em 13/03/2026:
+Estado consolidado em 14/03/2026:
 
 - modulo `temperatura` segue encerrado no escopo funcional atual
 - modulo `acionamento` foi iniciado no backend e no dashboard
@@ -327,25 +326,30 @@ Estado em 13/03/2026:
 - pendencia imediata:
   - manter `DIRECT_DATABASE_URL` configurado nos ambientes onde houver migrate/verificacao administrativa
   - revisar por que `npx prisma migrate deploy` encontrou timeout no advisory lock mesmo com o schema ja presente
-  - avaliar se o proximo refinamento do dashboard deve incluir CTA comercial mais explicito para expansao modular
+  - revisar a imagem da API para remover o warning atual de Prisma/OpenSSL
+  - consolidar o roteiro final de demonstracao comercial dos modulos `temperatura` e `acionamento`
   - definir onde os dumps de backup serao armazenados fora da VPS principal
 - restricao importante:
   - ainda nao existem hardwares fisicos disponiveis
   - continuidade deve priorizar simulacao, contratos de API, dashboard e operacao manual
 - observacao operacional:
-  - em 13/03/2026 houve tentativa de `npx prisma migrate deploy` contra o banco configurado, mas o comando excedeu o tempo de execucao e nao confirmou conclusao
   - em 13/03/2026 o Cloudflare foi ajustado para `Full (strict)`; `monitor.virtuagil.com.br` ficou funcional com proxy e o dominio raiz apresentou `526` por falta de origem HTTPS valida
-  - em 13/03/2026, apos configurar `DIRECT_DATABASE_URL`, `npm run db:verify-actuation` confirmou no banco real a migration `20260313013000_create_actuation_module` e as tabelas `Actuator` e `ActuationCommand`
-  - em 13/03/2026 `npx prisma migrate deploy` ainda retornou timeout no advisory lock (`pg_advisory_lock`), mesmo com o schema do `acionamento` ja confirmado como presente
-  - em 13/03/2026 as estruturas faltantes de `User` e `ClientModule` foram alinhadas diretamente no banco real e registradas em `_prisma_migrations` para compatibilizar o ambiente com o codigo atual
-  - em 13/03/2026 o seed foi executado com sucesso no banco real apos esse alinhamento
-  - em 13/03/2026 o fluxo do `acionamento` foi validado ponta a ponta com login real e API local: login `201`, criacao de atuador `201`, comando `201` e historico `200`
-  - em 13/03/2026 a migration `20260313170000_expand_clients_business_profile` foi aplicada ao banco real por `prisma db execute` e registrada manualmente em `_prisma_migrations` via `psql`, porque `prisma migrate deploy` continuou batendo no advisory lock
-  - em 13/03/2026 `npm run db:seed` foi executado novamente com sucesso apos essa migration
+  - em 13/03/2026 `npm run db:verify-actuation` confirmou no banco real a migration `20260313013000_create_actuation_module` e as tabelas `Actuator` e `ActuationCommand`
+  - em 13/03/2026 as estruturas faltantes de `User` e `ClientModule` foram alinhadas diretamente no banco real e registradas em `_prisma_migrations`; o seed voltou a rodar com sucesso
+  - em 13/03/2026 a migration `20260313170000_expand_clients_business_profile` foi aplicada por `prisma db execute` e registrada manualmente em `_prisma_migrations`, porque `prisma migrate deploy` continuou batendo no advisory lock
   - em 13/03/2026 os clientes `virtuagil` e `cliente_teste` foram confirmados no Supabase com `document`, `phone`, `billingEmail` e `status` populados
   - em 13/03/2026 foi revisado o GitHub Actions atual: `ci.yml` nao roda migrations e `deploy.yml` nao roda `prisma migrate deploy`, entao o advisory lock do Prisma nao parece vir do workflow atual por si so
   - em 13/03/2026 foi criada uma base inicial de backup com documentacao interna e script `npm run backup:db` usando `pg_dump`
-  - em 14/03/2026 o `/health` passou a expor release e features publicadas, e o deploy passou a exportar `APP_RELEASE` e `APP_BUILD_TIME` antes do `docker stack deploy`
-  - em 14/03/2026 o deploy em Swarm foi ajustado para consumir `API_IMAGE` e `WEB_IMAGE` com tag `sha-xxxxxxx`, porque o uso de `latest` era a causa mais provavel da diferenca entre codigo atual e API realmente publicada em producao
-  - em 14/03/2026 foi adicionado `npm run health:check:prod` para consultar o `/health` publicado e validar `release` e `features` sem depender de conferencias manuais
-  - em 14/03/2026 os logs temporarios locais passaram a ter pasta dedicada em `logs/` para manter a raiz do projeto limpa
+  - em 14/03/2026 o `/health` passou a expor `release`, `buildTime` e `features`, e o projeto ganhou `npm run health:check:prod`
+  - em 14/03/2026 o deploy em Swarm foi ajustado para consumir `API_IMAGE` e `WEB_IMAGE` por release, reduzindo a dependencia de `latest`
+  - em 14/03/2026 os logs temporarios locais passaram a ter pasta dedicada em `logs/`
+  - em 14/03/2026 a publicacao da API nova em producao exigiu alinhar tres pontos:
+    - a stack antiga salva no Portainer
+    - o `stack.prod.yml` da VPS
+    - o `.env.prod` da VPS
+  - em 14/03/2026 a API nova subiu com sucesso em producao apos incluir `AUTH_*`, `APP_RELEASE`, `APP_BUILD_TIME`, `API_IMAGE` e `WEB_IMAGE` no `.env.prod` e repassar `AUTH_*` no bloco `environment` do servico `api`
+  - em 14/03/2026 `npm run health:check:prod` confirmou `release`, `buildTime` e todas as `features` novas publicadas
+  - em 14/03/2026 foi validado em producao:
+    - `POST /auth/login` respondendo com token e usuario
+    - `GET /actuators/commands/recent` deixando de retornar `404` e passando a exigir bearer token
+  - o warning operacional ainda conhecido em producao e o do Prisma/OpenSSL dentro da imagem da API; isso nao bloqueou a subida, mas continua como refinamento pendente
