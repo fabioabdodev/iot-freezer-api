@@ -64,6 +64,9 @@ Identidade tecnica atual escolhida:
   - campos maiores
   - login e filtro separados visualmente
   - CTA mais legivel para autenticacao e selecao de tenant
+- imagem final da API endurecida para operacao:
+  - `openssl` instalado no container
+  - pasta `scripts/` copiada para permitir seed e utilitarios em runtime
 - regra-mae de produto consolidada:
   - a plataforma cria a estrutura inicial do cliente
   - o admin do cliente pode ajustar regras operacionais autorizadas
@@ -115,6 +118,7 @@ Resultado esperado no ponto atual:
 - decidir se a pasta local do repositorio tambem sera renomeada
 - configurar no ambiente do projeto `SUPABASE_PROJECT_REF` e `CONTEXT7_API_KEY` quando o uso de MCP no VS Code for desejado
 - atualizar o `.env.prod` real da VPS com as chaves novas/obrigatorias que agora estao documentadas em `deploy/swarm/.env.prod.example`
+- alinhar o handoff de deploy com o estado real do GHCR e do caminho atual da VPS (`iot-freezer-api`) ate concluir a troca definitiva do namespace
 - alinhar qualquer evolucao de firmware em `iot-virtuagil-firmware/`, nao mais dentro deste repositorio
 - evoluir o produto para refletir a politica de acesso registrada em `.github/instructions/ACCESS_POLICY.md`
 - planejar trilha de auditoria para alteracoes de faixa de temperatura e regras de alerta antes de liberar mais autonomia operacional ao cliente
@@ -197,6 +201,7 @@ Estado aplicado em codigo nesta etapa:
 - `producao`:
   - deploy via SSH passou a executar `prisma migrate deploy` antes do rollout
   - cenarios com Portainer webhook exigem migration manual previa
+  - em ambiente IPv4 com Supabase, o `session pooler` foi o caminho funcional para `DATABASE_URL` e `DIRECT_DATABASE_URL`
 - `monitor web`:
   - painel de acesso inicial ficou mais usavel para login real em producao
   - ainda vale revisar UX geral depois dos estudos de caso

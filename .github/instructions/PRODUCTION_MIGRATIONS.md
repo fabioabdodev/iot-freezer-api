@@ -34,7 +34,7 @@ docker run --rm --env-file .env.prod "${API_IMAGE}" npx prisma migrate deploy
 Isso depende de:
 
 - `/opt/iot-virtuagil-api/.env.prod` existir na VPS
-- a imagem da API conter `prisma` CLI e a pasta `prisma/`
+- a imagem da API conter `prisma` CLI, `prisma/`, `scripts/` e `openssl`
 
 ## Fluxo manual para VPS ou Portainer
 
@@ -43,12 +43,12 @@ Se o deploy for disparado por webhook do Portainer, a migration precisa ser roda
 No host da VPS:
 
 ```bash
-cd /opt/iot-virtuagil-api
+cd /opt/iot-freezer-api
 set -a
 . ./.env.prod
 set +a
-docker pull ghcr.io/fabioabdodev/iot-virtuagil-api/api:latest
-docker run --rm --env-file .env.prod ghcr.io/fabioabdodev/iot-virtuagil-api/api:latest npx prisma migrate deploy
+docker pull ghcr.io/fabioabdodev/iot-freezer-api/api:latest
+docker run --rm --env-file .env.prod ghcr.io/fabioabdodev/iot-freezer-api/api:latest npx prisma migrate deploy
 ```
 
 Depois disso:
@@ -61,7 +61,7 @@ Depois disso:
 Comandos uteis:
 
 ```bash
-docker run --rm --env-file .env.prod ghcr.io/fabioabdodev/iot-virtuagil-api/api:latest npx prisma migrate status
+docker run --rm --env-file .env.prod ghcr.io/fabioabdodev/iot-freezer-api/api:latest npx prisma migrate status
 docker service ls | grep iot-monitor
 ```
 
@@ -70,4 +70,5 @@ docker service ls | grep iot-monitor
 - nunca rodar `prisma migrate dev` em producao
 - se `migrate deploy` falhar, nao seguir com rollout da stack
 - confirmar `DATABASE_URL` e `DIRECT_DATABASE_URL` antes da execucao
+- em VPS IPv4 com Supabase, o `session pooler` pode ser o unico caminho acessivel
 - se houver duvida sobre o estado do banco, fazer backup antes de repetir a migration
