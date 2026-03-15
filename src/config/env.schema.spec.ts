@@ -4,6 +4,7 @@ describe('envSchema', () => {
   it('applies defaults and coerces numeric values', () => {
     const result = envSchema.parse({
       DATABASE_URL: 'postgresql://user:pass@localhost:5432/app',
+      AUTH_SECRET: 'super-secret-key',
       PORT: '4000',
       DEVICE_OFFLINE_MINUTES: '10',
       ALERT_QUEUE_RETRY_DELAY_MS: '1500',
@@ -25,6 +26,7 @@ describe('envSchema', () => {
   it('rejects invalid URLs and enum values', () => {
     const result = envSchema.safeParse({
       DATABASE_URL: 'postgresql://user:pass@localhost:5432/app',
+      AUTH_SECRET: 'super-secret-key',
       NODE_ENV: 'staging',
       N8N_OFFLINE_WEBHOOK_URL: 'not-a-url',
     });

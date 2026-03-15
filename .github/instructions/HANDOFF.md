@@ -238,3 +238,11 @@ npm run test:e2e -- --runInBand test/actuators.e2e-spec.ts
 - o deploy final validado para esse ajuste foi publicado apos os commits de estabilizacao do widget
 - pendencia operacional que ficou aberta para a proxima sessao:
   - girar a `TURNSTILE_SECRET_KEY` no Cloudflare e atualizar a VPS, porque a chave atual foi exposta em conversa operacional
+- em `15/03/2026` a base local foi revalidada apos a estabilizacao recente:
+  - `npm run build` ok no backend
+  - `cd apps/web && npm run build` ok no frontend
+  - `npm test -- --runInBand` ok com `12/12` suites e `42/42` testes
+  - `npm run test:e2e -- --runInBand` ok com `14/14` suites e `50/50` testes
+- os testes de configuracao de ambiente foram alinhados ao requisito atual de `AUTH_SECRET`
+- proximo passo recomendado:
+  - executar os estudos de caso em conjunto e registrar bugs, riscos operacionais e ajustes de UX

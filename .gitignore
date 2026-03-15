@@ -84,3 +84,6 @@ institucional-site/
 
 # escopo local do futuro projeto de firmware/hardware
 iot-virtuagil-firmware/
+
+# estudos de caso locais, fora das instrucoes padrao e sem versionamento
+estudos de caso/

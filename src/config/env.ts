@@ -6,8 +6,8 @@ export function validateEnv(config: Record<string, unknown>) {
 
   if (!result.success) {
     const errors = result.error.flatten().fieldErrors;
-    console.error('Erro nas variáveis de ambiente:', errors);
-    throw new Error('Configuração de ambiente inválida');
+    console.error('Erro nas variaveis de ambiente:', errors);
+    throw new Error('Configuracao de ambiente invalida');
   }
 
   return result.data;
