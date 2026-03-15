@@ -13,7 +13,7 @@ declare global {
           theme?: 'light' | 'dark' | 'auto';
           callback?: (token: string) => void;
           'expired-callback'?: () => void;
-          'error-callback'?: () => void;
+          'error-callback'?: (errorCode?: string) => void;
         },
       ) => string;
       reset: (widgetId?: string) => void;
@@ -34,6 +34,7 @@ export function TurnstileWidget({
   resetKey = 0,
 }: TurnstileWidgetProps) {
   const widgetContainerRef = useRef<HTMLDivElement | null>(null);
+  const lastResetKeyRef = useRef(resetKey);
   const [scriptReady, setScriptReady] = useState(
     typeof window !== 'undefined' && Boolean(window.turnstile),
   );
@@ -59,12 +60,16 @@ export function TurnstileWidget({
         theme: 'dark',
         callback: (token) => onTokenChange(token),
         'expired-callback': () => onTokenChange(null),
-        'error-callback': () => onTokenChange(null),
+        'error-callback': (errorCode) => {
+          console.error('Turnstile widget error:', errorCode ?? 'unknown');
+          onTokenChange(null);
+        },
       });
 
       setWidgetId(renderedWidgetId);
       setHasWidgetError(false);
-    } catch {
+    } catch (error) {
+      console.error('Turnstile render failed:', error);
       setHasWidgetError(true);
       onTokenChange(null);
     }
@@ -82,11 +87,14 @@ export function TurnstileWidget({
 
   useEffect(() => {
     if (!widgetId || !window.turnstile) return;
+    if (lastResetKeyRef.current === resetKey) return;
 
     try {
       window.turnstile.reset(widgetId);
+      lastResetKeyRef.current = resetKey;
       onTokenChange(null);
-    } catch {
+    } catch (error) {
+      console.error('Turnstile reset failed:', error);
       setHasWidgetError(true);
       onTokenChange(null);
     }
@@ -99,6 +107,7 @@ export function TurnstileWidget({
         strategy="afterInteractive"
         onLoad={() => setScriptReady(true)}
         onError={() => {
+          console.error('Turnstile script failed to load.');
           setHasWidgetError(true);
           onTokenChange(null);
         }}
