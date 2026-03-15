@@ -12,6 +12,7 @@ import {
   CircleDot,
   KeyRound,
   RefreshCw,
+  ShieldCheck,
   Snowflake,
   Thermometer,
 } from 'lucide-react';
@@ -238,6 +239,169 @@ function DashboardContent() {
       setEditingDeviceId(null);
       setFormMode('closed');
     }
+  }
+
+  if (!isReady) {
+    return (
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,208,77,0.12),transparent_28%),linear-gradient(180deg,rgba(4,8,15,1),rgba(7,14,24,1))]">
+        <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
+          <Panel variant="strong" className="w-full max-w-xl p-8 text-center">
+            <p className="text-sm text-muted">Validando sessao local...</p>
+          </Panel>
+        </div>
+      </main>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,208,77,0.14),transparent_28%),radial-gradient(circle_at_bottom,rgba(49,189,255,0.18),transparent_32%),linear-gradient(180deg,rgba(4,8,15,1),rgba(7,14,24,1))]">
+        <div className="mx-auto flex min-h-screen max-w-7xl items-center px-4 py-10 sm:px-6 lg:px-8">
+          <div className="grid w-full gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+            <section className="relative overflow-hidden rounded-[28px] border border-line/60 bg-card/70 p-7 shadow-[0_24px_80px_rgba(0,0,0,0.34)] sm:p-9">
+              <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top,rgba(255,208,77,0.14),transparent_42%),radial-gradient(circle_at_bottom,rgba(49,189,255,0.16),transparent_46%)]" />
+              <div className="relative z-10">
+                <div className="mb-6 inline-flex rounded-3xl border border-line/70 bg-bg/30 px-4 py-3">
+                  <Image
+                    src="/brand/virtuagil_logo_low.png"
+                    alt="Virtuagil"
+                    width={164}
+                    height={48}
+                    priority
+                  />
+                </div>
+
+                <Badge>
+                  <ShieldCheck className="h-3.5 w-3.5 text-ok" />
+                  Acesso protegido
+                </Badge>
+
+                <p className="mt-6 text-sm uppercase tracking-[0.24em] text-muted">
+                  Virtuagil Monitor
+                </p>
+                <h1 className="mt-3 max-w-2xl font-[var(--font-display)] text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
+                  Login da plataforma de monitoramento e automacao IoT.
+                </h1>
+                <p className="mt-5 max-w-2xl text-sm leading-7 text-muted sm:text-base">
+                  Entre com sua conta para acessar clientes, devices, alertas e o
+                  historico operacional da sua operacao.
+                </p>
+
+                <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                  <Panel variant="strong" className="p-4">
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted">Monitoramento</p>
+                    <p className="mt-2 text-sm text-ink">Temperatura, online/offline e historico em um unico fluxo.</p>
+                  </Panel>
+                  <Panel variant="strong" className="p-4">
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted">Alertas</p>
+                    <p className="mt-2 text-sm text-ink">Regras operacionais com cooldown e tolerancia por cliente.</p>
+                  </Panel>
+                  <Panel variant="strong" className="p-4">
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted">Evolucao</p>
+                    <p className="mt-2 text-sm text-ink">Base pronta para energia, sensores adicionais e automacoes auxiliares.</p>
+                  </Panel>
+                </div>
+              </div>
+            </section>
+
+            <section className="space-y-4">
+              <Panel variant="strong" className="p-5 sm:p-6">
+                <div className="mb-5 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted">
+                      Acesso
+                    </p>
+                    <h2 className="mt-1 text-xl font-semibold">Entrar na plataforma</h2>
+                    <p className="mt-2 text-sm text-muted">
+                      Use um usuario autorizado para acessar o dashboard.
+                    </p>
+                  </div>
+                  <Badge>
+                    <KeyRound className="h-3.5 w-3.5 text-accent" />
+                    Login
+                  </Badge>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted">
+                      E-mail
+                    </label>
+                    <Input
+                      type="email"
+                      value={authEmailDraft}
+                      onChange={(event) => setAuthEmailDraft(event.target.value)}
+                      placeholder="plataforma@virtuagil.com.br"
+                      className="min-h-[50px]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted">
+                      Senha
+                    </label>
+                    <Input
+                      type="password"
+                      value={authPasswordDraft}
+                      onChange={(event) => setAuthPasswordDraft(event.target.value)}
+                      placeholder="Digite sua senha"
+                      className="min-h-[50px]"
+                    />
+                  </div>
+
+                  {isTurnstileEnabled ? (
+                    <TurnstileWidget
+                      siteKey={turnstileSiteKey}
+                      onTokenChange={setTurnstileToken}
+                      resetKey={turnstileResetKey}
+                    />
+                  ) : null}
+
+                  <Button
+                    onClick={() => {
+                      void handleLogin();
+                    }}
+                    variant="primary"
+                    className="min-h-[50px] w-full"
+                    loading={isAuthenticating}
+                  >
+                    Entrar
+                  </Button>
+                </div>
+
+                {authError ? (
+                  <Feedback variant="danger" className="mt-4">
+                    {authError}
+                  </Feedback>
+                ) : null}
+              </Panel>
+
+              <Panel id="como-contratar" className="p-5 sm:p-6">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted">
+                  Interesse comercial
+                </p>
+                <h2 className="mt-1 text-lg font-semibold">Nao e cliente ainda?</h2>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  Fale com a Virtuagil para avaliar monitoramento, alertas e a
+                  implantacao da sua operacao com uma jornada guiada.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <a
+                    href="mailto:contato@virtuagil.com.br?subject=Quero%20conhecer%20o%20Virtuagil%20Monitor"
+                    className="btn-primary px-4 py-3 text-sm font-semibold"
+                  >
+                    Solicitar demonstracao
+                  </a>
+                  <Link href="/lab" className="btn-secondary px-4 py-3 text-sm font-semibold">
+                    Conhecer laboratorio
+                  </Link>
+                </div>
+              </Panel>
+            </section>
+          </div>
+        </div>
+      </main>
+    );
   }
 
   return (
