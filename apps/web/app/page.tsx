@@ -408,7 +408,7 @@ function DashboardContent() {
         }}
       />
 
-      <Panel variant="shell" className="mb-6 grid gap-6 p-5 xl:grid-cols-[1.3fr_0.95fr] xl:p-7">
+      <Panel variant="shell" className="mb-6 p-5 xl:p-7">
         <div className="relative overflow-hidden rounded-[24px] border border-line/50 bg-gradient-to-br from-card/90 via-card/70 to-bg/20 p-6">
           <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top,rgba(255,208,77,0.14),transparent_42%),radial-gradient(circle_at_bottom,rgba(49,189,255,0.18),transparent_45%)]" />
           <div className="relative z-10">
@@ -459,131 +459,41 @@ function DashboardContent() {
             </div>
           </div>
         </div>
+      </Panel>
 
-        <Panel variant="strong" className="p-4 sm:p-5">
-          <div className="mb-4 flex items-center justify-between">
+      <Panel variant="strong" className="mb-6 p-4 sm:p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-muted">
+              Contexto operacional
+            </p>
+            <h2 className="mt-1 text-lg font-semibold">Tenant em foco</h2>
+            <p className="mt-1 text-sm text-muted">
+              Defina qual cliente deseja operar no restante do dashboard.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_140px] lg:min-w-[420px]">
             <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-muted">
-                Contexto de acesso
-              </p>
-              <h2 className="mt-1 text-lg font-semibold">Acesso e filtros</h2>
-              <p className="mt-1 text-sm text-muted">
-                Entre com um usuario da plataforma e escolha o tenant que deseja operar.
-              </p>
+              <label className="mb-1.5 block text-xs font-medium text-muted">
+                ClientId
+              </label>
+              <Input
+                value={clientIdDraft}
+                onChange={(event) => setClientIdDraft(event.target.value)}
+                placeholder="cuidare-vacinas"
+                className="min-h-[48px]"
+              />
             </div>
-            <Badge>
-              <KeyRound className="h-3.5 w-3.5 text-accent" />
-              {isAuthenticated ? 'Sessao ativa' : 'Sessao local'}
-            </Badge>
+            <Button
+              onClick={applyFilters}
+              variant="primary"
+              className="min-h-[48px] w-full self-end"
+            >
+              Aplicar filtro
+            </Button>
           </div>
-
-          <div className="space-y-3">
-            <div className="rounded-2xl border border-line/70 bg-bg/30 px-4 py-3 text-sm leading-6 text-muted">
-              {!isReady ? (
-                'Validando sessao local...'
-              ) : isAuthenticated ? (
-                <>
-                  Conectado como <strong className="text-ink">{user?.name}</strong>{' '}
-                  ({user?.role}) em{' '}
-                  <strong className="text-ink">{user?.email}</strong>.
-                </>
-              ) : (
-                'Entre com um usuario da plataforma para persistir a sessao no frontend.'
-              )}
-            </div>
-
-            <div className="space-y-4 rounded-[22px] border border-line/70 bg-card/40 p-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-muted">
-                  Login da plataforma
-                </p>
-                <div className="mt-3 grid gap-3">
-                  <div className="relative">
-                    <label className="mb-1.5 block text-xs font-medium text-muted">
-                      E-mail
-                    </label>
-                    <KeyRound className="pointer-events-none absolute left-4 top-[calc(50%+12px)] h-4 w-4 -translate-y-1/2 text-muted" />
-                    <Input
-                      type="email"
-                      value={authEmailDraft}
-                      onChange={(event) => setAuthEmailDraft(event.target.value)}
-                      placeholder="plataforma@virtuagil.com.br"
-                      className="min-h-[48px] pl-11"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted">
-                      Senha
-                    </label>
-                    <Input
-                      type="password"
-                      value={authPasswordDraft}
-                      onChange={(event) => setAuthPasswordDraft(event.target.value)}
-                      placeholder="Digite sua senha"
-                      className="min-h-[48px]"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <Button
-                      onClick={() => {
-                        void handleLogin();
-                      }}
-                      variant="primary"
-                      className="min-h-[48px] min-w-[140px]"
-                      loading={isAuthenticating}
-                    >
-                      {isAuthenticated ? 'Trocar usuario' : 'Entrar na plataforma'}
-                    </Button>
-                    <Button
-                      onClick={clearToken}
-                      variant="secondary"
-                      className="min-h-[48px] min-w-[110px]"
-                    >
-                      Sair
-                    </Button>
-                  </div>
-                  {isTurnstileEnabled ? (
-                    <TurnstileWidget
-                      siteKey={turnstileSiteKey}
-                      onTokenChange={setTurnstileToken}
-                      resetKey={turnstileResetKey}
-                    />
-                  ) : null}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-muted">
-                  Filtro operacional
-                </p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_140px] sm:items-end">
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted">
-                      ClientId
-                    </label>
-                    <Input
-                      value={clientIdDraft}
-                      onChange={(event) => setClientIdDraft(event.target.value)}
-                      placeholder="virtuagil"
-                      className="min-h-[48px]"
-                    />
-                  </div>
-                  <Button
-                    onClick={applyFilters}
-                    variant="primary"
-                    className="min-h-[48px] w-full"
-                  >
-                    Aplicar filtro
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {authError ? (
-              <Feedback variant="danger">{authError}</Feedback>
-            ) : null}
-          </div>
-        </Panel>
+        </div>
       </Panel>
 
       <ClientsPanel
@@ -1065,6 +975,32 @@ function DashboardContent() {
         canView={isAdmin}
         />
       </div>
+
+      <footer className="mt-8 border-t border-line/60 pt-6">
+        <div className="flex flex-col gap-4 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
+          <p>Virtuagil Monitor</p>
+          <nav className="flex flex-wrap items-center gap-2">
+            <Link
+              href="#resumo-operacional"
+              className="rounded-2xl border border-line/70 bg-card/50 px-3 py-2 text-xs font-medium transition hover:border-accent/40 hover:text-ink"
+            >
+              Resumo
+            </Link>
+            <Link
+              href="#contas-modulos"
+              className="rounded-2xl border border-line/70 bg-card/50 px-3 py-2 text-xs font-medium transition hover:border-accent/40 hover:text-ink"
+            >
+              Contas
+            </Link>
+            <Link
+              href="#auditoria"
+              className="rounded-2xl border border-line/70 bg-card/50 px-3 py-2 text-xs font-medium transition hover:border-accent/40 hover:text-ink"
+            >
+              Auditoria
+            </Link>
+          </nav>
+        </div>
+      </footer>
       </div>
     </main>
   );
