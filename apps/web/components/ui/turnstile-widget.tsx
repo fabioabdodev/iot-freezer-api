@@ -34,11 +34,11 @@ export function TurnstileWidget({
   resetKey = 0,
 }: TurnstileWidgetProps) {
   const widgetContainerRef = useRef<HTMLDivElement | null>(null);
+  const widgetIdRef = useRef<string | null>(null);
   const lastResetKeyRef = useRef(resetKey);
   const [scriptReady, setScriptReady] = useState(
     typeof window !== 'undefined' && Boolean(window.turnstile),
   );
-  const [widgetId, setWidgetId] = useState<string | null>(null);
   const [hasWidgetError, setHasWidgetError] = useState(false);
 
   useEffect(() => {
@@ -46,16 +46,14 @@ export function TurnstileWidget({
       !scriptReady ||
       !siteKey ||
       !window.turnstile ||
-      widgetId ||
+      widgetIdRef.current ||
       !widgetContainerRef.current
     ) {
       return;
     }
 
-    let renderedWidgetId: string | null = null;
-
     try {
-      renderedWidgetId = window.turnstile.render(widgetContainerRef.current, {
+      widgetIdRef.current = window.turnstile.render(widgetContainerRef.current, {
         sitekey: siteKey,
         theme: 'dark',
         callback: (token) => onTokenChange(token),
@@ -66,31 +64,32 @@ export function TurnstileWidget({
         },
       });
 
-      setWidgetId(renderedWidgetId);
       setHasWidgetError(false);
     } catch (error) {
+      widgetIdRef.current = null;
       console.error('Turnstile render failed:', error);
       setHasWidgetError(true);
       onTokenChange(null);
     }
 
     return () => {
-      if (!renderedWidgetId || !window.turnstile) return;
+      if (!widgetIdRef.current || !window.turnstile) return;
 
       try {
-        window.turnstile.remove(renderedWidgetId);
+        window.turnstile.remove(widgetIdRef.current);
+        widgetIdRef.current = null;
       } catch {
         // Ignora erros de limpeza para evitar derrubar a pagina.
       }
     };
-  }, [onTokenChange, scriptReady, siteKey, widgetId]);
+  }, [onTokenChange, scriptReady, siteKey]);
 
   useEffect(() => {
-    if (!widgetId || !window.turnstile) return;
+    if (!widgetIdRef.current || !window.turnstile) return;
     if (lastResetKeyRef.current === resetKey) return;
 
     try {
-      window.turnstile.reset(widgetId);
+      window.turnstile.reset(widgetIdRef.current);
       lastResetKeyRef.current = resetKey;
       onTokenChange(null);
     } catch (error) {
@@ -98,7 +97,7 @@ export function TurnstileWidget({
       setHasWidgetError(true);
       onTokenChange(null);
     }
-  }, [onTokenChange, resetKey, widgetId]);
+  }, [onTokenChange, resetKey]);
 
   return (
     <div className="space-y-2">
