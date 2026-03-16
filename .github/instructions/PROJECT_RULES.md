@@ -247,6 +247,7 @@ Correcoes validadas em producao:
 - a stack de producao agora deve preferir `API_IMAGE` e `WEB_IMAGE` com tag imutavel por release em vez de depender apenas de `latest`
 - o projeto agora possui `npm run health:check:prod` para validacao rapida do `/health` publicado
 - em producao, a stack do Swarm e o `.env.prod` da VPS devem permanecer alinhados; variaveis no Portainer isoladamente nao garantem que o deploy por SSH use o mesmo conjunto
+- em VPS pequena, o rollout da stack deve preferir `update_config.order = stop-first` para evitar `exit code 137` durante troca de imagem
 - Cloudflare configurado no plano `Free`
 - `monitor.virtuagil.com.br` validado com proxy ativo no Cloudflare
 - `virtuagil.com.br` testado com proxy ativo, mas retornou erro `526 Invalid SSL certificate` por ainda nao existir origem HTTPS valida para esse host
@@ -387,3 +388,4 @@ Para evitar confusao de contexto:
 - `institucional-site/` tem regras e material de outro projeto, o futuro site institucional da Virtuagil
 - `iot-virtuagil-firmware/` tem README e handoff proprios de outro projeto, o futuro repositorio de firmware
 - quando a tarefa for sobre a API ou o dashboard, nao misturar decisoes desses dois escopos paralelos
+

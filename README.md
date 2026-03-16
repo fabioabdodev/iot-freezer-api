@@ -564,7 +564,10 @@ Observacao operacional importante:
 
 - o build continua publicando `latest`, mas o deploy agora deve usar a tag `sha-xxxxxxx` da release
 - isso reduz o risco de pipeline verde com a producao ainda servindo uma imagem antiga reaproveitada como `latest`
+- a stack de producao agora usa `update_config.order=stop-first` para `api` e `web`
+- esse ajuste privilegia estabilidade em VPS pequena e evita pico de memoria durante rollout, ao custo de alguns segundos de indisponibilidade no deploy
 - depois do deploy, consulte `GET /health` para confirmar `release`, `buildTime` e `features` publicados
+- se o deploy for manual no Portainer usando imagens `latest`, atualize tambem `APP_RELEASE=latest` e `APP_BUILD_TIME` com o horario atual para manter o `/health` coerente
 - se quiser automatizar essa checagem sem abrir o navegador, use `npm run health:check:prod`
 - a pasta esperada hoje na VPS é `/opt/iot-virtuagil-api`
 
@@ -646,13 +649,24 @@ Depois de um deploy em produção, valide nesta ordem:
 Se alguma credencial for exposta, troque nesta ordem:
 
 1. Senha do banco no provedor (`Supabase` ou equivalente)
-2. `DEVICE_API_KEY`
-3. `GHCR_TOKEN`
-4. `TURNSTILE_SECRET_KEY`, quando o Turnstile estiver ativo
-5. Atualize os valores em:
+2. `AUTH_SECRET`
+3. `DEVICE_API_KEY`
+4. `GHCR_TOKEN`
+5. `TURNSTILE_SECRET_KEY`, quando o Turnstile estiver ativo
+6. Atualize os valores em:
    - `Settings > Secrets and variables > Actions` no GitHub
    - `/opt/iot-virtuagil-api/.env.prod` na VPS
-6. Rode o workflow `deploy` novamente
+7. Rode o workflow `deploy` novamente
+
+Passo a passo prático quando houver exposicao em print, chat ou ticket:
+
+1. girar primeiro a senha/conexao do banco no provedor
+2. gerar um novo `AUTH_SECRET` longo e aleatorio
+3. gerar um novo `DEVICE_API_KEY`
+4. atualizar a VPS com os novos valores
+5. redeployar a stack
+6. validar `https://api-monitor.virtuagil.com.br/health`
+7. confirmar login no dashboard e ingestao do device
 
 ## Comandos úteis na VPS
 
@@ -673,4 +687,5 @@ No `Portainer Community Edition`, `stack webhooks` não ficam disponíveis. Neste 
 2. deploy da stack por `SSH`
 
 O uso de `PORTAINER_WEBHOOK_URL` so faz sentido se a stack for gerenciada por uma edicao do Portainer que suporte webhook.
+
 

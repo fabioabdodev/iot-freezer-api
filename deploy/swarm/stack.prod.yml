@@ -42,7 +42,8 @@ services:
         condition: on-failure
       update_config:
         parallelism: 1
-        order: start-first
+        # Em VPS pequena, evita pico de memoria ao subir uma nova replica antes de derrubar a atual.
+        order: stop-first
       labels:
         - traefik.enable=true
         - traefik.docker.network=network_public
@@ -68,7 +69,8 @@ services:
         condition: on-failure
       update_config:
         parallelism: 1
-        order: start-first
+        # Em VPS pequena, evita pico de memoria ao subir uma nova replica antes de derrubar a atual.
+        order: stop-first
       labels:
         - traefik.enable=true
         - traefik.docker.network=network_public

@@ -293,3 +293,57 @@ Enquanto nao houver hardware:
 - usar Insomnia, dashboard e simulador como trilha principal
 - tratar `currentState` como estado operacional registrado na plataforma
 - nao prometer confirmacao eletrica real da carga
+
+## 6. Checklist rapido de pos-deploy em producao
+
+Use este bloco quando o deploy ja subiu, mas voce quer confirmar rapidamente se o ambiente ficou certo.
+
+### Portainer
+
+Confirmar:
+
+- stack `iot-monitor` atualizada sem erro
+- `update_config.order = stop-first` em `api` e `web`
+- servico `iot-monitor_api` com task nova em `running`
+- servico `iot-monitor_web` com task nova em `running`
+
+### Health
+
+Abrir:
+
+- `https://api-monitor.virtuagil.com.br/health`
+
+Esperado:
+
+- `"status": "ok"`
+- `"environment": "production"`
+- `"release": "latest"` quando o deploy estiver usando imagem `latest`
+- `"buildTime"` preenchido com a data/hora mais recente do deploy
+- `"alertQueueDepth": 0` ou baixo
+
+### Dashboard
+
+Abrir:
+
+- `https://monitor.virtuagil.com.br`
+
+Esperado:
+
+- tela de login abre normalmente
+- login funciona
+- dashboard carrega devices
+- painel principal abre sem erro visivel
+
+### Se algo der errado
+
+Ver nesta ordem:
+
+- logs do servico `iot-monitor_api`
+- retorno atual de `/health`
+- valores de `APP_RELEASE` e `APP_BUILD_TIME`
+- se a stack ainda ficou com `order: start-first`
+
+Sinal comum em VPS pequena:
+
+- `exit code 137` durante update costuma indicar pico de memoria no rollout
+- nesse caso, confirmar se a stack realmente ficou com `stop-first`
