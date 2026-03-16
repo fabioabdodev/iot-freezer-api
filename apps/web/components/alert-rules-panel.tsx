@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { BellRing, Thermometer, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -216,7 +217,45 @@ export function AlertRulesPanel({
           })}
           className=""
         >
-          <Panel variant="strong" className="mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Panel variant="strong" className="mb-4 p-4">
+            <div className="mb-4 grid gap-3 lg:grid-cols-[1.05fr_0.95fr]">
+              <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
+                <div className="flex items-center gap-2">
+                  <BellRing className="h-4 w-4 text-accent" />
+                  <p className="text-sm font-medium text-ink">
+                    Primeira regra recomendada
+                  </p>
+                </div>
+                <p className="mt-2 text-xs leading-6 text-muted">
+                  Para um cliente em onboarding, comece com uma regra simples por
+                  equipamento critico. Assim a demonstracao fica clara: leitura
+                  normal, desvio de faixa e resposta operacional.
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
+                  <p className="text-xs uppercase tracking-[0.16em] text-muted">
+                    Sensor
+                  </p>
+                  <p className="mt-2 text-sm font-medium text-ink">temperature</p>
+                </div>
+                <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
+                  <p className="text-xs uppercase tracking-[0.16em] text-muted">
+                    Cooldown
+                  </p>
+                  <p className="mt-2 text-sm font-medium text-ink">15 min</p>
+                </div>
+                <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
+                  <p className="text-xs uppercase tracking-[0.16em] text-muted">
+                    Tolerancia
+                  </p>
+                  <p className="mt-2 text-sm font-medium text-ink">0 a 5 min</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="mb-1 block text-xs text-muted">Sensor</label>
               <Input {...register('sensorType')} />
@@ -239,11 +278,19 @@ export function AlertRulesPanel({
             <div>
               <label className="mb-1 block text-xs text-muted">Min</label>
               <Input {...register('minValue')} placeholder="-20" />
+              <div className="mt-1 flex items-center gap-1 text-xs text-muted">
+                <Thermometer className="h-3.5 w-3.5" />
+                Limite minimo esperado para o equipamento.
+              </div>
             </div>
 
             <div>
               <label className="mb-1 block text-xs text-muted">Max</label>
               <Input {...register('maxValue')} placeholder="-10" />
+              <div className="mt-1 flex items-center gap-1 text-xs text-muted">
+                <TriangleAlert className="h-3.5 w-3.5" />
+                Acima deste valor o alerta pode ser disparado.
+              </div>
               {errors.maxValue ? (
                 <p className="mt-1 text-xs text-bad">{errors.maxValue.message}</p>
               ) : null}
@@ -289,6 +336,7 @@ export function AlertRulesPanel({
                   Cancelar
                 </Button>
               ) : null}
+            </div>
             </div>
           </Panel>
         </form>
@@ -433,7 +481,25 @@ export function AlertRulesPanel({
         />
       ) : null}
       {!isLoading && !isError && (data?.length ?? 0) === 0 && devices.length > 0 ? (
-        <Feedback>Sem regras cadastradas para este clientId.</Feedback>
+        <SetupGuideCard
+          eyebrow="Primeira regra"
+          title="Seu equipamento ja pode ganhar a primeira regra de alerta"
+          description="Agora que o cliente ja tem ao menos um equipamento, o proximo passo e configurar uma regra simples para demonstrar valor operacional e resposta a incidente."
+          steps={[
+            {
+              title: 'Escolher o equipamento principal',
+              description: 'Comece pelo equipamento mais critico da conta para deixar a demonstracao mais concreta.',
+            },
+            {
+              title: 'Definir limites e tempo de resposta',
+              description: 'Preencha faixa, cooldown e tolerancia de forma conservadora para evitar ruido inicial.',
+            },
+            {
+              title: 'Simular um evento e acompanhar o fluxo',
+              description: 'Depois da regra criada, rode um cenario de alerta para revisar dashboard, webhook e notificacao.',
+            },
+          ]}
+        />
       ) : null}
     </Panel>
   );
