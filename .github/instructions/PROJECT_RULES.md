@@ -282,6 +282,29 @@ Ao criar telas novas ou expandir modulos existentes:
 - manter nomes tecnicos como `clientId` e payloads apenas onde forem realmente necessarios para cadastro, suporte ou simulacao
 - novos modulos devem nascer alinhados a essa direcao, sem exigir uma rodada posterior de traducao da interface
 
+## Direcao de continuidade por estudo de caso
+
+Quando houver tarefa ligada a cliente real, demonstracao, onboarding ou implantacao:
+
+- consultar primeiro `estudos de caso/README.md`
+- abrir depois o arquivo especifico do cliente, como `estudos de caso/cuidare.md`
+- tratar cada estudo de caso como base para um roteiro pratico de implantacao dentro do dashboard
+- o trabalho esperado nao e apenas revisar copy:
+  - deve ensinar a ordem real de uso da plataforma
+  - deve mostrar o que cadastrar, habilitar, configurar e simular
+  - deve revelar friccoes de layout e onboarding
+- cada caso novo deve ajudar a plataforma a responder esta pergunta:
+  - `se esse cliente chegasse agora, o que eu faria primeiro, depois e por ultimo dentro do painel?`
+
+Direcao de produto consolidada para proximos agentes:
+
+- os estudos de caso devem virar playbooks operacionais progressivos dentro da UI
+- o dashboard deve ajudar a conduzir a implantacao, nao apenas exibir dados
+- cada rodada de caso concreto deve gerar:
+  - roteiro mais claro
+  - melhorias de layout e navegacao
+  - registro de continuidade no handoff
+
 ## Registro operacional recente
 
 Correcoes validadas em producao:

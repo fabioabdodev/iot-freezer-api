@@ -293,10 +293,26 @@ npm run test:e2e -- --runInBand test/actuators.e2e-spec.ts
   - onboarding guiado de cliente, equipamento e regra
   - melhoria de copy no laboratorio, auditoria, historico, acionamento e estados vazios
   - registro operacional sobre limpeza de imagens Docker na VPS
+- em `16/03/2026` a direcao de trabalho com `estudos de caso/` foi consolidada de forma mais pratica:
+  - cada novo caso deve virar um roteiro real de implantacao dentro do dashboard
+  - esse roteiro deve ensinar a ordem de uso da plataforma quando um cliente chega
+  - o objetivo nao e apenas revisar copy, mas mostrar:
+    - o que cadastrar primeiro
+    - o que habilitar
+    - qual equipamento estruturar
+    - qual regra criar
+    - como ensaiar a demonstracao sem hardware
+  - essa mesma simulacao deve ser usada para revisar layout, onboarding e navegacao
+- em `16/03/2026` o dashboard ganhou uma primeira base concreta dessa direcao:
+  - painel guiado do caso `Cuidare`
+  - bloco de proximo passo da conta
+  - contexto mais humano da conta em foco em header, prontidao, atividade, auditoria, acionamento e laboratorio
 - ponto de retomada recomendado para o proximo chat:
   - continuar os estudos de caso em `estudos de caso/`
-  - percorrer a UI como se o time tivesse chegado a um cliente real
-  - registrar bugs, ajustes de copy, friccoes de onboarding e possiveis melhorias visuais por tela
+  - transformar cada novo caso em roteiro pratico de implantacao dentro da UI
+  - percorrer a plataforma como se o cliente tivesse chegado agora
+  - registrar bugs, ajustes de copy, friccoes de onboarding, lacunas de fluxo e melhorias visuais por tela
+  - manter `HANDOFF.md`, `PROJECT_RULES.md` e `estudos de caso/README.md` atualizados sempre que essa direcao evoluir
 - a API nova tambem falhou ao subir com:
   - `PrismaClientInitializationError: Prisma Client could not locate the Query Engine for runtime "debian-openssl-3.0.x"`
 - em `16/03/2026` o `stack.prod.yml` foi ajustado para usar `update_config.order = stop-first` em `api` e `web`
@@ -328,5 +344,5 @@ npm run test:e2e -- --runInBand test/actuators.e2e-spec.ts
   - mostra padrao de `name`, `clientId` e `deviceId`
   - resume o primeiro fluxo sugerido: criar tenant, abrir dashboard e estruturar o primeiro device
 - proximo passo recomendado:
-  - executar os estudos de caso em conjunto e registrar bugs, riscos operacionais e ajustes de UX
+  - executar os estudos de caso em conjunto e transformar o dashboard em um playbook progressivo de implantacao por cliente
 
