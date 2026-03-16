@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Building2, Filter, Trash2 } from 'lucide-react';
+import { Building2, ChevronDown, Filter, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -96,6 +96,7 @@ export function ClientsPanel({
   const { createMutation, deleteMutation } = useClientListMutations(authToken);
   const [pendingDeleteClientId, setPendingDeleteClientId] = useState<string | null>(null);
   const [deletingClientId, setDeletingClientId] = useState<string | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const clients = data ?? [];
 
   const {
@@ -127,9 +128,11 @@ export function ClientsPanel({
     [clients],
   );
   const [formError, setFormError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   async function handleDeleteClient(id: string) {
     setDeletingClientId(id);
+    setSuccessMessage(null);
     try {
       await deleteMutation.mutateAsync(id);
       if (selectedClientId === id && clients.length > 1) {
@@ -189,152 +192,214 @@ export function ClientsPanel({
         </Badge>
       </div>
 
-      <form
-        onSubmit={handleSubmit(async (rawValues) => {
-          setFormError(null);
-          const values = formSchema.parse(rawValues);
-          const normalizedDocument = normalizeDigits(values.document);
-          const billingPhone = values.useSameBillingPhone
-            ? values.adminPhone
-            : values.billingPhone;
-
-          if (duplicateClientIds.has(values.id)) {
-            setFormError('Ja existe um cliente com este identificador tecnico.');
-            return;
-          }
-
-          if (duplicateDocuments.has(normalizedDocument)) {
-            setFormError('Ja existe um cliente com este CPF ou CNPJ.');
-            return;
-          }
-
-          await createMutation.mutateAsync({
-            id: values.id,
-            name: values.name,
-            adminName: values.adminName,
-            document: values.document,
-            adminPhone: values.adminPhone,
-            billingName: values.useSameBillingPhone
-              ? values.adminName
-              : values.billingName,
-            billingPhone: billingPhone ?? values.adminPhone,
-            billingEmail: values.billingEmail,
-            status: values.status,
-            notes: values.notes,
-          });
-          reset();
-          onSelectClient(values.id);
-        })}
-      >
-        <Panel variant="strong" className="mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="sm:col-span-2 lg:col-span-4">
-            <p className="text-xs text-muted">Campos com <strong>*</strong> sao obrigatorios.</p>
-          </div>
+      <Panel variant="strong" className="mb-4 overflow-hidden p-0">
+        <button
+          type="button"
+          className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition hover:bg-white/5"
+          onClick={() => {
+            setSuccessMessage(null);
+            setIsCreateOpen((current) => !current);
+          }}
+        >
           <div>
-            <label className="mb-1 block text-xs text-muted">Identificador tecnico *</label>
-            <Input {...register('id')} placeholder="cuidare-vacinas" />
-            <p className="mt-1 text-xs text-muted">
-              Use um identificador unico, sem espacos. Ex.: `cuidare-vacinas`
+            <p className="text-xs uppercase tracking-[0.18em] text-muted">Cadastro</p>
+            <h3 className="mt-1 text-base font-semibold">Novo cliente</h3>
+            <p className="mt-1 text-sm text-muted">
+              Abra este formulario quando precisar cadastrar uma nova conta na plataforma.
             </p>
-            {errors.id ? <p className="mt-1 text-xs text-bad">{errors.id.message}</p> : null}
           </div>
+          <ChevronDown
+            className={`h-5 w-5 shrink-0 text-muted transition ${isCreateOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
 
-          <div>
-            <label className="mb-1 block text-xs text-muted">Nome do cliente *</label>
-            <Input {...register('name')} placeholder="Clinica Cuidare" />
-            {errors.name ? <p className="mt-1 text-xs text-bad">{errors.name.message}</p> : null}
-          </div>
+        {isCreateOpen ? (
+          <form
+            className="border-t border-line/70 px-4 py-4"
+            onSubmit={handleSubmit(async (rawValues) => {
+              setFormError(null);
+              setSuccessMessage(null);
+              const values = formSchema.parse(rawValues);
+              const normalizedDocument = normalizeDigits(values.document);
+              const billingPhone = values.useSameBillingPhone
+                ? values.adminPhone
+                : values.billingPhone;
 
-          <div>
-            <label className="mb-1 block text-xs text-muted">Nome do administrador *</label>
-            <Input {...register('adminName')} placeholder="Fabio Abdo" />
-            {errors.adminName ? (
-              <p className="mt-1 text-xs text-bad">{errors.adminName.message}</p>
-            ) : null}
-          </div>
+              if (duplicateClientIds.has(values.id)) {
+                setFormError('Ja existe um cliente com este identificador tecnico.');
+                setIsCreateOpen(true);
+                return;
+              }
 
-          <div>
-            <label className="mb-1 block text-xs text-muted">CPF ou CNPJ *</label>
-            <Input {...register('document')} placeholder="00.000.000/0000-00" />
-            {errors.document ? <p className="mt-1 text-xs text-bad">{errors.document.message}</p> : null}
-          </div>
+              if (duplicateDocuments.has(normalizedDocument)) {
+                setFormError('Ja existe um cliente com este CPF ou CNPJ.');
+                setIsCreateOpen(true);
+                return;
+              }
 
-          <div>
-            <label className="mb-1 block text-xs text-muted">Status</label>
-            <Select {...register('status')}>
-              <option value="active">Ativo</option>
-              <option value="inactive">Inativo</option>
-              <option value="delinquent">Pendente</option>
-            </Select>
-          </div>
+              await createMutation.mutateAsync({
+                id: values.id,
+                name: values.name,
+                adminName: values.adminName,
+                document: values.document,
+                adminPhone: values.adminPhone,
+                billingName: values.useSameBillingPhone
+                  ? values.adminName
+                  : values.billingName,
+                billingPhone: billingPhone ?? values.adminPhone,
+                billingEmail: values.billingEmail,
+                status: values.status,
+                notes: values.notes,
+              });
+              reset();
+              onSelectClient(values.id);
+              setSuccessMessage(`Cliente ${values.name} criado com sucesso.`);
+              setIsCreateOpen(false);
+            })}
+          >
+            <div className="mb-3">
+              <p className="text-xs text-muted">
+                Campos com <strong>*</strong> sao obrigatorios.
+              </p>
+            </div>
 
-          <div>
-            <label className="mb-1 block text-xs text-muted">Contato do administrador *</label>
-            <Input {...register('adminPhone')} placeholder="(31) 99999-0000" />
-            {errors.adminPhone ? (
-              <p className="mt-1 text-xs text-bad">{errors.adminPhone.message}</p>
-            ) : null}
-          </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-2xl border border-line/70 bg-card/40 p-4 sm:col-span-2 lg:col-span-4">
+                <p className="mb-3 text-xs uppercase tracking-[0.16em] text-muted">Dados principais</p>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <label className="mb-1 block text-xs text-muted">Identificador tecnico *</label>
+                    <Input {...register('id')} placeholder="cuidare-vacinas" />
+                    <p className="mt-1 text-xs text-muted">
+                      Use um identificador unico, sem espacos. Ex.: `cuidare-vacinas`
+                    </p>
+                    {errors.id ? <p className="mt-1 text-xs text-bad">{errors.id.message}</p> : null}
+                  </div>
 
-          <div>
-            <label className="mb-1 block text-xs text-muted">Email financeiro *</label>
-            <Input {...register('billingEmail')} placeholder="financeiro@cuidare.com.br" />
-            {errors.billingEmail ? (
-              <p className="mt-1 text-xs text-bad">{errors.billingEmail.message}</p>
-            ) : null}
-          </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-muted">Nome do cliente *</label>
+                    <Input {...register('name')} placeholder="Clinica Cuidare" />
+                    {errors.name ? <p className="mt-1 text-xs text-bad">{errors.name.message}</p> : null}
+                  </div>
 
-          <div className="sm:col-span-2">
-            <label className="mb-2 flex items-center gap-2 text-xs text-muted">
-              <input type="checkbox" className="h-4 w-4 rounded border-line/70" {...register('useSameBillingPhone')} />
-              Usar o mesmo telefone para financeiro
-            </label>
-          </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-muted">Nome do administrador *</label>
+                    <Input {...register('adminName')} placeholder="Fabio Abdo" />
+                    {errors.adminName ? (
+                      <p className="mt-1 text-xs text-bad">{errors.adminName.message}</p>
+                    ) : null}
+                  </div>
 
-          <div>
-            <label className="mb-1 block text-xs text-muted">Nome do financeiro</label>
-            <Input
-              {...register('billingName')}
-              placeholder="Financeiro Cuidare"
-              disabled={watchedUseSameBillingPhone}
-            />
-          </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-muted">CPF ou CNPJ *</label>
+                    <Input {...register('document')} placeholder="00.000.000/0000-00" />
+                    {errors.document ? (
+                      <p className="mt-1 text-xs text-bad">{errors.document.message}</p>
+                    ) : null}
+                  </div>
 
-          <div>
-            <label className="mb-1 block text-xs text-muted">
-              Contato financeiro {watchedUseSameBillingPhone ? '' : '*'}
-            </label>
-            <Input
-              {...register('billingPhone')}
-              placeholder="(31) 3333-0000"
-              disabled={watchedUseSameBillingPhone}
-            />
-            {errors.billingPhone ? (
-              <p className="mt-1 text-xs text-bad">{errors.billingPhone.message}</p>
-            ) : null}
-          </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-muted">Status</label>
+                    <Select {...register('status')}>
+                      <option value="active">Ativo</option>
+                      <option value="inactive">Inativo</option>
+                      <option value="delinquent">Pendente</option>
+                    </Select>
+                  </div>
+                </div>
+              </div>
 
-          <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs text-muted">Observacoes</label>
-            <Input {...register('notes')} placeholder="Contexto comercial, unidade e observacoes iniciais" />
-          </div>
+              <div className="rounded-2xl border border-line/70 bg-card/40 p-4 sm:col-span-2 lg:col-span-2">
+                <p className="mb-3 text-xs uppercase tracking-[0.16em] text-muted">Contatos</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs text-muted">Contato do administrador *</label>
+                    <Input {...register('adminPhone')} placeholder="(31) 99999-0000" />
+                    {errors.adminPhone ? (
+                      <p className="mt-1 text-xs text-bad">{errors.adminPhone.message}</p>
+                    ) : null}
+                  </div>
 
-          <div className="sm:col-span-2 lg:col-span-4">
-            <Button
-              type="submit"
-              variant="primary"
-              loading={createMutation.isPending}
-              className="min-w-[180px]"
-            >
-              Criar cliente
-            </Button>
-          </div>
-        </Panel>
-      </form>
+                  <div className="sm:col-span-2">
+                    <label className="mb-2 flex items-center gap-2 text-xs text-muted">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-line/70"
+                        {...register('useSameBillingPhone')}
+                      />
+                      Usar o mesmo telefone para financeiro
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs text-muted">Nome do financeiro</label>
+                    <Input
+                      {...register('billingName')}
+                      placeholder="Financeiro Cuidare"
+                      disabled={watchedUseSameBillingPhone}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs text-muted">
+                      Contato financeiro {watchedUseSameBillingPhone ? '' : '*'}
+                    </label>
+                    <Input
+                      {...register('billingPhone')}
+                      placeholder="(31) 3333-0000"
+                      disabled={watchedUseSameBillingPhone}
+                    />
+                    {errors.billingPhone ? (
+                      <p className="mt-1 text-xs text-bad">{errors.billingPhone.message}</p>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-line/70 bg-card/40 p-4 sm:col-span-2 lg:col-span-2">
+                <p className="mb-3 text-xs uppercase tracking-[0.16em] text-muted">Financeiro e observacoes</p>
+                <div className="grid gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs text-muted">Email financeiro *</label>
+                    <Input {...register('billingEmail')} placeholder="financeiro@cuidare.com.br" />
+                    {errors.billingEmail ? (
+                      <p className="mt-1 text-xs text-bad">{errors.billingEmail.message}</p>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs text-muted">Observacoes</label>
+                    <Input
+                      {...register('notes')}
+                      placeholder="Contexto comercial, unidade e observacoes iniciais"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="sm:col-span-2 lg:col-span-4">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  loading={createMutation.isPending}
+                  className="min-w-[180px]"
+                >
+                  Criar cliente
+                </Button>
+              </div>
+            </div>
+          </form>
+        ) : null}
+      </Panel>
 
       {createMutation.isError ? (
         <Feedback variant="danger" className="mb-3">
           {createMutation.error?.message ?? 'Falha ao criar cliente.'}
+        </Feedback>
+      ) : null}
+      {successMessage ? (
+        <Feedback variant="success" className="mb-3">
+          {successMessage}
         </Feedback>
       ) : null}
       {formError ? (

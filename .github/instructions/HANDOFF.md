@@ -257,5 +257,9 @@ npm run test:e2e -- --runInBand test/actuators.e2e-spec.ts
 - a API nova tambem falhou ao subir com:
   - `PrismaClientInitializationError: Prisma Client could not locate the Query Engine for runtime "debian-openssl-3.0.x"`
 - a correcao aplicada no repositorio foi adicionar `binaryTargets = ["native", "debian-openssl-3.0.x"]` em `prisma/schema.prisma`
+- no dashboard, o cadastro de clientes foi reorganizado para ficar menos ruidoso:
+  - bloco `Novo cliente` em accordion
+  - separacao visual entre `Dados principais`, `Contatos` e `Financeiro e observacoes`
+  - mensagem de sucesso apos criar cliente
 - proximo passo recomendado:
   - executar os estudos de caso em conjunto e registrar bugs, riscos operacionais e ajustes de UX
