@@ -206,8 +206,8 @@ export function ActuationPanel({
             Controle manual e historico rapido
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            Cadastre cargas como sauna, exaustor ou rele de potencia e acione
-            o estado manualmente pelo dashboard.
+            Cadastre pontos de acionamento como sauna, exaustor ou rele de
+            potencia e controle o estado manualmente pelo dashboard.
           </p>
         </div>
 
@@ -332,8 +332,8 @@ export function ActuationPanel({
             </form>
           ) : (
             <Feedback className="mb-4">
-              Seu perfil pode monitorar o acionamento. Cadastro estrutural de
-              atuadores permanece com o administrador da plataforma.
+              Seu perfil pode acompanhar o acionamento, mas o cadastro dos
+              pontos de controle permanece com o administrador da plataforma.
             </Feedback>
           )}
 

@@ -154,7 +154,7 @@ export function ActuationSchedulesPanel({
         <div>
           <h2 className="text-lg font-semibold">Rotinas de acionamento</h2>
           <p className="mt-1 text-sm text-muted">
-            Agende janelas recorrentes para ligar e desligar atuadores automaticamente.
+            Agende janelas recorrentes para ligar e desligar cargas automaticamente.
           </p>
         </div>
         <Badge>rotinas</Badge>
@@ -285,7 +285,7 @@ export function ActuationSchedulesPanel({
 
       {clientId && !canManage ? (
         <Feedback className="mb-3">
-          Seu perfil pode monitorar as rotinas, mas nao pode altera-las.
+          Seu perfil pode acompanhar as rotinas, mas nao pode altera-las.
         </Feedback>
       ) : null}
 

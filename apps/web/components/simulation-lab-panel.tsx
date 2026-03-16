@@ -36,13 +36,13 @@ export function SimulationLabPanel({ clientId }: SimulationLabPanelProps) {
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
 
   const suffix = clientId ? ` --client-id ${clientId}` : '';
-  const demoTenant = clientId ?? 'cliente-demo';
+  const demoTenant = clientId ?? 'conta-demo';
 
   const demoSteps: DemoStep[] = [
     {
       title: '1. Entrar no cliente certo',
       description:
-        `Comece filtrando o dashboard para o cliente atual (${demoTenant}) e revise o estado comercial da conta.`,
+        `Comece filtrando o dashboard para a conta em foco (${demoTenant}) e revise o estado comercial do cliente.`,
       icon: MapPinned,
     },
     {
@@ -90,7 +90,7 @@ export function SimulationLabPanel({ clientId }: SimulationLabPanelProps) {
     {
       title: 'Popular base demo',
       description:
-        'Cria clientes, devices, regras, atuadores demo e historicos iniciais sem hardware real.',
+        'Cria clientes, equipamentos, regras, atuadores demo e historicos iniciais sem hardware real.',
       command: 'npm run db:seed',
       badge: 'seed',
     },
@@ -104,7 +104,7 @@ export function SimulationLabPanel({ clientId }: SimulationLabPanelProps) {
     {
       title: 'Cadastrar atuador',
       description:
-        'Cria um atuador manual para validar o modulo de acionamento sem rele fisico.',
+        'Cria um ponto de acionamento manual para validar o modulo sem rele fisico.',
       command: `curl -X POST http://localhost:3000/actuators -H "Content-Type: application/json" -d "{\\"id\\":\\"sauna_main\\",\\"clientId\\":\\"${clientId ?? 'virtuagil'}\\",\\"name\\":\\"Sauna principal\\"}"`,
       badge: 'acionamento',
     },
@@ -163,8 +163,8 @@ export function SimulationLabPanel({ clientId }: SimulationLabPanelProps) {
             Simulacao e cenarios de teste
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            Estes comandos foram montados para acelerar seus testes antes da
-            chegada dos sensores e placas.
+            Estes comandos ajudam a ensaiar a operacao antes da chegada dos
+            sensores e placas, como se o cliente ja estivesse em implantacao.
           </p>
         </div>
 
@@ -182,7 +182,7 @@ export function SimulationLabPanel({ clientId }: SimulationLabPanelProps) {
           </div>
           <p className="max-w-2xl text-sm text-muted">
             Use este fluxo quando quiser simular a chegada a um cliente real,
-            navegar pelas telas e observar onde a UI ainda precisa evoluir.
+            percorrer as telas e observar onde a experiencia ainda precisa evoluir.
           </p>
 
           <div className="mt-4 space-y-3">
