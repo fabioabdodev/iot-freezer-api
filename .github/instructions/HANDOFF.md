@@ -130,6 +130,9 @@ Resultado esperado no ponto atual:
 - girar a `TURNSTILE_SECRET_KEY` no Cloudflare, porque a chave atual foi exposta em conversa operacional
 - corrigir o `/health` de producao para refletir `release` e `buildTime` atualizados em vez de permanecer com valores antigos como `manual`
 - decidir quando remover com seguranca a pasta legada `/opt/iot-freezer-api` da VPS depois de confirmar que nenhum script manual ainda depende dela
+- alinhar a stack efetiva do Portainer/VPS com `deploy/swarm/stack.prod.yml`, removendo referencias antigas a `ghcr.io/fabioabdodev/iot-freezer-api/*`
+- manter `API_IMAGE` e `WEB_IMAGE` da stack apontando para `ghcr.io/fabioabdodev/iot-virtuagil-api/*`, preferencialmente com tag imutavel `sha-xxxxxxx`
+- confirmar que a API publicada usa Prisma Client gerado com `binaryTargets = ["native", "debian-openssl-3.0.x"]`, evitando o erro de runtime em containers Node 20 slim
 - configurar no ambiente do projeto `SUPABASE_PROJECT_REF` e `CONTEXT7_API_KEY` quando o uso de MCP no VS Code for desejado
 - alinhar qualquer evolucao de firmware em `iot-virtuagil-firmware/`, nao mais dentro deste repositorio
 - evoluir o produto para refletir a politica de acesso registrada em `.github/instructions/ACCESS_POLICY.md`
@@ -248,5 +251,11 @@ npm run test:e2e -- --runInBand test/actuators.e2e-spec.ts
   - adotar `React Hook Form + Zod` como padrao progressivo
   - evitar refatoracao geral sem necessidade
   - priorizar esse padrao primeiro nos formularios de cliente e em fluxos com validacao mais rica
+- em `16/03/2026` foi identificado em producao que a stack salva no Portainer ainda misturava nomes antigos do rebranding:
+  - `ghcr.io/fabioabdodev/iot-freezer-api/*`
+  - `ghcr.io/fabioabdodev/iot-virtuagil-api/*`
+- a API nova tambem falhou ao subir com:
+  - `PrismaClientInitializationError: Prisma Client could not locate the Query Engine for runtime "debian-openssl-3.0.x"`
+- a correcao aplicada no repositorio foi adicionar `binaryTargets = ["native", "debian-openssl-3.0.x"]` em `prisma/schema.prisma`
 - proximo passo recomendado:
   - executar os estudos de caso em conjunto e registrar bugs, riscos operacionais e ajustes de UX

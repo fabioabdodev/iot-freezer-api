@@ -43,25 +43,27 @@ Se o deploy for disparado por webhook do Portainer, a migration precisa ser roda
 No host da VPS:
 
 ```bash
-cd /opt/iot-freezer-api
+cd /opt/iot-virtuagil-api
 set -a
 . ./.env.prod
 set +a
-docker pull ghcr.io/fabioabdodev/iot-freezer-api/api:latest
-docker run --rm --env-file .env.prod ghcr.io/fabioabdodev/iot-freezer-api/api:latest npx prisma migrate deploy
+docker pull ghcr.io/fabioabdodev/iot-virtuagil-api/api:latest
+docker run --rm --env-file .env.prod ghcr.io/fabioabdodev/iot-virtuagil-api/api:latest npx prisma migrate deploy
 ```
 
 Depois disso:
 
 - atualizar a stack no Portainer
 - ou deixar o webhook seguir normalmente
+- confirmar que `API_IMAGE` e `WEB_IMAGE` da stack nao ficaram com referencias antigas a `iot-freezer-api`
+- preferir tags imutaveis `sha-xxxxxxx` durante diagnostico de rollout
 
 ## Verificacao rapida
 
 Comandos uteis:
 
 ```bash
-docker run --rm --env-file .env.prod ghcr.io/fabioabdodev/iot-freezer-api/api:latest npx prisma migrate status
+docker run --rm --env-file .env.prod ghcr.io/fabioabdodev/iot-virtuagil-api/api:latest npx prisma migrate status
 docker service ls | grep iot-monitor
 ```
 
@@ -72,3 +74,4 @@ docker service ls | grep iot-monitor
 - confirmar `DATABASE_URL` e `DIRECT_DATABASE_URL` antes da execucao
 - em VPS IPv4 com Supabase, o `session pooler` pode ser o unico caminho acessivel
 - se houver duvida sobre o estado do banco, fazer backup antes de repetir a migration
+- em containers Node 20 slim, garantir que o Prisma Client tenha sido gerado com `binaryTargets = ["native", "debian-openssl-3.0.x"]`
