@@ -141,3 +141,15 @@ Sempre indicar como validar a mudanca. Prioridade:
 2. `npm test -- --runInBand`
 3. `npm run test:e2e -- --runInBand`
 4. validacao manual quando envolver dashboard, ingestao ou deploy
+
+## Higiene operacional de deploy
+
+Em VPS com muitos deploys seguidos, o aumento de uso em disco tende a vir de
+imagens Docker acumuladas, nao de commits Git.
+
+Regras praticas:
+
+- ao investigar crescimento rapido de disco, verificar primeiro `docker system df`
+- imagens antigas de `api` e `web` com tags `sha-*` costumam ser a principal causa
+- a limpeza inicial mais segura e `docker image prune -a`
+- evitar `docker volume prune` sem revisar antes, porque volumes podem conter dados persistentes

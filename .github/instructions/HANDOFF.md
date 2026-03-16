@@ -160,6 +160,11 @@ Resultado esperado no ponto atual:
   - novos modulos do dashboard devem nascer com linguagem orientada ao cliente
   - evitar expor `tenant`, `clientId` e outros termos internos como copy principal da interface
   - preferir `cliente`, `conta`, `equipamento`, `codigo interno` e `painel` quando houver equivalente claro para negocio
+- direcao operacional consolidada para a VPS:
+  - em ciclos com muitos deploys, crescimento de disco tende a vir de imagens Docker acumuladas
+  - a primeira verificacao deve ser `docker system df`
+  - a limpeza inicial mais segura para imagens antigas e `docker image prune -a`
+  - evitar `docker volume prune` sem revisar persistencia de dados
 
 ## Supabase
 
@@ -262,6 +267,10 @@ npm run test:e2e -- --runInBand test/actuators.e2e-spec.ts
   - priorizar esse padrao primeiro nos formularios de cliente e em fluxos com validacao mais rica
 - em `16/03/2026` foi identificado em producao que a stack salva no Portainer ainda misturava nomes antigos do rebranding:
   - `ghcr.io/fabioabdodev/iot-freezer-api/*`
+- em `16/03/2026` foi validado que o aumento de disco na VPS nao vinha de commits Git:
+  - `docker system df` mostrou `91.1GB` ocupados por imagens
+  - `docker image prune -a` reduziu o uso total do disco de `103G` para `26G`
+  - proximas investigacoes de disco devem comecar por imagens Docker antigas de deploy
   - `ghcr.io/fabioabdodev/iot-virtuagil-api/*`
 - a API nova tambem falhou ao subir com:
   - `PrismaClientInitializationError: Prisma Client could not locate the Query Engine for runtime "debian-openssl-3.0.x"`

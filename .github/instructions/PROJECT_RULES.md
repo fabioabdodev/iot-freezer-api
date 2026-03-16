@@ -251,6 +251,26 @@ Quando a validacao for manual:
 - usar `.github/instructions/MANUAL_TESTS.md` como roteiro base
 - evitar complicar a validacao com processos pesados quando a API puder ser verificada diretamente
 
+## Higiene operacional de disco na VPS
+
+Em ciclos com muitos deploys, o maior vilao de disco tende a ser Docker:
+
+- imagens antigas acumuladas de `api` e `web`
+- tags `sha-*` antigas
+- imagens `<none>` de builds anteriores
+
+Regra operacional:
+
+- antes de suspeitar de banco, Git ou codigo-fonte, verificar `docker system df`
+- se o crescimento estiver concentrado em `Images`, a limpeza segura inicial e `docker image prune -a`
+- evitar `docker volume prune` sem auditoria manual, porque volumes podem guardar dados persistentes do `n8n`, bancos e outras stacks
+
+Registro validado em producao em `16/03/2026`:
+
+- VPS com disco de `194G` chegou a `103G` usados
+- `docker system df` mostrou `91.1GB` em imagens, com `74.43GB` reclamaveis
+- apos `docker image prune -a`, o uso caiu para `26G`
+
 ## Direcao de linguagem para frontend
 
 Ao criar telas novas ou expandir modulos existentes:
