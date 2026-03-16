@@ -3,12 +3,16 @@
 import { LogOut, ShieldCheck, UserCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import type { AuthUser } from '@/types/auth';
 
 type DashboardHeaderProps = {
   currentUser: AuthUser | null;
   scopedClientId?: string;
   isAuthenticated: boolean;
+  clientIdDraft: string;
+  onClientIdDraftChange: (value: string) => void;
+  onApplyClientFilter: () => void;
   onLogout: () => void;
 };
 
@@ -16,6 +20,9 @@ export function DashboardHeader({
   currentUser,
   scopedClientId,
   isAuthenticated,
+  clientIdDraft,
+  onClientIdDraftChange,
+  onApplyClientFilter,
   onLogout,
 }: DashboardHeaderProps) {
   const initials = currentUser?.name
@@ -45,6 +52,23 @@ export function DashboardHeader({
         </div>
 
         <div className="flex flex-col gap-3 lg:items-end">
+          <div className="grid gap-2 sm:grid-cols-[minmax(0,220px)_120px] lg:min-w-[360px]">
+            <Input
+              value={clientIdDraft}
+              onChange={(event) => onClientIdDraftChange(event.target.value)}
+              placeholder="Filtrar por clientId"
+              className="min-h-[42px]"
+            />
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onApplyClientFilter}
+              className="min-h-[42px] w-full"
+            >
+              Aplicar filtro
+            </Button>
+          </div>
+
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-3 rounded-[20px] border border-line/70 bg-card/45 px-3 py-2">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,hsl(var(--accent))_0%,hsl(var(--accent-2))_100%)] text-sm font-bold text-slate-950">

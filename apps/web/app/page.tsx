@@ -385,6 +385,9 @@ function DashboardContent() {
         currentUser={user}
         scopedClientId={scopedClientId}
         isAuthenticated={isAuthenticated}
+        clientIdDraft={clientIdDraft}
+        onClientIdDraftChange={setClientIdDraft}
+        onApplyClientFilter={applyFilters}
         onLogout={clearToken}
       />
 
@@ -457,41 +460,6 @@ function DashboardContent() {
                 Abrir laboratorio
               </Link>
             </div>
-          </div>
-        </div>
-      </Panel>
-
-      <Panel variant="strong" className="mb-6 p-4 sm:p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted">
-              Contexto operacional
-            </p>
-            <h2 className="mt-1 text-lg font-semibold">Tenant em foco</h2>
-            <p className="mt-1 text-sm text-muted">
-              Defina qual cliente deseja operar no restante do dashboard.
-            </p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_140px] lg:min-w-[420px]">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-muted">
-                ClientId
-              </label>
-              <Input
-                value={clientIdDraft}
-                onChange={(event) => setClientIdDraft(event.target.value)}
-                placeholder="cuidare-vacinas"
-                className="min-h-[48px]"
-              />
-            </div>
-            <Button
-              onClick={applyFilters}
-              variant="primary"
-              className="min-h-[48px] w-full self-end"
-            >
-              Aplicar filtro
-            </Button>
           </div>
         </div>
       </Panel>
