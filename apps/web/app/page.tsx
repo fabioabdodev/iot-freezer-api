@@ -28,6 +28,7 @@ import { ClientModulesPanel } from '@/components/client-modules-panel';
 import { ClientProfilePanel } from '@/components/client-profile-panel';
 import { ClientsPanel } from '@/components/clients-panel';
 import { AuditLogPanel } from '@/components/audit-log-panel';
+import { CaseStudyGuidePanel } from '@/components/case-study-guide-panel';
 import { SetupGuideCard } from '@/components/setup-guide-card';
 import { UsersPanel } from '@/components/users-panel';
 import { CommercialReadinessPanel } from '@/components/commercial-readiness-panel';
@@ -540,6 +541,22 @@ function DashboardContent() {
         clientModules={clientModules}
         />
       </div>
+
+      <CaseStudyGuidePanel
+        clientId={scopedClientId}
+        client={selectedClient}
+        devices={devices}
+        alertRules={alertRules}
+        clientModules={clientModules}
+        onCreateDevice={
+          canCreateDevices
+            ? () => {
+                setEditingDeviceId(null);
+                setFormMode('create');
+              }
+            : undefined
+        }
+      />
 
       {scopedClientId ? (
         <Panel className="mt-6 p-4 sm:p-5">
