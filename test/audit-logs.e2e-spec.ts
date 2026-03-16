@@ -64,6 +64,12 @@ describe('Audit Logs (e2e)', () => {
           if (where?.clientId) filtered = filtered.filter((row) => row.clientId === where.clientId);
           if (where?.entityType) filtered = filtered.filter((row) => row.entityType === where.entityType);
           if (where?.entityId) filtered = filtered.filter((row) => row.entityId === where.entityId);
+          if (where?.createdAt?.gte) {
+            filtered = filtered.filter((row) => row.createdAt >= where.createdAt.gte);
+          }
+          if (where?.createdAt?.lte) {
+            filtered = filtered.filter((row) => row.createdAt <= where.createdAt.lte);
+          }
           filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
           return Promise.resolve(filtered.slice(0, take));
         }),
@@ -133,6 +139,24 @@ describe('Audit Logs (e2e)', () => {
         expect(res.body[0]).toEqual(
           expect.objectContaining({
             clientId: 'virtuagil',
+            entityId: 'freezer_01',
+          }),
+        );
+      });
+  });
+
+  it('should filter audit logs by entity and period', async () => {
+    await request(app.getHttpServer())
+      .get(
+        '/audit-logs?entityType=device&entityId=freezer_01&from=2026-03-14T12:00:00.000Z&to=2026-03-14T12:05:00.000Z',
+      )
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toHaveLength(1);
+        expect(res.body[0]).toEqual(
+          expect.objectContaining({
+            id: 'audit_1',
+            entityType: 'device',
             entityId: 'freezer_01',
           }),
         );

@@ -16,6 +16,8 @@ export class AuditLogsController {
     @Query('clientId') clientId?: string,
     @Query('entityType') entityType?: string,
     @Query('entityId') entityId?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
     @Query('limit') limit?: string,
     @CurrentUser() authUser?: SessionUser,
   ) {
@@ -25,6 +27,8 @@ export class AuditLogsController {
       clientId: authUser ? resolveScopedClientId(authUser, clientId) : clientId,
       entityType,
       entityId,
+      from,
+      to,
       limit: parsedLimit,
     });
   }

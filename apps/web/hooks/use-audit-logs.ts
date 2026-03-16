@@ -8,13 +8,24 @@ export function useAuditLogs(
     clientId?: string;
     entityType?: string;
     entityId?: string;
+    from?: string;
+    to?: string;
     limit?: number;
   },
   authToken?: string,
   enabled = true,
 ) {
   return useQuery({
-    queryKey: ['audit-logs', filters.clientId, filters.entityType, filters.entityId, filters.limit, authToken],
+    queryKey: [
+      'audit-logs',
+      filters.clientId,
+      filters.entityType,
+      filters.entityId,
+      filters.from,
+      filters.to,
+      filters.limit,
+      authToken,
+    ],
     queryFn: () => fetchAuditLogs(filters, authToken),
     enabled: Boolean(authToken && enabled),
     retry: 2,

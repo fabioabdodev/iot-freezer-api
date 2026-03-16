@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { FileSearch, ShieldCheck } from 'lucide-react';
@@ -7,7 +8,9 @@ import { useAuditLogs } from '@/hooks/use-audit-logs';
 import { AuthUser } from '@/types/auth';
 import { AccessNotice } from '@/components/ui/access-notice';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Feedback } from '@/components/ui/feedback';
+import { Input, Select } from '@/components/ui/input';
 import { Panel } from '@/components/ui/panel';
 
 type AuditLogPanelProps = {
@@ -35,8 +38,41 @@ export function AuditLogPanel({
   currentUser,
   canView,
 }: AuditLogPanelProps) {
+  const [entityTypeDraft, setEntityTypeDraft] = useState('');
+  const [entityIdDraft, setEntityIdDraft] = useState('');
+  const [periodPreset, setPeriodPreset] = useState<'24h' | '7d' | '30d' | 'all'>(
+    '7d',
+  );
+  const [appliedFilters, setAppliedFilters] = useState({
+    entityType: '',
+    entityId: '',
+    periodPreset: '7d' as '24h' | '7d' | '30d' | 'all',
+  });
+
+  const from = useMemo(() => {
+    const now = Date.now();
+
+    switch (appliedFilters.periodPreset) {
+      case '24h':
+        return new Date(now - 24 * 60 * 60 * 1000).toISOString();
+      case '7d':
+        return new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
+      case '30d':
+        return new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
+      case 'all':
+      default:
+        return undefined;
+    }
+  }, [appliedFilters.periodPreset]);
+
   const { data, isLoading, isError, error } = useAuditLogs(
-    { clientId, limit: 8 },
+    {
+      clientId,
+      entityType: appliedFilters.entityType || undefined,
+      entityId: appliedFilters.entityId || undefined,
+      from,
+      limit: 12,
+    },
     authToken,
     canView,
   );
@@ -68,6 +104,43 @@ export function AuditLogPanel({
           <ShieldCheck className="h-3.5 w-3.5 text-accent" />
           rastreabilidade
         </Badge>
+      </div>
+
+      <div className="mb-5 grid gap-3 lg:grid-cols-[1fr_1fr_180px_auto]">
+        <Input
+          value={entityTypeDraft}
+          onChange={(event) => setEntityTypeDraft(event.target.value)}
+          placeholder="Filtrar por entidade, ex.: device"
+        />
+        <Input
+          value={entityIdDraft}
+          onChange={(event) => setEntityIdDraft(event.target.value)}
+          placeholder="Filtrar por ID, ex.: freezer_01"
+        />
+        <Select
+          value={periodPreset}
+          onChange={(event) =>
+            setPeriodPreset(event.target.value as '24h' | '7d' | '30d' | 'all')
+          }
+        >
+          <option value="24h">Ultimas 24h</option>
+          <option value="7d">Ultimos 7 dias</option>
+          <option value="30d">Ultimos 30 dias</option>
+          <option value="all">Todo periodo</option>
+        </Select>
+        <Button
+          onClick={() =>
+            setAppliedFilters({
+              entityType: entityTypeDraft.trim(),
+              entityId: entityIdDraft.trim(),
+              periodPreset,
+            })
+          }
+          variant="secondary"
+          className="w-full lg:w-auto"
+        >
+          Aplicar filtros
+        </Button>
       </div>
 
       {isLoading ? <Feedback>Carregando auditoria...</Feedback> : null}

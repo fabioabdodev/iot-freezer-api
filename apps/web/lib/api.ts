@@ -791,6 +791,8 @@ export async function fetchAuditLogs(
     clientId?: string;
     entityType?: string;
     entityId?: string;
+    from?: string;
+    to?: string;
     limit?: number;
   },
   authToken?: string,
@@ -799,6 +801,8 @@ export async function fetchAuditLogs(
   if (filters.clientId) query.set('clientId', filters.clientId);
   if (filters.entityType) query.set('entityType', filters.entityType);
   if (filters.entityId) query.set('entityId', filters.entityId);
+  if (filters.from) query.set('from', filters.from);
+  if (filters.to) query.set('to', filters.to);
   if (filters.limit) query.set('limit', String(filters.limit));
 
   const response = await fetch(`${API_BASE_URL}/audit-logs?${query.toString()}`, {

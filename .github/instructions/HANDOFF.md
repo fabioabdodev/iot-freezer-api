@@ -263,6 +263,8 @@ npm run test:e2e -- --runInBand test/actuators.e2e-spec.ts
   - bloco `Novo cliente` em accordion
   - separacao visual entre `Dados principais`, `Contatos` e `Financeiro e observacoes`
   - mensagem de sucesso apos criar cliente
+- o painel de auditoria do dashboard agora aceita filtros por `entityType`, `entityId` e periodo recente
+  - isso facilita investigar alteracoes operacionais sem depender apenas da lista mais recente
 - proximo passo recomendado:
   - executar os estudos de caso em conjunto e registrar bugs, riscos operacionais e ajustes de UX
 
