@@ -387,5 +387,8 @@ Para evitar confusao de contexto:
 
 - `institucional-site/` tem regras e material de outro projeto, o futuro site institucional da Virtuagil
 - `iot-virtuagil-firmware/` tem README e handoff proprios de outro projeto, o futuro repositorio de firmware
+- `estudos de caso/` na raiz do projeto guarda material local de proposta, onboarding, implantacao e revisao de UX por cliente
+- essa pasta pode nao estar no Git e deve ser tratada como contexto local complementar, nao como documentacao oficial versionada
+- quando a tarefa mencionar estudo de caso, jornada do cliente, proposta ou implantacao, consultar primeiro `estudos de caso/README.md` e depois o caso especifico
 - quando a tarefa for sobre a API ou o dashboard, nao misturar decisoes desses dois escopos paralelos
 

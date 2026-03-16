@@ -36,7 +36,10 @@ Importante para continuidade:
 
 - `institucional-site/` e um rascunho local de outro projeto, o futuro site institucional
 - `iot-virtuagil-firmware/` e a base local de outro projeto, o futuro repositorio de firmware/hardware
+- `estudos de caso/` na raiz do projeto e uma pasta local de apoio comercial e operacional
 - essas pastas nao devem guiar mudancas do backend/dashboard, a menos que o pedido do usuario seja explicitamente sobre elas
+- quando a tarefa envolver proposta comercial, onboarding, implantacao, jornada real de uso ou revisao de UX por cliente, consultar primeiro `estudos de caso/`
+- essa pasta e local, pode nao estar no Git e nao deve ser tratada como documentacao versionada do produto
 - quando a tarefa for sobre um desses escopos, tratar as regras e documentos internos dessas pastas como fonte principal daquele contexto
 
 ## Regra principal de colaboracao

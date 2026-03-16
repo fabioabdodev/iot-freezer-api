@@ -149,6 +149,12 @@ Resultado esperado no ponto atual:
 - `iot-virtuagil-firmware/` e um escopo local do futuro projeto separado de firmware
 - essa pasta deve ser tratada como outro projeto e possui material proprio em `iot-virtuagil-firmware/README.md` e `iot-virtuagil-firmware/handoff/HANDOFF.md`
 - as regras de hardware, runtime e bancada foram movidas para essa pasta
+- `estudos de caso/` na raiz do projeto e uma pasta local que nao entra no Git
+- ela concentra material de proposta comercial, onboarding, implantacao, validacao operacional e revisao de UX
+- ao receber tarefa ligada a cliente real, demonstracao, jornada de uso ou estudo de caso, consultar primeiro:
+  - `estudos de caso/README.md`
+  - o arquivo especifico do cliente, por exemplo `estudos de caso/cuidare.md`
+- esse material deve orientar analise de UX e operacao, mas nao substitui a documentacao tecnica versionada em `.github/instructions/`
 
 ## Supabase
 
