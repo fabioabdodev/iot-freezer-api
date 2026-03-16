@@ -442,7 +442,7 @@ export function AlertRulesPanel({
                         </Button>
                       </div>
                     ) : (
-                      <span className="text-xs text-muted">Somente leitura</span>
+                      <span className="text-xs text-muted">Acompanhamento apenas</span>
                     )}
                   </td>
                 </tr>
@@ -496,7 +496,7 @@ export function AlertRulesPanel({
             },
             {
               title: 'Simular um evento e acompanhar o fluxo',
-              description: 'Depois da regra criada, rode um cenario de alerta para revisar dashboard, webhook e notificacao.',
+              description: 'Depois da regra criada, rode um cenario de alerta para revisar painel, webhook e notificacao.',
             },
           ]}
         />

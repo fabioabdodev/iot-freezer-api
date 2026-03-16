@@ -78,7 +78,7 @@ export function DeviceHistoryPanel({
               {latestPoint?.temperature.toFixed(1)} C
             </p>
             <p className="mt-1 text-xs text-muted">
-              Ultimo ponto registrado no historico visivel.
+              Ultimo ponto registrado nesta janela de acompanhamento.
             </p>
           </div>
 

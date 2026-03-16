@@ -262,7 +262,7 @@ export function OperationalActivityPanel({
           {!isLoading && !isError && actuationEnabled && commands.length === 0 ? (
             <Feedback>
               Ainda nao ha comandos registrados. Use o painel de acionamento para
-              ligar ou desligar um atuador e alimentar este historico.
+              ligar ou desligar uma carga e alimentar este historico.
             </Feedback>
           ) : null}
         </div>

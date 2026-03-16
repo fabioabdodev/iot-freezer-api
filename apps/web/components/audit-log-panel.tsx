@@ -110,7 +110,7 @@ export function AuditLogPanel({
         <Input
           value={entityTypeDraft}
           onChange={(event) => setEntityTypeDraft(event.target.value)}
-          placeholder="Filtrar por entidade, ex.: device"
+          placeholder="Filtrar por entidade, ex.: equipment"
         />
         <Input
           value={entityIdDraft}

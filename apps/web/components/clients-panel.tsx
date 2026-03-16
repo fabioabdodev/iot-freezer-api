@@ -192,7 +192,7 @@ export function ClientsPanel({
           </p>
           <h2 className="mt-1 text-xl font-semibold">Clientes</h2>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            Crie novos clientes e troque o foco operacional do dashboard sem sair da tela principal.
+            Crie novos clientes e troque o foco operacional do painel sem sair da tela principal.
           </p>
         </div>
         <Badge>
@@ -548,7 +548,7 @@ export function ClientsPanel({
                     {isSelected ? (
                       <Badge variant="success">
                         <CircleCheckBig className="h-3.5 w-3.5" />
-                        ativo no dashboard
+                        ativo no painel
                       </Badge>
                     ) : (
                       <Button

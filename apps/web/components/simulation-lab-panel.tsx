@@ -42,7 +42,7 @@ export function SimulationLabPanel({ clientId }: SimulationLabPanelProps) {
     {
       title: '1. Entrar no cliente certo',
       description:
-        `Comece filtrando o dashboard para a conta em foco (${demoTenant}) e revise o estado comercial do cliente.`,
+        `Comece filtrando o painel para a conta em foco (${demoTenant}) e revise o estado comercial do cliente.`,
       icon: MapPinned,
     },
     {
@@ -127,14 +127,14 @@ export function SimulationLabPanel({ clientId }: SimulationLabPanelProps) {
     {
       title: 'Listar atuadores',
       description:
-        'Consulta os atuadores do cliente atual para conferir seed, cadastro e estado operacional.',
+        'Consulta os pontos de acionamento do cliente atual para conferir seed, cadastro e estado operacional.',
       command: `curl "http://localhost:3000/actuators?clientId=${clientId ?? 'virtuagil'}"`,
       badge: 'consulta',
     },
     {
-      title: 'Historico do atuador',
+      title: 'Historico do acionamento',
       description:
-        'Busca os ultimos comandos emitidos para um atuador especifico.',
+        'Busca os ultimos comandos emitidos para um ponto de acionamento especifico.',
       command: 'curl http://localhost:3000/actuators/sauna_main/commands',
       badge: 'log',
     },

@@ -148,7 +148,7 @@ export function CommercialReadinessPanel({
         </p>
         <h2 className="mt-1 text-xl font-semibold">Conta e modulos</h2>
         <p className="mt-2 max-w-2xl text-sm text-muted">
-          Escolha um cliente para transformar o dashboard em narrativa comercial:
+          Escolha um cliente para transformar o painel em narrativa comercial:
           status da conta, modulos contratados e nivel de implantacao.
         </p>
       </Panel>
@@ -251,7 +251,7 @@ export function CommercialReadinessPanel({
                     addSuffix: true,
                     locale: ptBR,
                   })}.`
-                : 'Use este painel para consolidar o estado comercial da conta.'}
+                : 'Use este bloco para consolidar o estado comercial da conta.'}
             </p>
           </div>
 

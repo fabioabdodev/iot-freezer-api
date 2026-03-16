@@ -287,7 +287,7 @@ function DashboardContent() {
                     </p>
                     <h2 className="mt-1 text-xl font-semibold">Entrar na plataforma</h2>
                     <p className="mt-2 text-sm text-muted">
-                      Use um usuario autorizado para acessar o dashboard.
+                      Use um usuario autorizado para acessar o painel.
                     </p>
                   </div>
                   <Badge>
@@ -398,7 +398,7 @@ function DashboardContent() {
         description={
           <>
             O equipamento <strong>{pendingDeleteDeviceId}</strong> sera removido do
-            dashboard e do historico.
+            painel e do historico.
           </>
         }
         confirmLabel="Excluir equipamento"
@@ -660,7 +660,7 @@ function DashboardContent() {
                     <th>Faixa</th>
                     <th>Ultima leitura</th>
                     <th className="text-right">Acoes</th>
-                    <th className="text-right">Historico</th>
+                    <th className="text-right">Leituras</th>
                   </tr>
                 </thead>
                 <tbody>

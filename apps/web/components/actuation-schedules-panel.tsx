@@ -139,7 +139,7 @@ export function ActuationSchedulesPanel({
       <ConfirmDialog
         open={Boolean(pendingDeleteScheduleId)}
         title="Excluir rotina?"
-        description="A rotina sera removida do agendamento automatico do atuador."
+        description="A rotina sera removida do agendamento automatico do ponto de acionamento."
         confirmLabel="Excluir rotina"
         loading={deleteMutation.isPending}
         onCancel={() => setPendingDeleteScheduleId(null)}
@@ -369,7 +369,7 @@ export function ActuationSchedulesPanel({
                         </Button>
                       </div>
                     ) : (
-                      <span className="text-xs text-muted">Somente leitura</span>
+                      <span className="text-xs text-muted">Acompanhamento apenas</span>
                     )}
                   </td>
                 </tr>

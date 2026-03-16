@@ -207,7 +207,7 @@ export function ActuationPanel({
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-muted">
             Cadastre pontos de acionamento como sauna, exaustor ou rele de
-            potencia e controle o estado manualmente pelo dashboard.
+            potencia e controle o estado manualmente pelo painel.
           </p>
         </div>
 
@@ -280,7 +280,7 @@ export function ActuationPanel({
                   Device (opcional)
                 </label>
                 <Select {...register('deviceId')}>
-                  <option value="">Sem device vinculado</option>
+                  <option value="">Sem equipamento vinculado</option>
                   {devices.map((device) => (
                     <option key={device.id} value={device.id}>
                       {device.name ?? device.id}
@@ -397,7 +397,7 @@ export function ActuationPanel({
                         </td>
                         <td className="text-muted">
                           <div className="flex flex-col">
-                            <span>{actuator.deviceId ?? 'Sem device'}</span>
+                            <span>{actuator.deviceId ?? 'Sem equipamento'}</span>
                             <span className="text-xs">
                               {actuator.location ?? 'Sem local'}
                             </span>
@@ -492,7 +492,7 @@ export function ActuationPanel({
                               </Button>
                             </div>
                           ) : (
-                            <span className="text-xs text-muted">Somente leitura</span>
+                            <span className="text-xs text-muted">Acompanhamento apenas</span>
                           )}
                         </td>
                         <td className="text-right">
@@ -521,7 +521,7 @@ export function ActuationPanel({
                   <div className="mb-3 flex items-center justify-between">
                     <div>
                       <h3 className="text-base font-semibold">
-                        Historico recente
+                        Acionamentos recentes
                       </h3>
                       <p className="mt-1 text-sm text-muted">
                         Ultimos comandos emitidos para {selectedActuatorId}.
@@ -539,7 +539,7 @@ export function ActuationPanel({
                   {isErrorHistory ? (
                     <Feedback variant="danger">
                       {historyError?.message ??
-                        'Falha ao carregar historico do atuador.'}
+                        'Falha ao carregar historico do acionamento.'}
                     </Feedback>
                   ) : null}
                   {!isLoadingHistory &&
@@ -580,7 +580,7 @@ export function ActuationPanel({
                   {!isLoadingHistory &&
                   !isErrorHistory &&
                   (commandHistory?.length ?? 0) === 0 ? (
-                    <Feedback>Sem comandos para este atuador.</Feedback>
+                    <Feedback>Sem comandos para este ponto de acionamento.</Feedback>
                   ) : null}
                 </Panel>
               ) : null}
