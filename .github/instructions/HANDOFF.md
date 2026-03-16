@@ -154,6 +154,7 @@ Resultado esperado no ponto atual:
 - ao receber tarefa ligada a cliente real, demonstracao, jornada de uso ou estudo de caso, consultar primeiro:
   - `estudos de caso/README.md`
   - o arquivo especifico do cliente, por exemplo `estudos de caso/cuidare.md`
+- o objetivo dessa pasta e permitir simulacoes de chegada ao cliente no contexto real de implantacao, ajudando a conhecer as telas atuais do sistema e a sugerir melhorias de UI/UX com base nessa experiencia guiada
 - esse material deve orientar analise de UX e operacao, mas nao substitui a documentacao tecnica versionada em `.github/instructions/`
 
 ## Supabase

@@ -390,5 +390,6 @@ Para evitar confusao de contexto:
 - `estudos de caso/` na raiz do projeto guarda material local de proposta, onboarding, implantacao e revisao de UX por cliente
 - essa pasta pode nao estar no Git e deve ser tratada como contexto local complementar, nao como documentacao oficial versionada
 - quando a tarefa mencionar estudo de caso, jornada do cliente, proposta ou implantacao, consultar primeiro `estudos de caso/README.md` e depois o caso especifico
+- o uso esperado dessa pasta e apoiar simulacoes de uso real do sistema, como se a equipe tivesse chegado ao cliente, para conhecer melhor as telas e levantar melhorias de UI/UX com base em contexto concreto
 - quando a tarefa for sobre a API ou o dashboard, nao misturar decisoes desses dois escopos paralelos
 

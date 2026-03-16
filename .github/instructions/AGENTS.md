@@ -40,6 +40,7 @@ Importante para continuidade:
 - essas pastas nao devem guiar mudancas do backend/dashboard, a menos que o pedido do usuario seja explicitamente sobre elas
 - quando a tarefa envolver proposta comercial, onboarding, implantacao, jornada real de uso ou revisao de UX por cliente, consultar primeiro `estudos de caso/`
 - essa pasta e local, pode nao estar no Git e nao deve ser tratada como documentacao versionada do produto
+- o objetivo pratico dessa pasta e simular a chegada a um cliente real, percorrer o sistema como se a implantacao estivesse acontecendo e usar isso para conhecer as telas e sugerir melhorias de UI/UX
 - quando a tarefa for sobre um desses escopos, tratar as regras e documentos internos dessas pastas como fonte principal daquele contexto
 
 ## Regra principal de colaboracao
