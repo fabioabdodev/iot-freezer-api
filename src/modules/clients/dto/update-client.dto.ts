@@ -16,6 +16,12 @@ export class UpdateClientDto {
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(120)
+  adminName?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(40)
   @IsClientDocument()
   document?: string;
@@ -31,6 +37,11 @@ export class UpdateClientDto {
   @MaxLength(30)
   @IsClientPhone()
   billingPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  billingName?: string;
 
   @IsOptional()
   @IsEmail()

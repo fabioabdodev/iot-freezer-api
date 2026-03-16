@@ -35,9 +35,11 @@ export class ClientsService {
       data: {
         id: dto.id,
         name: dto.name,
+        adminName: dto.adminName.trim(),
         document,
         phone: normalizeClientPhone(dto.adminPhone),
         adminPhone: normalizeClientPhone(dto.adminPhone),
+        billingName: dto.billingName?.trim() ?? dto.adminName.trim(),
         billingPhone: normalizeClientPhone(dto.billingPhone),
         billingEmail: dto.billingEmail.trim(),
         status: dto.status ?? 'active',
@@ -79,6 +81,7 @@ export class ClientsService {
       where: { id },
       data: {
         name: dto.name,
+        adminName: dto.adminName?.trim(),
         document,
         phone:
           dto.adminPhone != null
@@ -88,6 +91,7 @@ export class ClientsService {
           dto.adminPhone != null
             ? normalizeClientPhone(dto.adminPhone)
             : undefined,
+        billingName: dto.billingName?.trim(),
         billingPhone:
           dto.billingPhone != null
             ? normalizeClientPhone(dto.billingPhone)

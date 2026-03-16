@@ -18,8 +18,10 @@ describe('Clients CRUD (e2e)', () => {
           const row = {
             status: 'active',
             document: null,
+            adminName: null,
             phone: null,
             adminPhone: null,
+            billingName: null,
             billingPhone: null,
             billingEmail: null,
             notes: null,
@@ -113,8 +115,10 @@ describe('Clients CRUD (e2e)', () => {
       .send({
         id: 'client_a',
         name: 'Client A',
+        adminName: 'Admin Client A',
         document: '19131243000197',
         adminPhone: '31999998888',
+        billingName: 'Financeiro Client A',
         billingPhone: '3133334444',
         billingEmail: 'financeiro@clientea.com',
         status: 'active',
@@ -130,8 +134,10 @@ describe('Clients CRUD (e2e)', () => {
             expect.objectContaining({
               id: 'client_a',
               name: 'Client A',
+              adminName: 'Admin Client A',
               document: '19131243000197',
               adminPhone: '31999998888',
+              billingName: 'Financeiro Client A',
               billingPhone: '3133334444',
               billingEmail: 'financeiro@clientea.com',
               status: 'active',
@@ -144,7 +150,9 @@ describe('Clients CRUD (e2e)', () => {
       .patch('/clients/client_a')
       .send({
         name: 'Client A Updated',
+        adminName: 'Admin Atualizado',
         adminPhone: '31988887777',
+        billingName: 'Financeiro Atualizado',
         billingPhone: '3132221111',
         status: 'delinquent',
       })
@@ -154,7 +162,9 @@ describe('Clients CRUD (e2e)', () => {
             expect.objectContaining({
               id: 'client_a',
               name: 'Client A Updated',
+              adminName: 'Admin Atualizado',
               adminPhone: '31988887777',
+              billingName: 'Financeiro Atualizado',
               billingPhone: '3132221111',
               status: 'delinquent',
             }),
@@ -172,8 +182,10 @@ describe('Clients CRUD (e2e)', () => {
       .send({
         id: 'client_a',
         name: 'Client A',
+        adminName: 'Admin Client A',
         document: '19.131.243/0001-97',
         adminPhone: '31999998888',
+        billingName: 'Financeiro Client A',
         billingPhone: '3133334444',
         billingEmail: 'financeiro@clientea.com',
         status: 'active',
@@ -185,8 +197,10 @@ describe('Clients CRUD (e2e)', () => {
       .send({
         id: 'client_b',
         name: 'Client B',
+        adminName: 'Admin Client B',
         document: '19131243000197',
         adminPhone: '31999990000',
+        billingName: 'Financeiro Client B',
         billingPhone: '3133330000',
         billingEmail: 'financeiro@clienteb.com',
         status: 'active',

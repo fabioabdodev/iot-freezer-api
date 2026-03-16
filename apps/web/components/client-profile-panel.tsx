@@ -51,8 +51,10 @@ export function ClientProfilePanel({
   const { updateMutation } = useClientMutations(clientId, authToken);
 
   const [name, setName] = useState('');
+  const [adminName, setAdminName] = useState('');
   const [document, setDocument] = useState('');
   const [adminPhone, setAdminPhone] = useState('');
+  const [billingName, setBillingName] = useState('');
   const [billingPhone, setBillingPhone] = useState('');
   const [useSameBillingPhone, setUseSameBillingPhone] = useState(true);
   const [billingEmail, setBillingEmail] = useState('');
@@ -63,10 +65,13 @@ export function ClientProfilePanel({
   useEffect(() => {
     if (!data) return;
     setName(data.name ?? '');
+    setAdminName(data.adminName ?? '');
     setDocument(data.document ?? '');
     const nextAdminPhone = data.adminPhone ?? data.phone ?? '';
+    const nextBillingName = data.billingName ?? data.adminName ?? '';
     const nextBillingPhone = data.billingPhone ?? nextAdminPhone;
     setAdminPhone(nextAdminPhone);
+    setBillingName(nextBillingName);
     setBillingPhone(nextBillingPhone);
     setUseSameBillingPhone(nextBillingPhone === nextAdminPhone);
     setBillingEmail(data.billingEmail ?? '');
@@ -105,6 +110,11 @@ export function ClientProfilePanel({
       return;
     }
 
+    if (!adminName.trim()) {
+      setFormError('Informe o nome do administrador.');
+      return;
+    }
+
     if (!adminPhone.trim() || !isValidPhone(adminPhone)) {
       setFormError('Informe um telefone valido para o administrador.');
       return;
@@ -123,8 +133,10 @@ export function ClientProfilePanel({
 
     await updateMutation.mutateAsync({
       name: name.trim() || undefined,
+      adminName: adminName.trim() || undefined,
       document: document.trim() || undefined,
       adminPhone: adminPhone.trim() || undefined,
+      billingName: (useSameBillingPhone ? adminName : billingName).trim() || undefined,
       billingPhone: nextBillingPhone.trim() || undefined,
       billingEmail: billingEmail.trim() || undefined,
       status,
@@ -231,6 +243,14 @@ export function ClientProfilePanel({
                 />
               </div>
               <div>
+                <label className="mb-1 block text-xs text-muted">Nome do administrador *</label>
+                <Input
+                  value={adminName}
+                  onChange={(event) => setAdminName(event.target.value)}
+                  placeholder="Fabio Abdo"
+                />
+              </div>
+              <div>
                 <label className="mb-1 block text-xs text-muted">Contato do administrador *</label>
                 <Input
                   value={adminPhone}
@@ -248,6 +268,15 @@ export function ClientProfilePanel({
                   />
                   Usar o mesmo telefone para financeiro
                 </label>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-muted">Nome do financeiro</label>
+                <Input
+                  value={useSameBillingPhone ? adminName : billingName}
+                  onChange={(event) => setBillingName(event.target.value)}
+                  disabled={useSameBillingPhone}
+                  placeholder="Financeiro Cuidare"
+                />
               </div>
               <div>
                 <label className="mb-1 block text-xs text-muted">

@@ -33,6 +33,7 @@ const formSchema = z.object({
     .max(50, 'ID muito longo')
     .refine((value) => isValidClientId(value), 'Use apenas letras, numeros, _ e -'),
   name: z.string().trim().min(2, 'Nome obrigatorio'),
+  adminName: z.string().trim().min(2, 'Nome do administrador obrigatorio'),
   document: z
     .string()
     .trim()
@@ -49,6 +50,7 @@ const formSchema = z.object({
     .optional()
     .transform((value) => value || undefined)
     .refine((value) => value == null || isValidPhone(value), 'Telefone financeiro invalido'),
+  billingName: z.string().trim().optional().transform((value) => value || undefined),
   useSameBillingPhone: z.boolean().default(true),
   billingEmail: z
     .string()
@@ -107,8 +109,10 @@ export function ClientsPanel({
     defaultValues: {
       id: '',
       name: '',
+      adminName: '',
       document: '',
       adminPhone: '',
+      billingName: '',
       billingPhone: '',
       useSameBillingPhone: true,
       billingEmail: '',
@@ -207,8 +211,12 @@ export function ClientsPanel({
           await createMutation.mutateAsync({
             id: values.id,
             name: values.name,
+            adminName: values.adminName,
             document: values.document,
             adminPhone: values.adminPhone,
+            billingName: values.useSameBillingPhone
+              ? values.adminName
+              : values.billingName,
             billingPhone: billingPhone ?? values.adminPhone,
             billingEmail: values.billingEmail,
             status: values.status,
@@ -235,6 +243,14 @@ export function ClientsPanel({
             <label className="mb-1 block text-xs text-muted">Nome do cliente *</label>
             <Input {...register('name')} placeholder="Clinica Cuidare" />
             {errors.name ? <p className="mt-1 text-xs text-bad">{errors.name.message}</p> : null}
+          </div>
+
+          <div>
+            <label className="mb-1 block text-xs text-muted">Nome do administrador *</label>
+            <Input {...register('adminName')} placeholder="Fabio Abdo" />
+            {errors.adminName ? (
+              <p className="mt-1 text-xs text-bad">{errors.adminName.message}</p>
+            ) : null}
           </div>
 
           <div>
@@ -273,6 +289,15 @@ export function ClientsPanel({
               <input type="checkbox" className="h-4 w-4 rounded border-line/70" {...register('useSameBillingPhone')} />
               Usar o mesmo telefone para financeiro
             </label>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-xs text-muted">Nome do financeiro</label>
+            <Input
+              {...register('billingName')}
+              placeholder="Financeiro Cuidare"
+              disabled={watchedUseSameBillingPhone}
+            />
           </div>
 
           <div>
@@ -355,10 +380,10 @@ export function ClientsPanel({
                     <div className="flex flex-col">
                       <span>{client.billingEmail ?? 'Sem email financeiro'}</span>
                       <span className="text-xs">
-                        admin: {client.adminPhone ?? client.phone ?? 'Sem telefone'}
+                        admin: {client.adminName ?? 'Sem nome'} · {client.adminPhone ?? client.phone ?? 'Sem telefone'}
                       </span>
                       <span className="text-xs">
-                        financeiro: {client.billingPhone ?? client.adminPhone ?? client.phone ?? 'Sem telefone'}
+                        financeiro: {client.billingName ?? client.adminName ?? 'Sem nome'} · {client.billingPhone ?? client.adminPhone ?? client.phone ?? 'Sem telefone'}
                       </span>
                     </div>
                   </td>

@@ -44,8 +44,10 @@ model Client {
   id                String             @id
   name              String
   document          String?
+  adminName         String?
   phone             String?
   adminPhone        String?
+  billingName       String?
   billingPhone      String?
   billingEmail      String?
   status            String             @default("active")

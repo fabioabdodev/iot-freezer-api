@@ -21,6 +21,11 @@ export class CreateClientDto {
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(120)
+  adminName: string;
+
+  @IsString()
+  @IsNotEmpty()
   @MaxLength(40)
   @IsClientDocument()
   document: string;
@@ -36,6 +41,11 @@ export class CreateClientDto {
   @MaxLength(30)
   @IsClientPhone()
   billingPhone: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  billingName?: string;
 
   @IsEmail()
   billingEmail: string;
