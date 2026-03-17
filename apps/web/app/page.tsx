@@ -545,122 +545,6 @@ function DashboardContent() {
         />
       </section>
 
-      <div id="contas-modulos" className="scroll-mt-28">
-        <CommercialReadinessPanel
-        clientId={scopedClientId}
-        authToken={authToken}
-        currentUser={user}
-        client={selectedClient}
-        devices={devices}
-        clientModules={clientModules}
-        />
-      </div>
-
-      <CaseStudyGuidePanel
-        clientId={scopedClientId}
-        client={selectedClient}
-        devices={devices}
-        alertRules={alertRules}
-        clientModules={clientModules}
-        onCreateDevice={
-          canCreateDevices
-            ? () => {
-                setEditingDeviceId(null);
-                setFormMode('create');
-              }
-            : undefined
-        }
-      />
-
-      {scopedClientId ? (
-        <Panel className="mt-6 p-4 sm:p-5">
-          <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-muted">
-                Jornada da conta
-              </p>
-              <h2 className="mt-1 text-xl font-semibold">
-                Proximo passo recomendado para {selectedClient?.name ?? scopedClientId}
-              </h2>
-              <p className="mt-2 max-w-3xl text-sm text-muted">
-                Este bloco encurta a demonstracao: mostra em que etapa a conta esta e leva direto para a proxima acao no painel.
-              </p>
-            </div>
-            <Badge>
-              <ArrowRight className="h-3.5 w-3.5 text-accent" />
-              onboarding guiado
-            </Badge>
-          </div>
-
-          <div className="grid gap-3 xl:grid-cols-4">
-            <div className={`rounded-2xl border p-3 ${devices.length > 0 ? 'border-ok/30 bg-ok/10' : 'border-line/70 bg-bg/30'}`}>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted">1. Equipamento</p>
-              <p className="mt-2 text-sm font-medium text-ink">
-                {devices.length > 0 ? `${devices.length} cadastrado(s)` : 'Pendente'}
-              </p>
-            </div>
-            <div className={`rounded-2xl border p-3 ${alertRules.length > 0 ? 'border-ok/30 bg-ok/10' : 'border-line/70 bg-bg/30'}`}>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted">2. Regra</p>
-              <p className="mt-2 text-sm font-medium text-ink">
-                {alertRules.length > 0 ? `${alertRules.length} configurada(s)` : 'Pendente'}
-              </p>
-            </div>
-            <div className={`rounded-2xl border p-3 ${!actuationEnabled || actuators.length > 0 ? 'border-ok/30 bg-ok/10' : 'border-line/70 bg-bg/30'}`}>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted">3. Acionamento</p>
-              <p className="mt-2 text-sm font-medium text-ink">
-                {!actuationEnabled
-                  ? 'Nao contratado'
-                  : actuators.length > 0
-                    ? `${actuators.length} ponto(s)`
-                    : 'Pendente'}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
-              <p className="text-xs uppercase tracking-[0.16em] text-muted">4. Simulacao</p>
-              <p className="mt-2 text-sm font-medium text-ink">
-                {devices.length > 0 && alertRules.length > 0 ? 'Pronta para ensaio' : 'Depois das etapas anteriores'}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            {devices.length === 0 && canCreateDevices ? (
-              <Button
-                variant="primary"
-                onClick={() => {
-                  setEditingDeviceId(null);
-                  setFormMode('create');
-                }}
-              >
-                Cadastrar primeiro equipamento
-              </Button>
-            ) : null}
-
-            {devices.length > 0 && alertRules.length === 0 ? (
-              <Link href="#regras-alerta" className="btn-primary px-4 py-3 text-sm font-semibold">
-                Configurar primeira regra
-              </Link>
-            ) : null}
-
-            {devices.length > 0 && alertRules.length > 0 && actuationEnabled && actuators.length === 0 ? (
-              <Link href="#acionamento" className="btn-primary px-4 py-3 text-sm font-semibold">
-                Cadastrar ponto de acionamento
-              </Link>
-            ) : null}
-
-            {devices.length > 0 && alertRules.length > 0 ? (
-              <Link href="#laboratorio" className="btn-primary px-4 py-3 text-sm font-semibold">
-                Ensaiar demonstracao no laboratorio
-              </Link>
-            ) : null}
-
-            <Link href="#resumo-operacional" className="btn-secondary px-4 py-3 text-sm font-semibold">
-              Revisar resumo da conta
-            </Link>
-          </div>
-        </Panel>
-      ) : null}
-
       <OperationalActivityPanel
         clientId={scopedClientId}
         client={selectedClient}
@@ -1012,6 +896,122 @@ function DashboardContent() {
             hint="Habilite o recurso no painel de contratacao para liberar equipamentos, historico e alertas."
           />
         </div>
+      ) : null}
+
+      <div id="contas-modulos" className="scroll-mt-28">
+        <CommercialReadinessPanel
+        clientId={scopedClientId}
+        authToken={authToken}
+        currentUser={user}
+        client={selectedClient}
+        devices={devices}
+        clientModules={clientModules}
+        />
+      </div>
+
+      <CaseStudyGuidePanel
+        clientId={scopedClientId}
+        client={selectedClient}
+        devices={devices}
+        alertRules={alertRules}
+        clientModules={clientModules}
+        onCreateDevice={
+          canCreateDevices
+            ? () => {
+                setEditingDeviceId(null);
+                setFormMode('create');
+              }
+            : undefined
+        }
+      />
+
+      {scopedClientId ? (
+        <Panel className="mt-6 p-4 sm:p-5">
+          <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-muted">
+                Jornada da conta
+              </p>
+              <h2 className="mt-1 text-xl font-semibold">
+                Proximo passo recomendado para {selectedClient?.name ?? scopedClientId}
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm text-muted">
+                Este bloco encurta a demonstracao: mostra em que etapa a conta esta e leva direto para a proxima acao no painel.
+              </p>
+            </div>
+            <Badge>
+              <ArrowRight className="h-3.5 w-3.5 text-accent" />
+              onboarding guiado
+            </Badge>
+          </div>
+
+          <div className="grid gap-3 xl:grid-cols-4">
+            <div className={`rounded-2xl border p-3 ${devices.length > 0 ? 'border-ok/30 bg-ok/10' : 'border-line/70 bg-bg/30'}`}>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted">1. Equipamento</p>
+              <p className="mt-2 text-sm font-medium text-ink">
+                {devices.length > 0 ? `${devices.length} cadastrado(s)` : 'Pendente'}
+              </p>
+            </div>
+            <div className={`rounded-2xl border p-3 ${alertRules.length > 0 ? 'border-ok/30 bg-ok/10' : 'border-line/70 bg-bg/30'}`}>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted">2. Regra</p>
+              <p className="mt-2 text-sm font-medium text-ink">
+                {alertRules.length > 0 ? `${alertRules.length} configurada(s)` : 'Pendente'}
+              </p>
+            </div>
+            <div className={`rounded-2xl border p-3 ${!actuationEnabled || actuators.length > 0 ? 'border-ok/30 bg-ok/10' : 'border-line/70 bg-bg/30'}`}>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted">3. Acionamento</p>
+              <p className="mt-2 text-sm font-medium text-ink">
+                {!actuationEnabled
+                  ? 'Nao contratado'
+                  : actuators.length > 0
+                    ? `${actuators.length} ponto(s)`
+                    : 'Pendente'}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
+              <p className="text-xs uppercase tracking-[0.16em] text-muted">4. Simulacao</p>
+              <p className="mt-2 text-sm font-medium text-ink">
+                {devices.length > 0 && alertRules.length > 0 ? 'Pronta para ensaio' : 'Depois das etapas anteriores'}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {devices.length === 0 && canCreateDevices ? (
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setEditingDeviceId(null);
+                  setFormMode('create');
+                }}
+              >
+                Cadastrar primeiro equipamento
+              </Button>
+            ) : null}
+
+            {devices.length > 0 && alertRules.length === 0 ? (
+              <Link href="#regras-alerta" className="btn-primary px-4 py-3 text-sm font-semibold">
+                Configurar primeira regra
+              </Link>
+            ) : null}
+
+            {devices.length > 0 && alertRules.length > 0 && actuationEnabled && actuators.length === 0 ? (
+              <Link href="#acionamento" className="btn-primary px-4 py-3 text-sm font-semibold">
+                Cadastrar ponto de acionamento
+              </Link>
+            ) : null}
+
+            {devices.length > 0 && alertRules.length > 0 ? (
+              <Link href="#laboratorio" className="btn-primary px-4 py-3 text-sm font-semibold">
+                Ensaiar demonstracao no laboratorio
+              </Link>
+            ) : null}
+
+            <Link href="#resumo-operacional" className="btn-secondary px-4 py-3 text-sm font-semibold">
+              Revisar resumo da conta
+            </Link>
+          </div>
+        </Panel>
       ) : null}
 
       {actuationEnabled ? (
