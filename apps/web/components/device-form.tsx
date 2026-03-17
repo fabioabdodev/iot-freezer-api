@@ -137,7 +137,9 @@ export function DeviceForm({
         const parsed = formSchema.parse(values);
         const nextValues = {
           ...parsed,
-          clientId: allowStructureFields ? parsed.clientId : undefined,
+          clientId: allowStructureFields
+            ? parsed.clientId ?? clientId
+            : undefined,
           name: allowStructureFields ? parsed.name : undefined,
           location: allowStructureFields ? parsed.location : undefined,
           minTemperature: allowTemperatureFields
@@ -217,7 +219,8 @@ export function DeviceForm({
               <Input
                 {...register('clientId')}
                 placeholder="cuidare-vacinas"
-                disabled={hasScopedClient}
+                readOnly={hasScopedClient}
+                aria-readonly={hasScopedClient}
               />
               {hasScopedClient ? (
                 <p className="mt-1 text-xs text-muted">
