@@ -9,9 +9,9 @@ import {
   Query,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { ActuatorsService } from './actuators.service';
 import { AckActuationDto } from './dto/ack-actuation.dto';
+import { RuntimeDeviceKeyService } from '../../infra/runtime-auth/runtime-device-key.service';
 
 @Controller('iot/actuators')
 export class IotActuationController {
@@ -19,7 +19,7 @@ export class IotActuationController {
 
   constructor(
     private readonly actuatorsService: ActuatorsService,
-    private readonly configService: ConfigService,
+    private readonly runtimeDeviceKeyService: RuntimeDeviceKeyService,
   ) {}
 
   @Get()
@@ -27,17 +27,20 @@ export class IotActuationController {
     @Headers('x-device-key') deviceKey: string | undefined,
     @Query('deviceId') deviceId?: string,
   ) {
-    const expectedKey = this.configService.get<string>('DEVICE_API_KEY');
+    if (!deviceId) {
+      return [];
+    }
 
-    if (!expectedKey || !deviceKey || deviceKey !== expectedKey) {
+    const isValidKey = await this.runtimeDeviceKeyService.isValidForDevice(
+      deviceKey,
+      deviceId,
+    );
+
+    if (!isValidKey) {
       this.logger.warn(
         `Unauthorized actuation polling for deviceId=${deviceId ?? 'missing'}`,
       );
       throw new UnauthorizedException('Invalid device key');
-    }
-
-    if (!deviceId) {
-      return [];
     }
 
     return this.actuatorsService.listForRuntime(deviceId);
@@ -49,9 +52,12 @@ export class IotActuationController {
     @Headers('x-device-key') deviceKey: string | undefined,
     @Body() body: AckActuationDto,
   ) {
-    const expectedKey = this.configService.get<string>('DEVICE_API_KEY');
+    const isValidKey = await this.runtimeDeviceKeyService.isValidForActuator(
+      deviceKey,
+      actuatorId,
+    );
 
-    if (!expectedKey || !deviceKey || deviceKey !== expectedKey) {
+    if (!isValidKey) {
       this.logger.warn(
         `Unauthorized actuation ack for actuatorId=${actuatorId}`,
       );

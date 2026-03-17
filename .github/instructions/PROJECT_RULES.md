@@ -230,6 +230,10 @@ Regras atuais:
 ## Seguranca
 
 - `x-device-key` e obrigatorio no endpoint do device
+- a direcao atual de seguranca para runtime IoT e:
+  - preferir `deviceApiKey` por cliente
+  - manter `DEVICE_API_KEY` global apenas como fallback de transicao
+  - sempre que possivel, simuladores e integracoes devem usar a chave da conta em foco
 - nunca comitar `.env`
 - nunca logar `DATABASE_URL`, tokens ou webhooks sensiveis
 - segredos de pipeline devem ficar em GitHub Secrets
@@ -331,6 +335,24 @@ Direcao atual do formulario de equipamentos:
   - validacao com `safeParse`
   - envio por chamada direta de API
   - feedback visual claro de sucesso, erro e refresh
+
+## Registro adicional de runtime IoT em 17/03/2026
+
+Direcao consolidada nesta rodada:
+
+- `DEVICE_API_KEY` global nao deve mais ser tratada como modelo final de seguranca
+- o runtime IoT deve caminhar para isolamento por cliente
+- o primeiro passo implementado foi `deviceApiKey` por cliente, com fallback de transicao
+
+Regras praticas agora:
+
+- novos clientes recebem `deviceApiKey` automaticamente
+- o perfil do cliente deve ser a referencia operacional para copiar ou girar essa chave
+- `POST /iot/temperature` pode receber `client_id` para autenticar um device novo antes de existir associacao previa no banco
+- `scripts/iot-simulator.mjs` deve usar:
+  - `--url` para apontar para API remota
+  - `--client-id` para incluir `client_id` no payload
+- no dashboard, o laboratorio deve preferir comandos da conta em foco e nao exemplos genericos que apontem para `localhost`
 
 ## Registro operacional recente
 

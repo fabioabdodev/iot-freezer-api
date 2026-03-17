@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEmail,
   IsIn,
   IsNotEmpty,
@@ -37,6 +38,15 @@ export class UpdateClientDto {
   @MaxLength(30)
   @IsClientPhone()
   alertPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  deviceApiKey?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  regenerateDeviceApiKey?: boolean;
 
   @IsOptional()
   @IsString()

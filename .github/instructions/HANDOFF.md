@@ -383,4 +383,38 @@ npm run test:e2e -- --runInBand test/actuators.e2e-spec.ts
     - primeiro equipamento criado
   - proximo passo operacional:
     - criar a primeira regra de alerta do `Freezer Vacinas 01`
+- em `17/03/2026` a autenticacao de runtime IoT evoluiu de chave global para chave por cliente com fallback de transicao:
+  - `Client` ganhou o campo `deviceApiKey`
+  - novos clientes agora recebem `deviceApiKey` automaticamente no backend
+  - atualizacao de cliente agora pode regenerar essa chave
+  - `POST /iot/temperature` passou a aceitar `client_id` opcional no payload
+  - no ingest, a ordem de validacao agora e:
+    - `deviceApiKey` do cliente informado em `client_id`
+    - senao `deviceApiKey` do cliente dono do `device`
+    - senao fallback para `DEVICE_API_KEY` global
+  - `GET /iot/actuators` e `POST /iot/actuators/:id/ack` seguem a mesma ideia:
+    - usam a chave do cliente dono do device/atuador
+    - mantem fallback para `DEVICE_API_KEY` global enquanto a base antiga existir
+- o simulador IoT tambem foi alinhado a essa mudanca:
+  - quando `--client-id` for informado, ele agora envia `client_id` no payload
+  - o argumento correto para trocar o host da API continua sendo `--url`, nao `--base-url`
+- o laboratorio do dashboard foi corrigido para nao induzir a erro:
+  - comandos de simulacao passaram a usar `--url https://api-monitor.virtuagil.com.br`
+  - no caso `Cuidare`, os comandos agora usam `freezer_vacinas_01`
+  - quando a conta possui `deviceApiKey`, o laboratorio ja renderiza a chave real no comando copiado
+- o perfil do cliente agora expoe a `deviceApiKey` operacional:
+  - campo somente leitura
+  - botao para copiar
+  - botao para gerar nova chave
+- commit relevante desta rodada:
+  - `f09598b` - `fix simulation lab production commands`
+- ponto de retomada atualizado:
+  - validar em producao a migration `20260317173000_add_client_device_api_key`
+  - abrir o perfil da `Cuidare`
+  - copiar a `deviceApiKey` da conta
+  - disparar simulacao critica com:
+    - `freezer_vacinas_01`
+    - `--url https://api-monitor.virtuagil.com.br`
+    - chave da propria conta
+  - confirmar execucao no `n8n` e entrega no `WhatsApp`
 

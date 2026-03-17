@@ -1,4 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
@@ -43,6 +44,9 @@ export class ClientsService {
       billingPhone,
     });
 
+    const deviceApiKey = this.resolveClientDeviceApiKey(dto.id, dto.deviceApiKey);
+    await this.ensureDeviceApiKeyIsUnique(deviceApiKey);
+
     return this.prisma.client.create({
       data: {
         id: dto.id,
@@ -52,13 +56,14 @@ export class ClientsService {
         phone: adminPhone,
         adminPhone,
         alertPhone,
+        deviceApiKey,
         billingName: dto.billingName?.trim() ?? dto.adminName.trim(),
         billingPhone,
         billingEmail: dto.billingEmail.trim(),
         status: dto.status ?? 'active',
         notes: dto.notes,
       },
-    });
+    } as any);
   }
 
   async list() {
@@ -112,6 +117,15 @@ export class ClientsService {
       id,
     );
 
+    const deviceApiKey = dto.regenerateDeviceApiKey
+      ? this.generateClientDeviceApiKey(id)
+      : this.resolveClientDeviceApiKey(
+          id,
+          dto.deviceApiKey,
+          (existing as any).deviceApiKey ?? undefined,
+        );
+    await this.ensureDeviceApiKeyIsUnique(deviceApiKey, id);
+
     return this.prisma.client.update({
       where: { id },
       data: {
@@ -121,13 +135,14 @@ export class ClientsService {
         phone: dto.adminPhone != null ? adminPhone : undefined,
         adminPhone: dto.adminPhone != null ? adminPhone : undefined,
         alertPhone: dto.alertPhone != null ? alertPhone : undefined,
+        deviceApiKey,
         billingName: dto.billingName?.trim(),
         billingPhone: dto.billingPhone != null ? billingPhone : undefined,
         billingEmail: dto.billingEmail?.trim(),
         status: dto.status,
         notes: dto.notes,
       },
-    });
+    } as any);
   }
 
   async remove(id: string) {
@@ -163,6 +178,45 @@ export class ClientsService {
       if (duplicatedPhone) {
         throw new ConflictException('Ja existe um cliente com este telefone');
       }
+    }
+  }
+
+  private resolveClientDeviceApiKey(
+    clientId: string,
+    providedKey?: string,
+    currentKey?: string,
+  ) {
+    const normalizedKey = providedKey?.trim();
+
+    if (normalizedKey) {
+      return normalizedKey;
+    }
+
+    if (currentKey) {
+      return currentKey;
+    }
+
+    return this.generateClientDeviceApiKey(clientId);
+  }
+
+  private generateClientDeviceApiKey(clientId: string) {
+    return `dvk_${clientId}_${randomBytes(10).toString('hex')}`;
+  }
+
+  private async ensureDeviceApiKeyIsUnique(
+    deviceApiKey: string,
+    ignoredClientId?: string,
+  ) {
+    const duplicatedKey = await this.prisma.client.findFirst({
+      where: {
+        id: ignoredClientId ? { not: ignoredClientId } : undefined,
+        deviceApiKey,
+      },
+      select: { id: true },
+    } as any);
+
+    if (duplicatedKey) {
+      throw new ConflictException('Ja existe um cliente com esta chave de device');
     }
   }
 }

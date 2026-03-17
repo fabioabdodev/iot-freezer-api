@@ -30,12 +30,14 @@ export class IngestService {
     await this.prisma.device.upsert({
       where: { id: body.device_id },
       update: {
+        clientId: body.client_id ?? undefined,
         lastSeen: receivedAt,
         isOffline: false,
         offlineSince: null,
       },
       create: {
         id: body.device_id,
+        clientId: body.client_id ?? undefined,
         lastSeen: receivedAt,
         isOffline: false,
       },

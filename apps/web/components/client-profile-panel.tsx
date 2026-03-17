@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Save } from 'lucide-react';
+import { Copy, RefreshCcw, Save } from 'lucide-react';
 import { isValidCpfOrCnpj, isValidEmail, isValidPhone } from '@/lib/client-form';
 import { useClient } from '@/hooks/use-client';
 import { useClientMutations } from '@/hooks/use-client-mutations';
@@ -55,6 +55,7 @@ export function ClientProfilePanel({
   const [document, setDocument] = useState('');
   const [adminPhone, setAdminPhone] = useState('');
   const [alertPhone, setAlertPhone] = useState('');
+  const [deviceApiKey, setDeviceApiKey] = useState('');
   const [billingName, setBillingName] = useState('');
   const [billingPhone, setBillingPhone] = useState('');
   const [useSameAlertPhone, setUseSameAlertPhone] = useState(true);
@@ -75,6 +76,7 @@ export function ClientProfilePanel({
     const nextBillingPhone = data.billingPhone ?? nextAdminPhone;
     setAdminPhone(nextAdminPhone);
     setAlertPhone(nextAlertPhone);
+    setDeviceApiKey(data.deviceApiKey ?? '');
     setBillingName(nextBillingName);
     setBillingPhone(nextBillingPhone);
     setUseSameAlertPhone(nextAlertPhone === nextAdminPhone);
@@ -154,6 +156,24 @@ export function ClientProfilePanel({
       status,
       notes: notes.trim() || undefined,
     });
+  }
+
+  async function handleRotateDeviceApiKey() {
+    setFormError(null);
+    const updatedClient = await updateMutation.mutateAsync({
+      regenerateDeviceApiKey: true,
+    });
+    setDeviceApiKey(updatedClient.deviceApiKey ?? '');
+  }
+
+  async function handleCopyDeviceApiKey() {
+    if (!deviceApiKey) return;
+
+    try {
+      await navigator.clipboard.writeText(deviceApiKey);
+    } catch {
+      setFormError('Nao foi possivel copiar a chave do device.');
+    }
   }
 
   return (
@@ -272,6 +292,36 @@ export function ClientProfilePanel({
                   onChange={(event) => setAdminPhone(event.target.value)}
                   placeholder="(31) 99999-0000"
                 />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-muted">Chave do device da conta</label>
+                <Input
+                  value={deviceApiKey}
+                  readOnly
+                  placeholder="Gerada automaticamente por cliente"
+                />
+                <div className="mt-2 flex gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => void handleCopyDeviceApiKey()}
+                    disabled={!deviceApiKey}
+                  >
+                    <Copy className="mr-2 h-3.5 w-3.5" />
+                    Copiar
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    loading={updateMutation.isPending}
+                    onClick={() => void handleRotateDeviceApiKey()}
+                  >
+                    <RefreshCcw className="mr-2 h-3.5 w-3.5" />
+                    Gerar nova chave
+                  </Button>
+                </div>
               </div>
               <div>
                 <label className="mb-2 flex items-center gap-2 text-xs text-muted">

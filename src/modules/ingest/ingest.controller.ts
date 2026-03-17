@@ -7,9 +7,9 @@ import {
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { IngestService } from './ingest.service';
 import { TemperatureDto } from './dto/temperature.dto';
+import { RuntimeDeviceKeyService } from '../../infra/runtime-auth/runtime-device-key.service';
 
 @Controller('iot') // mantém a URL antiga: /iot/temperature
 export class IngestController {
@@ -17,7 +17,7 @@ export class IngestController {
 
   constructor(
     private readonly ingest: IngestService,
-    private readonly configService: ConfigService,
+    private readonly runtimeDeviceKeyService: RuntimeDeviceKeyService,
   ) {}
 
   @Post('temperature')
@@ -26,9 +26,15 @@ export class IngestController {
     @Headers('x-device-key') deviceKey: string | undefined,
     @Body() body: TemperatureDto,
   ) {
-    const expectedKey = this.configService.get<string>('DEVICE_API_KEY');
+    const isValidKey = await this.runtimeDeviceKeyService.isValidForIngest(
+      deviceKey,
+      {
+        deviceId: body.device_id,
+        clientId: body.client_id,
+      },
+    );
 
-    if (!expectedKey || !deviceKey || deviceKey !== expectedKey) {
+    if (!isValidKey) {
       this.logger.warn(
         `Unauthorized ingest attempt for device_id=${body.device_id}`,
       );

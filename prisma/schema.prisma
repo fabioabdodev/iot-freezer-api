@@ -49,6 +49,7 @@ model Client {
   phone             String?
   adminPhone        String?
   alertPhone        String?
+  deviceApiKey      String?            @unique
   billingName       String?
   billingPhone      String?
   billingEmail      String?

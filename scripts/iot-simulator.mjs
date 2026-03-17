@@ -284,6 +284,10 @@ async function main() {
         device_id: simulator.deviceId,
         temperature,
       };
+
+      if (clientId) {
+        payload.client_id = clientId;
+      }
       simulator.attempts += 1;
 
       try {

@@ -49,6 +49,7 @@ export function SimulationLabPanel({ clientId, client }: SimulationLabPanelProps
   const demoTenant = client?.name ?? clientId ?? 'conta-demo';
   const simulatorUrl = 'https://api-monitor.virtuagil.com.br';
   const simulatorDevices = resolveSimulationDevices(clientId);
+  const simulatorApiKey = client?.deviceApiKey ?? 'SUA_CHAVE';
 
   const demoSteps: DemoStep[] = [
     {
@@ -82,21 +83,21 @@ export function SimulationLabPanel({ clientId, client }: SimulationLabPanelProps
       title: 'Carga normal',
       description:
         'Mantem freezers operando dentro da faixa esperada para validar painel e historico.',
-      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset normal --ensure-devices --url ${simulatorUrl}${suffix} --api-key SUA_CHAVE`,
+      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset normal --ensure-devices --url ${simulatorUrl}${suffix} --api-key ${simulatorApiKey}`,
       badge: 'baseline',
     },
     {
       title: 'Pre-alerta',
       description:
         'Aproxima as leituras do limite superior para conferir comportamento visual antes do disparo.',
-      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset alerta --ensure-devices --url ${simulatorUrl}${suffix} --api-key SUA_CHAVE`,
+      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset alerta --ensure-devices --url ${simulatorUrl}${suffix} --api-key ${simulatorApiKey}`,
       badge: 'alerta',
     },
     {
       title: 'Cenario critico',
       description:
         'Gera valores fora da faixa para testar alerta de temperatura e resposta operacional.',
-      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset critico --ensure-devices --url ${simulatorUrl}${suffix} --api-key SUA_CHAVE`,
+      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset critico --ensure-devices --url ${simulatorUrl}${suffix} --api-key ${simulatorApiKey}`,
       badge: 'critico',
     },
     {
