@@ -45,6 +45,7 @@ import { MetricCard } from '@/components/ui/metric-card';
 import { Panel } from '@/components/ui/panel';
 import { TurnstileWidget } from '@/components/ui/turnstile-widget';
 import { useAuth } from '@/lib/auth-context';
+import { createDevice, deleteDevice } from '@/lib/api';
 import { useClient } from '@/hooks/use-client';
 import { useActuators } from '@/hooks/use-actuators';
 import { useAlertRules } from '@/hooks/use-alert-rules';
@@ -119,6 +120,8 @@ function DashboardContent() {
   const [deviceProgressMessage, setDeviceProgressMessage] = useState<string | null>(
     null,
   );
+  const [deviceLocalError, setDeviceLocalError] = useState<string | null>(null);
+  const [isRunningDeviceDiagnostic, setIsRunningDeviceDiagnostic] = useState(false);
 
   useEffect(() => {
     // Mantem o campo de filtro sincronizado quando a URL muda por navegacao ou refresh.
@@ -261,6 +264,7 @@ function DashboardContent() {
     // A remocao afeta selecao e formulario; por isso limpamos os estados relacionados.
     setDeletingDeviceId(id);
     setDeviceSuccessMessage(null);
+    setDeviceLocalError(null);
     setDeviceProgressMessage('Removendo equipamento...');
     try {
       await deleteMutation.mutateAsync(id);
@@ -282,12 +286,53 @@ function DashboardContent() {
 
   async function handleRefreshDevices() {
     setRefreshMessage(null);
+    setDeviceLocalError(null);
     setDeviceProgressMessage('Atualizando lista...');
     try {
       await refetch();
       setRefreshMessage('Lista de equipamentos atualizada.');
     } finally {
       setDeviceProgressMessage(null);
+    }
+  }
+
+  async function handleDiagnoseDeviceCreate() {
+    if (!scopedClientId || !authToken) return;
+
+    const diagnosticId = `diag_${Date.now()}`;
+
+    setDeviceSuccessMessage(null);
+    setRefreshMessage(null);
+    setDeviceLocalError(null);
+    setIsRunningDeviceDiagnostic(true);
+    setDeviceProgressMessage('Testando cadastro de equipamento na API...');
+
+    try {
+      await createDevice(
+        {
+          id: diagnosticId,
+          clientId: scopedClientId,
+          name: 'Diagnostico temporario',
+          location: 'Teste interno',
+          minTemperature: -20,
+          maxTemperature: -10,
+        },
+        authToken,
+      );
+
+      setDeviceProgressMessage('Cadastro respondeu. Removendo equipamento temporario...');
+      await deleteDevice(diagnosticId, scopedClientId, authToken);
+      await refetch();
+      setDeviceSuccessMessage('Diagnostico concluido: a API criou e removeu um equipamento temporario.');
+    } catch (error) {
+      setDeviceLocalError(
+        error instanceof Error
+          ? error.message
+          : 'Falha ao diagnosticar o cadastro de equipamento.',
+      );
+    } finally {
+      setDeviceProgressMessage(null);
+      setIsRunningDeviceDiagnostic(false);
     }
   }
 
@@ -640,6 +685,18 @@ function DashboardContent() {
             {canCreateDevices ? (
               <Button
                 onClick={() => {
+                  void handleDiagnoseDeviceCreate();
+                }}
+                variant="secondary"
+                className="px-3 py-2.5"
+                loading={isRunningDeviceDiagnostic}
+              >
+                {isRunningDeviceDiagnostic ? 'Diagnosticando...' : 'Diagnosticar cadastro'}
+              </Button>
+            ) : null}
+            {canCreateDevices ? (
+              <Button
+                onClick={() => {
                   setEditingDeviceId(null);
                   setFormMode((current) =>
                     current === 'create' ? 'closed' : 'create',
@@ -667,6 +724,7 @@ function DashboardContent() {
               onSubmit={async (values) => {
                 setDeviceSuccessMessage(null);
                 setRefreshMessage(null);
+                setDeviceLocalError(null);
                 setDeviceProgressMessage('Enviando equipamento para a API...');
                 try {
                   await createMutation.mutateAsync({
@@ -706,6 +764,7 @@ function DashboardContent() {
               onSubmit={async (values) => {
                 setDeviceSuccessMessage(null);
                 setRefreshMessage(null);
+                setDeviceLocalError(null);
                 setDeviceProgressMessage('Salvando alteracoes do equipamento...');
                 try {
                   await updateMutation.mutateAsync({
@@ -735,9 +794,11 @@ function DashboardContent() {
 
         {createMutation.isError ||
         updateMutation.isError ||
-        deleteMutation.isError ? (
+        deleteMutation.isError ||
+        deviceLocalError ? (
           <Feedback variant="danger" className="mb-3">
-            {createMutation.error?.message ??
+            {deviceLocalError ??
+              createMutation.error?.message ??
               updateMutation.error?.message ??
               deleteMutation.error?.message ??
               'Erro ao salvar alteracoes do equipamento. Verifique os dados e tente novamente.'}
