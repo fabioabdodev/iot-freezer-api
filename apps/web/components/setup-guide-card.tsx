@@ -45,7 +45,7 @@ export function SetupGuideCard({
         </div>
         <Badge>
           <Sparkles className="h-3.5 w-3.5 text-accent" />
-          onboarding
+          guia
         </Badge>
       </div>
 

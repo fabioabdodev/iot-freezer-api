@@ -849,29 +849,29 @@ function DashboardContent() {
         ) : null}
         {!isLoading && !isError && temperatureEnabled && devices.length === 0 ? (
           <SetupGuideCard
-            eyebrow="Primeiros passos"
+            eyebrow="Equipamentos"
             title={
               selectedClient?.name
-                ? `${selectedClient.name} ainda nao tem o primeiro equipamento monitorado`
-                : 'Este cliente ainda nao tem o primeiro equipamento monitorado'
+                ? `${selectedClient.name} ainda nao tem equipamento cadastrado`
+                : 'Este cliente ainda nao tem equipamento cadastrado'
             }
             description={
               selectedClient?.name
-                ? `Para iniciar a implantacao da conta ${selectedClient.name}, cadastre o equipamento principal, defina a faixa de temperatura e depois movimente leituras para mostrar historico, online/offline e alertas.`
-                : 'Para iniciar a simulacao de implantacao, cadastre o equipamento principal, defina a faixa de temperatura e depois movimente leituras para mostrar historico, online/offline e alertas.'
+                ? `Cadastre o primeiro equipamento da conta para liberar monitoramento e regras.`
+                : 'Cadastre o primeiro equipamento para liberar monitoramento e regras.'
             }
             steps={[
               {
-                title: 'Cadastrar o equipamento principal',
-                description: 'Use um ID tecnico simples, um nome legivel e um local claro para a equipe do cliente.',
+                title: '1. Cadastrar equipamento',
+                description: 'Defina ID, nome e local.',
               },
               {
-                title: 'Simular operacao normal',
-                description: 'Movimente leituras pelo laboratorio para encher historico e mostrar o equipamento online em estado saudavel.',
+                title: '2. Ajustar faixa',
+                description: 'Preencha temperatura minima e maxima.',
               },
               {
-                title: 'Mostrar alerta e resposta operacional',
-                description: 'Depois do primeiro equipamento, configure a regra de alerta e simule um evento para validar a resposta da conta.',
+                title: '3. Criar regra',
+                description: 'Depois siga para regras de alerta.',
               },
             ]}
             primaryActionLabel={canCreateDevices ? 'Cadastrar primeiro equipamento' : undefined}
