@@ -153,8 +153,17 @@ export function DeviceForm({
           : undefined,
       };
 
-      await onSubmit(nextValues);
-      setSubmitStateLabel(null);
+      try {
+        await onSubmit(nextValues);
+        setSubmitStateLabel(null);
+      } catch (error) {
+        setSubmitStateLabel(null);
+        setSubmitHint(
+          error instanceof Error
+            ? error.message
+            : 'Nao foi possivel concluir o cadastro do equipamento.',
+        );
+      }
     },
     () => {
       setSubmitStateLabel(null);
