@@ -2,7 +2,9 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
+  RequestTimeoutException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -20,6 +22,8 @@ type UpdateDeviceOptions = {
 
 @Injectable()
 export class DevicesService {
+  private readonly logger = new Logger(DevicesService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly cache: CacheService,
@@ -49,7 +53,16 @@ export class DevicesService {
       isOffline: false,
     };
 
-    const created = await this.prisma.device.create({ data });
+    this.logger.log(
+      `Creating device id=${dto.id} clientId=${dto.clientId ?? 'null'}`,
+    );
+
+    const created = await this.runWithTimeout(
+      this.prisma.device.create({ data }),
+      `create device id=${dto.id}`,
+    );
+
+    this.logger.log(`Created device id=${created.id}`);
     this.invalidateDeviceCaches();
     return created;
   }
@@ -284,6 +297,24 @@ export class DevicesService {
 
   private getCacheTtlSeconds() {
     return this.configService.get<number>('CACHE_TTL_SECONDS') ?? 15;
+  }
+
+  private async runWithTimeout<T>(operation: Promise<T>, label: string) {
+    const timeoutMs = 10000;
+
+    return Promise.race([
+      operation,
+      new Promise<T>((_, reject) => {
+        setTimeout(() => {
+          this.logger.error(`Timed out while trying to ${label}`);
+          reject(
+            new RequestTimeoutException(
+              'A API demorou para concluir o cadastro do equipamento.',
+            ),
+          );
+        }, timeoutMs);
+      }),
+    ]);
   }
 
   private invalidateDeviceCaches() {
