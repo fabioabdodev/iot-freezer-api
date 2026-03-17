@@ -353,6 +353,10 @@ Regras praticas agora:
   - `--url` para apontar para API remota
   - `--client-id` para incluir `client_id` no payload
 - no dashboard, o laboratorio deve preferir comandos da conta em foco e nao exemplos genericos que apontem para `localhost`
+- em retomadas futuras, se o fluxo envolver `n8n` e Evolution:
+  - primeiro confirmar workflow publicado no `n8n`
+  - depois confirmar instancia conectada no Evolution
+  - so entao disparar simulacao pela plataforma
 
 ## Registro operacional recente
 

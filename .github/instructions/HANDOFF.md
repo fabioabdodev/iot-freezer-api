@@ -417,4 +417,15 @@ npm run test:e2e -- --runInBand test/actuators.e2e-spec.ts
     - `--url https://api-monitor.virtuagil.com.br`
     - chave da propria conta
   - confirmar execucao no `n8n` e entrega no `WhatsApp`
+- retomada recomendada para o proximo chat:
+  - considerar o workflow `IoT - Alerta de Temperatura - WhatsApp` no `n8n` como base ativa
+  - considerar a integracao com Evolution validada manualmente na versao `2.3.7`
+  - validar se a mensagem real sai da plataforma, nao apenas do teste manual do `n8n`
+  - revisar o bloco `Laboratorio` depois do deploy mais recente
+  - simplificar ainda mais a UX do laboratorio para cenarios prontos:
+    - operacao normal
+    - pre-alerta
+    - cenario critico
+    - offline
+  - evitar voltar a comandos com `localhost` ou devices genericos quando a conta em foco for `Cuidare`
 
