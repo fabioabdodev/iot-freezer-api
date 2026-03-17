@@ -93,8 +93,10 @@ export function DeviceForm({
   const [submitStateLabel, setSubmitStateLabel] = useState<string | null>(null);
   const {
     register,
-    handleSubmit,
+    getValues,
     reset,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<DeviceFormValues>({
     resolver: zodResolver(formSchema),
@@ -133,52 +135,60 @@ export function DeviceForm({
     });
   }, [mode, device, clientId, reset]);
 
-  const submitDeviceForm = handleSubmit(
-    async (values) => {
-      setSubmitHint(null);
-      setSubmitStateLabel('Enviando equipamento...');
-      const parsed = formSchema.parse(values);
-      const nextValues = {
-        ...parsed,
-        clientId: allowStructureFields
-          ? parsed.clientId ?? clientId
-          : undefined,
-        name: allowStructureFields ? parsed.name : undefined,
-        location: allowStructureFields ? parsed.location : undefined,
-        minTemperature: allowTemperatureFields
-          ? parsed.minTemperature
-          : undefined,
-        maxTemperature: allowTemperatureFields
-          ? parsed.maxTemperature
-          : undefined,
-      };
+  async function submitDeviceForm() {
+    const result = formSchema.safeParse(getValues());
 
-      try {
-        await onSubmit(nextValues);
-        setSubmitStateLabel(null);
-      } catch (error) {
-        setSubmitStateLabel(null);
-        setSubmitHint(
-          error instanceof Error
-            ? error.message
-            : 'Nao foi possivel concluir o cadastro do equipamento.',
-        );
+    if (!result.success) {
+      clearErrors();
+      for (const issue of result.error.issues) {
+        const fieldName = issue.path[0];
+        if (typeof fieldName === 'string') {
+          setError(fieldName as keyof DeviceFormValues, {
+            type: 'manual',
+            message: issue.message,
+          });
+        }
       }
-    },
-    () => {
       setSubmitStateLabel(null);
       setSubmitHint('Revise os campos destacados antes de continuar.');
-    },
-  );
+      return;
+    }
+
+    clearErrors();
+    setSubmitHint(null);
+    setSubmitStateLabel('Enviando equipamento...');
+
+    const parsed = result.data;
+    const nextValues = {
+      ...parsed,
+      clientId: allowStructureFields
+        ? parsed.clientId ?? clientId
+        : undefined,
+      name: allowStructureFields ? parsed.name : undefined,
+      location: allowStructureFields ? parsed.location : undefined,
+      minTemperature: allowTemperatureFields
+        ? parsed.minTemperature
+        : undefined,
+      maxTemperature: allowTemperatureFields
+        ? parsed.maxTemperature
+        : undefined,
+    };
+
+    try {
+      await onSubmit(nextValues);
+      setSubmitStateLabel(null);
+    } catch (error) {
+      setSubmitStateLabel(null);
+      setSubmitHint(
+        error instanceof Error
+          ? error.message
+          : 'Nao foi possivel concluir o cadastro do equipamento.',
+      );
+    }
+  }
 
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        void submitDeviceForm();
-      }}
-      className=""
-    >
+    <div className="">
       <Panel variant="strong" className="p-5">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-sm font-semibold tracking-wide text-ink">
@@ -295,14 +305,17 @@ export function DeviceForm({
 
         <div className="mt-4 flex items-center gap-2">
           <button
-            type="submit"
+            type="button"
             disabled={loading}
+            onClick={() => {
+              void submitDeviceForm();
+            }}
             className="inline-flex min-w-[168px] items-center justify-center rounded-2xl bg-[linear-gradient(135deg,hsl(var(--accent))_0%,hsl(var(--accent-2))_100%)] px-4 py-3 text-sm font-semibold text-slate-950 transition duration-150 active:scale-[0.98] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? 'Salvando...' : mode === 'create' ? 'Criar equipamento' : 'Salvar alteracoes'}
           </button>
         </div>
       </Panel>
-    </form>
+    </div>
   );
 }
