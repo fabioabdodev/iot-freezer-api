@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Lightbulb, MapPinned, Thermometer } from 'lucide-react';
+import { MapPinned, Thermometer } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -180,37 +180,6 @@ export function DeviceForm({
           <Feedback variant="danger" className="mb-4">
             {submitHint}
           </Feedback>
-        ) : null}
-
-        {mode === 'create' && allowStructureFields ? (
-          <div className="mb-4 grid gap-3 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
-              <div className="flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-accent" />
-                <p className="text-sm font-medium text-ink">Exemplo para onboarding</p>
-              </div>
-              <p className="mt-2 text-xs leading-6 text-muted">
-                Quando estiver simulando um cliente com um equipamento critico,
-                prefira um identificador simples, nome legivel e local facil de
-                reconhecer pela equipe.
-              </p>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
-                <p className="text-xs uppercase tracking-[0.16em] text-muted">Codigo do equipamento</p>
-                <p className="mt-2 text-sm font-medium text-ink">freezer_vacinas_01</p>
-              </div>
-              <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
-                <p className="text-xs uppercase tracking-[0.16em] text-muted">Nome</p>
-                <p className="mt-2 text-sm font-medium text-ink">Freezer Vacinas 01</p>
-              </div>
-              <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
-                <p className="text-xs uppercase tracking-[0.16em] text-muted">Local</p>
-                <p className="mt-2 text-sm font-medium text-ink">Sala de armazenamento</p>
-              </div>
-            </div>
-          </div>
         ) : null}
 
         <div className="grid gap-3 sm:grid-cols-2">
