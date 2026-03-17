@@ -301,7 +301,10 @@ function DashboardContent() {
                 <p className="text-sm uppercase tracking-[0.24em] text-muted">
                   Virtuagil Monitor
                 </p>
-                <h1 className="mt-3 font-[var(--font-display)] text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+                <h1
+                  className="mt-3 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
                   Plataforma de monitoramento e automacao IoT
                 </h1>
               </div>
@@ -462,7 +465,10 @@ function DashboardContent() {
             <p className="mb-3 text-sm uppercase tracking-[0.22em] text-muted">
               Plataforma de monitoramento
             </p>
-            <h1 className="max-w-2xl font-[var(--font-display)] text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+            <h1
+              className="max-w-2xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
               Painel de monitoramento com telemetria, alertas e historico
               operacional em uma unica camada.
             </h1>
