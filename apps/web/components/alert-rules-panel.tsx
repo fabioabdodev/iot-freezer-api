@@ -1,12 +1,13 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { BellRing, Thermometer, TriangleAlert } from 'lucide-react';
+import { BellRing, ChevronDown, Thermometer, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useAlertRuleMutations } from '@/hooks/use-alert-rule-mutations';
 import { useAlertRules } from '@/hooks/use-alert-rules';
+import { createAlertRule, updateAlertRule } from '@/lib/api';
 import { ClientSummary } from '@/types/client';
 import { DeviceSummary } from '@/types/device';
 import { Badge } from '@/components/ui/badge';
@@ -98,13 +99,19 @@ export function AlertRulesPanel({
   const [deletingRuleId, setDeletingRuleId] = useState<string | null>(null);
   const [pendingRuleId, setPendingRuleId] = useState<string | null>(null);
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isSubmittingRule, setIsSubmittingRule] = useState(false);
   const rules = data ?? [];
   const editingRule = rules.find((rule) => rule.id === editingRuleId) ?? null;
 
   const {
     register,
-    handleSubmit,
+    getValues,
     reset,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -130,6 +137,8 @@ export function AlertRulesPanel({
       });
       return;
     }
+
+    setIsCreateOpen(true);
 
     reset({
       sensorType: editingRule.sensorType,
@@ -158,6 +167,74 @@ export function AlertRulesPanel({
       id: ruleId,
       payload: { enabled },
     });
+  }
+
+  async function handleSubmitRule() {
+    if (!clientId) return;
+
+    const result = formSchema.safeParse(getValues());
+
+    if (!result.success) {
+      clearErrors();
+      for (const issue of result.error.issues) {
+        const fieldName = issue.path[0];
+        if (typeof fieldName === 'string') {
+          setError(fieldName as keyof FormValues, {
+            type: 'manual',
+            message: issue.message,
+          });
+        }
+      }
+      setFormError('Revise os campos destacados antes de continuar.');
+      setSuccessMessage(null);
+      return;
+    }
+
+    clearErrors();
+    setFormError(null);
+    setSuccessMessage(null);
+    setIsSubmittingRule(true);
+
+    try {
+      const values = result.data;
+      const payload = {
+        clientId,
+        deviceId: values.deviceId,
+        sensorType: values.sensorType,
+        minValue: values.minValue,
+        maxValue: values.maxValue,
+        cooldownMinutes: values.cooldownMinutes,
+        toleranceMinutes: values.toleranceMinutes,
+        enabled: editingRule ? editingRule.enabled : true,
+      };
+
+      if (editingRule) {
+        await updateAlertRule(editingRule.id, payload, authToken);
+        setSuccessMessage('Regra atualizada com sucesso.');
+        setEditingRuleId(null);
+      } else {
+        await createAlertRule(payload, authToken);
+        setSuccessMessage('Regra criada com sucesso.');
+      }
+
+      reset({
+        sensorType: 'temperature',
+        deviceId: '',
+        minValue: '',
+        maxValue: '',
+        cooldownMinutes: '15',
+        toleranceMinutes: '0',
+      });
+      setIsCreateOpen(false);
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : 'Falha ao salvar regra de alerta.',
+      );
+    } finally {
+      setIsSubmittingRule(false);
+    }
   }
 
   return (
@@ -195,41 +272,44 @@ export function AlertRulesPanel({
       </div>
 
       {clientId && canManageRules ? (
-        <form
-          onSubmit={handleSubmit(async (rawValues) => {
-            const values = formSchema.parse(rawValues);
-            if (editingRule) {
-              await updateMutation.mutateAsync({
-                id: editingRule.id,
-                payload: {
-                  clientId,
-                  deviceId: values.deviceId,
-                  sensorType: values.sensorType,
-                  minValue: values.minValue,
-                  maxValue: values.maxValue,
-                  cooldownMinutes: values.cooldownMinutes,
-                  toleranceMinutes: values.toleranceMinutes,
-                  enabled: editingRule.enabled,
-                },
-              });
-              setEditingRuleId(null);
-            } else {
-              await createMutation.mutateAsync({
-                clientId,
-                deviceId: values.deviceId,
-                sensorType: values.sensorType,
-                minValue: values.minValue,
-                maxValue: values.maxValue,
-                cooldownMinutes: values.cooldownMinutes,
-                toleranceMinutes: values.toleranceMinutes,
-                enabled: true,
-              });
-            }
-            reset();
-          })}
-          className=""
-        >
-          <Panel variant="strong" className="mb-4 p-4">
+        <Panel variant="strong" className="mb-4 overflow-hidden p-0">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition hover:bg-white/5"
+            onClick={() => {
+              setFormError(null);
+              setSuccessMessage(null);
+              setIsCreateOpen((current) => !current);
+              if (!isCreateOpen && !editingRule) {
+                reset({
+                  sensorType: 'temperature',
+                  deviceId: '',
+                  minValue: '',
+                  maxValue: '',
+                  cooldownMinutes: '15',
+                  toleranceMinutes: '0',
+                });
+              }
+            }}
+          >
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-muted">Cadastro</p>
+              <h3 className="mt-1 text-base font-semibold">
+                {editingRule ? 'Editar regra' : 'Nova regra de alerta'}
+              </h3>
+              <p className="mt-1 text-sm text-muted">
+                {editingRule
+                  ? 'Ajuste limites, cooldown e tolerancia da regra selecionada.'
+                  : 'Abra este formulario para cadastrar a primeira regra da conta.'}
+              </p>
+            </div>
+            <ChevronDown
+              className={`h-5 w-5 shrink-0 text-muted transition ${isCreateOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {isCreateOpen ? (
+            <div className="border-t border-line/70 px-4 py-4">
             <div className="mb-4 grid gap-3 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
                 <div className="flex items-center gap-2">
@@ -265,15 +345,18 @@ export function AlertRulesPanel({
                   <p className="text-xs uppercase tracking-[0.16em] text-muted">
                     Tolerancia
                   </p>
-                  <p className="mt-2 text-sm font-medium text-ink">0 a 5 min</p>
+                  <p className="mt-2 text-sm font-medium text-ink">0 min</p>
                 </div>
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="mb-1 block text-xs text-muted">Sensor</label>
-              <Input {...register('sensorType')} />
+              <Input {...register('sensorType')} placeholder="temperature" />
+              {errors.sensorType ? (
+                <p className="mt-1 text-xs text-bad">{errors.sensorType.message}</p>
+              ) : null}
             </div>
 
             <div>
@@ -297,6 +380,9 @@ export function AlertRulesPanel({
                 <Thermometer className="h-3.5 w-3.5" />
                 Limite minimo esperado para o equipamento.
               </div>
+              {errors.minValue ? (
+                <p className="mt-1 text-xs text-bad">{errors.minValue.message}</p>
+              ) : null}
             </div>
 
             <div>
@@ -315,25 +401,34 @@ export function AlertRulesPanel({
               <label className="mb-1 block text-xs text-muted">
                 Cooldown (min)
               </label>
-              <Input {...register('cooldownMinutes')} />
+              <Input {...register('cooldownMinutes')} placeholder="15" />
+              {errors.cooldownMinutes ? (
+                <p className="mt-1 text-xs text-bad">{errors.cooldownMinutes.message}</p>
+              ) : null}
             </div>
 
             <div>
               <label className="mb-1 block text-xs text-muted">
                 Tolerancia (min)
               </label>
-              <Input {...register('toleranceMinutes')} />
+              <Input {...register('toleranceMinutes')} placeholder="0" />
+              {errors.toleranceMinutes ? (
+                <p className="mt-1 text-xs text-bad">{errors.toleranceMinutes.message}</p>
+              ) : null}
             </div>
 
-            <div className="sm:col-span-2 lg:col-span-3">
+            <div className="sm:col-span-2 lg:col-span-3 flex items-center gap-2">
               <Button
-                type="submit"
+                type="button"
                 variant="primary"
-                disabled={createMutation.isPending || updateMutation.isPending}
-                loading={createMutation.isPending || updateMutation.isPending}
+                disabled={isSubmittingRule}
+                loading={isSubmittingRule}
                 className="min-w-[168px]"
+                onClick={() => {
+                  void handleSubmitRule();
+                }}
               >
-                {createMutation.isPending || updateMutation.isPending
+                {isSubmittingRule
                   ? 'Salvando...'
                   : editingRule
                     ? 'Salvar regra'
@@ -345,7 +440,17 @@ export function AlertRulesPanel({
                   variant="secondary"
                   onClick={() => {
                     setEditingRuleId(null);
-                    reset();
+                    setFormError(null);
+                    setSuccessMessage(null);
+                    reset({
+                      sensorType: 'temperature',
+                      deviceId: '',
+                      minValue: '',
+                      maxValue: '',
+                      cooldownMinutes: '15',
+                      toleranceMinutes: '0',
+                    });
+                    setIsCreateOpen(false);
                   }}
                 >
                   Cancelar
@@ -353,8 +458,9 @@ export function AlertRulesPanel({
               ) : null}
             </div>
             </div>
-          </Panel>
-        </form>
+            </div>
+          ) : null}
+        </Panel>
       ) : null}
       {clientId && !canManageRules ? (
         <Feedback className="mb-3">
@@ -363,13 +469,17 @@ export function AlertRulesPanel({
         </Feedback>
       ) : null}
 
-      {createMutation.isError || updateMutation.isError ? (
+      {formError ? (
         <Feedback variant="danger" className="mb-3">
-          {createMutation.error?.message ??
-            updateMutation.error?.message ??
-            'Falha ao salvar regra de alerta.'}
+          {formError}
         </Feedback>
       ) : null}
+      {successMessage ? (
+        <Feedback variant="success" className="mb-3">
+          {successMessage}
+        </Feedback>
+      ) : null}
+      {createMutation.isError || updateMutation.isError ? null : null}
       {deleteMutation.isError ? (
         <Feedback variant="danger" className="mb-3">
           {deleteMutation.error?.message ??
@@ -427,7 +537,11 @@ export function AlertRulesPanel({
                         <Button
                           variant="secondary"
                           size="sm"
-                          onClick={() => setEditingRuleId(rule.id)}
+                          onClick={() => {
+                            setFormError(null);
+                            setSuccessMessage(null);
+                            setEditingRuleId(rule.id);
+                          }}
                         >
                           Editar
                         </Button>
