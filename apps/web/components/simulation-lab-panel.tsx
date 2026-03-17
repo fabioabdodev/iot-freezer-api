@@ -34,11 +34,21 @@ type DemoStep = {
   icon: typeof MapPinned;
 };
 
+function resolveSimulationDevices(clientId?: string) {
+  if (clientId === 'cuidare-vacinas') {
+    return 'freezer_vacinas_01';
+  }
+
+  return 'freezer_01,freezer_02';
+}
+
 export function SimulationLabPanel({ clientId, client }: SimulationLabPanelProps) {
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
 
   const suffix = clientId ? ` --client-id ${clientId}` : '';
   const demoTenant = client?.name ?? clientId ?? 'conta-demo';
+  const simulatorUrl = 'https://api-monitor.virtuagil.com.br';
+  const simulatorDevices = resolveSimulationDevices(clientId);
 
   const demoSteps: DemoStep[] = [
     {
@@ -72,21 +82,21 @@ export function SimulationLabPanel({ clientId, client }: SimulationLabPanelProps
       title: 'Carga normal',
       description:
         'Mantem freezers operando dentro da faixa esperada para validar painel e historico.',
-      command: `npm run simulate:iot -- --devices freezer_01,freezer_02 --preset normal --ensure-devices${suffix} --api-key SUA_CHAVE`,
+      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset normal --ensure-devices --url ${simulatorUrl}${suffix} --api-key SUA_CHAVE`,
       badge: 'baseline',
     },
     {
       title: 'Pre-alerta',
       description:
         'Aproxima as leituras do limite superior para conferir comportamento visual antes do disparo.',
-      command: `npm run simulate:iot -- --devices freezer_01,freezer_02 --preset alerta --ensure-devices${suffix} --api-key SUA_CHAVE`,
+      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset alerta --ensure-devices --url ${simulatorUrl}${suffix} --api-key SUA_CHAVE`,
       badge: 'alerta',
     },
     {
       title: 'Cenario critico',
       description:
         'Gera valores fora da faixa para testar alerta de temperatura e resposta operacional.',
-      command: `npm run simulate:iot -- --devices freezer_01,freezer_02 --preset critico --ensure-devices${suffix} --api-key SUA_CHAVE`,
+      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset critico --ensure-devices --url ${simulatorUrl}${suffix} --api-key SUA_CHAVE`,
       badge: 'critico',
     },
     {
