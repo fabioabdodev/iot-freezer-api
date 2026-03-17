@@ -18,7 +18,12 @@ export function isValidCpfOrCnpj(value: string) {
 
 export function isValidPhone(value: string) {
   const digits = normalizeDigits(value);
-  return digits.length === 10 || digits.length === 11;
+  return (
+    digits.length === 10 ||
+    digits.length === 11 ||
+    (digits.startsWith('55') &&
+      (digits.length === 12 || digits.length === 13))
+  );
 }
 
 export function normalizeClientDocument(value?: string) {
@@ -28,7 +33,19 @@ export function normalizeClientDocument(value?: string) {
 
 export function normalizeClientPhone(value?: string) {
   if (!value) return undefined;
-  return normalizeDigits(value.trim());
+
+  const digits = normalizeDigits(value.trim());
+  if (!digits) return undefined;
+
+  if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
+    return digits;
+  }
+
+  if (digits.length === 10 || digits.length === 11) {
+    return `55${digits}`;
+  }
+
+  return digits;
 }
 
 function isValidCpf(value: string) {

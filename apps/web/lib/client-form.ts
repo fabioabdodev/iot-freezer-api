@@ -20,7 +20,12 @@ export function isValidCpfOrCnpj(value: string) {
 
 export function isValidPhone(value: string) {
   const digits = normalizeDigits(value);
-  return digits.length === 10 || digits.length === 11;
+  return (
+    digits.length === 10 ||
+    digits.length === 11 ||
+    (digits.startsWith('55') &&
+      (digits.length === 12 || digits.length === 13))
+  );
 }
 
 export function isValidEmail(value: string) {
