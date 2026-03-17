@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MapPinned, Thermometer } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { DeviceSummary } from '@/types/device';
@@ -90,7 +90,6 @@ export function DeviceForm({
   onCancel,
 }: DeviceFormProps) {
   const hasScopedClient = Boolean(clientId);
-  const formRef = useRef<HTMLFormElement | null>(null);
   const [submitHint, setSubmitHint] = useState<string | null>(null);
   const {
     register,
@@ -134,34 +133,38 @@ export function DeviceForm({
     });
   }, [mode, device, clientId, reset]);
 
+  const submitDeviceForm = handleSubmit(
+    async (values) => {
+      setSubmitHint(null);
+      const parsed = formSchema.parse(values);
+      const nextValues = {
+        ...parsed,
+        clientId: allowStructureFields
+          ? parsed.clientId ?? clientId
+          : undefined,
+        name: allowStructureFields ? parsed.name : undefined,
+        location: allowStructureFields ? parsed.location : undefined,
+        minTemperature: allowTemperatureFields
+          ? parsed.minTemperature
+          : undefined,
+        maxTemperature: allowTemperatureFields
+          ? parsed.maxTemperature
+          : undefined,
+      };
+
+      await onSubmit(nextValues);
+    },
+    () => {
+      setSubmitHint('Revise os campos destacados antes de continuar.');
+    },
+  );
+
   return (
     <form
-      ref={formRef}
-      onSubmit={handleSubmit(
-        async (values) => {
-          setSubmitHint(null);
-          const parsed = formSchema.parse(values);
-          const nextValues = {
-            ...parsed,
-            clientId: allowStructureFields
-              ? parsed.clientId ?? clientId
-              : undefined,
-            name: allowStructureFields ? parsed.name : undefined,
-            location: allowStructureFields ? parsed.location : undefined,
-            minTemperature: allowTemperatureFields
-              ? parsed.minTemperature
-              : undefined,
-            maxTemperature: allowTemperatureFields
-              ? parsed.maxTemperature
-              : undefined,
-          };
-
-          await onSubmit(nextValues);
-        },
-        () => {
-          setSubmitHint('Revise os campos destacados antes de continuar.');
-        },
-      )}
+      onSubmit={(event) => {
+        event.preventDefault();
+        void submitDeviceForm();
+      }}
       className=""
     >
       <Panel variant="strong" className="p-5">
@@ -279,7 +282,7 @@ export function DeviceForm({
             loading={loading}
             className="min-w-[168px]"
             onClick={() => {
-              formRef.current?.requestSubmit();
+              void submitDeviceForm();
             }}
           >
             {loading
