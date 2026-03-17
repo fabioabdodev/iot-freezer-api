@@ -13,6 +13,8 @@ export class ClientsService {
 
   async create(dto: CreateClientDto) {
     const document = normalizeClientDocument(dto.document);
+    const adminPhone = normalizeClientPhone(dto.adminPhone);
+    const billingPhone = normalizeClientPhone(dto.billingPhone);
     const duplicatedId = await this.prisma.client.findUnique({
       where: { id: dto.id },
     });
@@ -31,16 +33,21 @@ export class ClientsService {
       }
     }
 
+    await this.ensurePhonesAreUnique({
+      adminPhone,
+      billingPhone,
+    });
+
     return this.prisma.client.create({
       data: {
         id: dto.id,
         name: dto.name,
         adminName: dto.adminName.trim(),
         document,
-        phone: normalizeClientPhone(dto.adminPhone),
-        adminPhone: normalizeClientPhone(dto.adminPhone),
+        phone: adminPhone,
+        adminPhone,
         billingName: dto.billingName?.trim() ?? dto.adminName.trim(),
-        billingPhone: normalizeClientPhone(dto.billingPhone),
+        billingPhone,
         billingEmail: dto.billingEmail.trim(),
         status: dto.status ?? 'active',
         notes: dto.notes,
@@ -61,7 +68,7 @@ export class ClientsService {
   }
 
   async update(id: string, dto: UpdateClientDto) {
-    await this.findOne(id);
+    const existing = await this.findOne(id);
 
     const document = normalizeClientDocument(dto.document);
     if (document) {
@@ -77,25 +84,33 @@ export class ClientsService {
       }
     }
 
+    const adminPhone =
+      dto.adminPhone != null
+        ? normalizeClientPhone(dto.adminPhone)
+        : existing.adminPhone ?? existing.phone ?? undefined;
+    const billingPhone =
+      dto.billingPhone != null
+        ? normalizeClientPhone(dto.billingPhone)
+        : existing.billingPhone ?? undefined;
+
+    await this.ensurePhonesAreUnique(
+      {
+        adminPhone,
+        billingPhone,
+      },
+      id,
+    );
+
     return this.prisma.client.update({
       where: { id },
       data: {
         name: dto.name,
         adminName: dto.adminName?.trim(),
         document,
-        phone:
-          dto.adminPhone != null
-            ? normalizeClientPhone(dto.adminPhone)
-            : undefined,
-        adminPhone:
-          dto.adminPhone != null
-            ? normalizeClientPhone(dto.adminPhone)
-            : undefined,
+        phone: dto.adminPhone != null ? adminPhone : undefined,
+        adminPhone: dto.adminPhone != null ? adminPhone : undefined,
         billingName: dto.billingName?.trim(),
-        billingPhone:
-          dto.billingPhone != null
-            ? normalizeClientPhone(dto.billingPhone)
-            : undefined,
+        billingPhone: dto.billingPhone != null ? billingPhone : undefined,
         billingEmail: dto.billingEmail?.trim(),
         status: dto.status,
         notes: dto.notes,
@@ -106,5 +121,28 @@ export class ClientsService {
   async remove(id: string) {
     await this.findOne(id);
     return this.prisma.client.delete({ where: { id } });
+  }
+
+  private async ensurePhonesAreUnique(
+    phones: {
+      adminPhone?: string;
+      billingPhone?: string;
+    },
+    ignoredClientId?: string,
+  ) {
+    const candidates = [...new Set([phones.adminPhone, phones.billingPhone].filter(Boolean))];
+
+    for (const phone of candidates) {
+      const duplicatedPhone = await this.prisma.client.findFirst({
+        where: {
+          id: ignoredClientId ? { not: ignoredClientId } : undefined,
+          OR: [{ phone }, { adminPhone: phone }, { billingPhone: phone }],
+        },
+      });
+
+      if (duplicatedPhone) {
+        throw new ConflictException('Ja existe um cliente com este telefone');
+      }
+    }
   }
 }
