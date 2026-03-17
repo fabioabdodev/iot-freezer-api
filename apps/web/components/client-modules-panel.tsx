@@ -1,6 +1,7 @@
 'use client';
 
 import { Boxes, LockOpen } from 'lucide-react';
+import { useState } from 'react';
 import { useClientModuleMutations } from '@/hooks/use-client-module-mutations';
 import { useClientModules } from '@/hooks/use-client-modules';
 import { AuthUser } from '@/types/auth';
@@ -25,6 +26,7 @@ export function ClientModulesPanel({
   canManage,
   blockedReason,
 }: ClientModulesPanelProps) {
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { data, isLoading, isError, error } = useClientModules(
     clientId,
     authToken,
@@ -68,6 +70,11 @@ export function ClientModulesPanel({
           {mutation.error?.message ?? 'Falha ao atualizar recursos do cliente.'}
         </Feedback>
       ) : null}
+      {successMessage ? (
+        <Feedback variant="success" className="mb-3">
+          {successMessage}
+        </Feedback>
+      ) : null}
 
       {isLoading ? <Feedback>Carregando recursos...</Feedback> : null}
       {isError ? (
@@ -99,12 +106,16 @@ export function ClientModulesPanel({
               <Button
                 variant={module.enabled ? 'secondary' : 'primary'}
                 loading={mutation.isPending}
-                onClick={() => {
-                  void mutation.mutateAsync({
+                onClick={async () => {
+                  setSuccessMessage(null);
+                  await mutation.mutateAsync({
                     clientId,
                     moduleKey: module.moduleKey,
                     enabled: !module.enabled,
                   });
+                  setSuccessMessage(
+                    `Recurso ${module.name} ${module.enabled ? 'desabilitado' : 'habilitado'} com sucesso.`,
+                  );
                 }}
               >
                 <LockOpen className="h-3.5 w-3.5" />
