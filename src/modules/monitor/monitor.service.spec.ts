@@ -3,12 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { MonitorService } from './monitor.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AlertDeliveryQueueService } from '../../infra/alerts/alert-delivery-queue.service';
+import { ConnectivityAlertPolicyService } from '../../infra/alerts/connectivity-alert-policy.service';
 
 describe('MonitorService', () => {
   let service: MonitorService;
   let fakePrisma: any;
   let fakeConfigService: any;
   let fakeAlertQueue: { enqueue: jest.Mock };
+  let fakeConnectivityAlertPolicy: { handleOfflineTransition: jest.Mock };
 
   beforeEach(async () => {
     fakePrisma = {
@@ -38,6 +40,9 @@ describe('MonitorService', () => {
       }),
     };
     fakeAlertQueue = { enqueue: jest.fn() };
+    fakeConnectivityAlertPolicy = {
+      handleOfflineTransition: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -45,6 +50,10 @@ describe('MonitorService', () => {
         { provide: PrismaService, useValue: fakePrisma },
         { provide: ConfigService, useValue: fakeConfigService },
         { provide: AlertDeliveryQueueService, useValue: fakeAlertQueue },
+        {
+          provide: ConnectivityAlertPolicyService,
+          useValue: fakeConnectivityAlertPolicy,
+        },
       ],
     }).compile();
 
@@ -72,6 +81,13 @@ describe('MonitorService', () => {
         isOffline: false,
       },
     ]);
+    fakeConnectivityAlertPolicy.handleOfflineTransition.mockReturnValue({
+      type: 'device_offline',
+      clientId: 'client_a',
+      deviceId: 'dev1',
+      lastSeenAt: '2026-03-07T09:40:00.000Z',
+      offlineSince: '2026-03-07T10:00:00.000Z',
+    });
 
     await service.checkOfflineDevices();
 
@@ -82,6 +98,59 @@ describe('MonitorService', () => {
         clientId: 'client_a',
       }),
     );
+  });
+
+  it('enqueues instability alert instead of repeated offline alert when policy detects flapping', async () => {
+    const now = new Date('2026-03-07T10:00:00.000Z');
+    jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
+
+    fakePrisma.device.count.mockResolvedValue(1);
+    fakePrisma.device.findMany.mockResolvedValueOnce([
+      {
+        id: 'dev1',
+        clientId: 'client_a',
+        lastSeen: new Date('2026-03-07T09:40:00.000Z'),
+        isOffline: false,
+      },
+    ]);
+    fakeConnectivityAlertPolicy.handleOfflineTransition.mockReturnValue({
+      type: 'device_connectivity_instability',
+      clientId: 'client_a',
+      deviceId: 'dev1',
+      offlineSince: '2026-03-07T10:00:00.000Z',
+      cameOnlineAt: '2026-03-07T09:40:00.000Z',
+      flapCount: 3,
+      windowMinutes: 30,
+    });
+
+    await service.checkOfflineDevices();
+
+    expect(fakeAlertQueue.enqueue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'device_connectivity_instability',
+        deviceId: 'dev1',
+      }),
+    );
+  });
+
+  it('suppresses offline alert when policy says the oscillation is already under cooldown', async () => {
+    const now = new Date('2026-03-07T10:00:00.000Z');
+    jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
+
+    fakePrisma.device.count.mockResolvedValue(1);
+    fakePrisma.device.findMany.mockResolvedValueOnce([
+      {
+        id: 'dev1',
+        clientId: 'client_a',
+        lastSeen: new Date('2026-03-07T09:40:00.000Z'),
+        isOffline: false,
+      },
+    ]);
+    fakeConnectivityAlertPolicy.handleOfflineTransition.mockReturnValue(null);
+
+    await service.checkOfflineDevices();
+
+    expect(fakeAlertQueue.enqueue).not.toHaveBeenCalled();
   });
 
   it('enqueues alert when configured temperature rule is violated', async () => {

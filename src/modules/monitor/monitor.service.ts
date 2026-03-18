@@ -3,6 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AlertDeliveryQueueService } from '../../infra/alerts/alert-delivery-queue.service';
+import { ConnectivityAlertPolicyService } from '../../infra/alerts/connectivity-alert-policy.service';
 
 @Injectable()
 export class MonitorService {
@@ -12,6 +13,7 @@ export class MonitorService {
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     private readonly alertQueue: AlertDeliveryQueueService,
+    private readonly connectivityAlertPolicy: ConnectivityAlertPolicyService,
   ) {}
 
   @Cron('*/1 * * * *')
@@ -51,13 +53,17 @@ export class MonitorService {
       this.logger.warn(
         `Device ${device.id} ficou OFFLINE lastSeen=${device.lastSeen ? device.lastSeen.toISOString() : 'null'}`,
       );
-      this.alertQueue.enqueue({
-        type: 'device_offline',
-        clientId: (device as any).clientId ?? null,
-        deviceId: device.id,
-        lastSeenAt: device.lastSeen ? device.lastSeen.toISOString() : null,
-        offlineSince: offlineSince.toISOString(),
-      });
+      const connectivityAlert =
+        this.connectivityAlertPolicy.handleOfflineTransition({
+          clientId: (device as any).clientId ?? null,
+          deviceId: device.id,
+          lastSeenAt: device.lastSeen ? device.lastSeen.toISOString() : null,
+          offlineSince: offlineSince.toISOString(),
+        });
+
+      if (connectivityAlert) {
+        this.alertQueue.enqueue(connectivityAlert);
+      }
     }
 
     const hasConfigurableRules = await this.processConfiguredTemperatureRules();

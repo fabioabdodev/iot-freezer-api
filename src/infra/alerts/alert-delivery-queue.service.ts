@@ -21,7 +21,30 @@ type OfflineAlertPayload = {
   offlineSince: string;
 };
 
-type AlertPayload = TemperatureAlertPayload | OfflineAlertPayload;
+type OnlineAlertPayload = {
+  type: 'device_back_online';
+  clientId: string | null;
+  deviceId: string;
+  lastSeenAt: string | null;
+  offlineSince: string | null;
+  cameOnlineAt: string;
+};
+
+type ConnectivityInstabilityPayload = {
+  type: 'device_connectivity_instability';
+  clientId: string | null;
+  deviceId: string;
+  offlineSince: string | null;
+  cameOnlineAt: string;
+  flapCount: number;
+  windowMinutes: number;
+};
+
+type AlertPayload =
+  | TemperatureAlertPayload
+  | OfflineAlertPayload
+  | OnlineAlertPayload
+  | ConnectivityInstabilityPayload;
 
 type QueueJob = {
   payload: AlertPayload;
@@ -141,6 +164,14 @@ export class AlertDeliveryQueueService implements OnModuleDestroy {
       return this.configService.get<string>('N8N_OFFLINE_WEBHOOK_URL');
     }
 
+    if (type === 'device_back_online') {
+      return this.configService.get<string>('N8N_ONLINE_WEBHOOK_URL');
+    }
+
+    if (type === 'device_connectivity_instability') {
+      return this.configService.get<string>('N8N_ONLINE_WEBHOOK_URL');
+    }
+
     return this.configService.get<string>('N8N_TEMPERATURE_ALERT_WEBHOOK_URL');
   }
 
@@ -154,6 +185,33 @@ export class AlertDeliveryQueueService implements OnModuleDestroy {
         device_id: payload.deviceId,
         last_seen_at: payload.lastSeenAt,
         offline_since: payload.offlineSince,
+        recipient_phone: recipient?.phone ?? null,
+        recipient_source: recipient?.source ?? null,
+      };
+    }
+
+    if (payload.type === 'device_back_online') {
+      return {
+        type: payload.type,
+        client_id: payload.clientId,
+        device_id: payload.deviceId,
+        last_seen_at: payload.lastSeenAt,
+        offline_since: payload.offlineSince,
+        came_online_at: payload.cameOnlineAt,
+        recipient_phone: recipient?.phone ?? null,
+        recipient_source: recipient?.source ?? null,
+      };
+    }
+
+    if (payload.type === 'device_connectivity_instability') {
+      return {
+        type: payload.type,
+        client_id: payload.clientId,
+        device_id: payload.deviceId,
+        offline_since: payload.offlineSince,
+        came_online_at: payload.cameOnlineAt,
+        flap_count: payload.flapCount,
+        window_minutes: payload.windowMinutes,
         recipient_phone: recipient?.phone ?? null,
         recipient_source: recipient?.source ?? null,
       };

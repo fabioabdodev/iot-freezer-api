@@ -20,6 +20,8 @@ describe('AlertDeliveryQueueService', () => {
           return 'https://example.com/webhook';
         if (key === 'N8N_OFFLINE_WEBHOOK_URL')
           return 'https://example.com/offline-webhook';
+        if (key === 'N8N_ONLINE_WEBHOOK_URL')
+          return 'https://example.com/online-webhook';
         if (key === 'ALERT_QUEUE_BATCH_SIZE') return 20;
         if (key === 'ALERT_QUEUE_RETRY_MAX') return 3;
         if (key === 'ALERT_QUEUE_RETRY_DELAY_MS') return 1000;
@@ -92,6 +94,49 @@ describe('AlertDeliveryQueueService', () => {
       expect.objectContaining({
         method: 'POST',
         body: expect.stringContaining('"recipient_phone":"5531999999999"'),
+      }),
+    );
+  });
+
+  it('should enqueue and deliver online recovery alert payload', async () => {
+    service.enqueue({
+      type: 'device_back_online',
+      clientId: 'client_a',
+      deviceId: 'dev1',
+      lastSeenAt: new Date('2026-03-12T10:00:00.000Z').toISOString(),
+      offlineSince: new Date('2026-03-12T10:06:00.000Z').toISOString(),
+      cameOnlineAt: new Date('2026-03-12T10:08:00.000Z').toISOString(),
+    });
+
+    await jest.advanceTimersByTimeAsync(1100);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://example.com/online-webhook',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.stringContaining('"recipient_phone":"5531999999999"'),
+      }),
+    );
+  });
+
+  it('should enqueue and deliver connectivity instability payload through online webhook', async () => {
+    service.enqueue({
+      type: 'device_connectivity_instability',
+      clientId: 'client_a',
+      deviceId: 'dev1',
+      offlineSince: new Date('2026-03-12T10:06:00.000Z').toISOString(),
+      cameOnlineAt: new Date('2026-03-12T10:08:00.000Z').toISOString(),
+      flapCount: 3,
+      windowMinutes: 30,
+    });
+
+    await jest.advanceTimersByTimeAsync(1100);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://example.com/online-webhook',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.stringContaining('"flap_count":3'),
       }),
     );
   });

@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TemperatureDto } from './dto/temperature.dto';
 import { CacheService } from '../../infra/cache/cache.service';
+import { AlertDeliveryQueueService } from '../../infra/alerts/alert-delivery-queue.service';
+import { ConnectivityAlertPolicyService } from '../../infra/alerts/connectivity-alert-policy.service';
 
 @Injectable()
 export class IngestService {
@@ -13,12 +15,17 @@ export class IngestService {
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     private readonly cache: CacheService,
+    private readonly alertQueue: AlertDeliveryQueueService,
+    private readonly connectivityAlertPolicy: ConnectivityAlertPolicyService,
   ) {}
 
   async ingestTemperature(body: TemperatureDto) {
     this.enforceDeviceRateLimit(body.device_id);
 
     const receivedAt = new Date();
+    const existingDevice = await this.prisma.device.findUnique({
+      where: { id: body.device_id },
+    } as any);
 
     await this.prisma.temperatureLog.create({
       data: {
@@ -42,6 +49,29 @@ export class IngestService {
         isOffline: false,
       },
     });
+
+    if (existingDevice?.isOffline) {
+      this.logger.log(
+        `Device ${body.device_id} voltou ONLINE after offlineSince=${existingDevice.offlineSince?.toISOString() ?? 'null'}`,
+      );
+
+      const connectivityAlert =
+        this.connectivityAlertPolicy.handleRecoveryTransition({
+          clientId: (existingDevice as any).clientId ?? body.client_id ?? null,
+          deviceId: body.device_id,
+          lastSeenAt: existingDevice.lastSeen
+            ? existingDevice.lastSeen.toISOString()
+            : null,
+          offlineSince: existingDevice.offlineSince
+            ? existingDevice.offlineSince.toISOString()
+            : null,
+          cameOnlineAt: receivedAt.toISOString(),
+        });
+
+      if (connectivityAlert) {
+        this.alertQueue.enqueue(connectivityAlert);
+      }
+    }
 
     this.cache.invalidatePrefix('devices:dashboard:');
     this.cache.invalidatePrefix('devices:history:');

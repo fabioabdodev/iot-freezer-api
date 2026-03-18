@@ -141,6 +141,7 @@ Ao receber uma leitura valida:
 - atualizar `lastSeen`
 - marcar o device como online
 - limpar `offlineSince`
+- se o device estava offline, disparar um alerta unico de recuperacao na transicao `offline -> online`
 
 ### Offline
 
@@ -156,6 +157,10 @@ Importante:
 
 - o alerta de offline e disparado apenas na transicao `online -> offline`
 - se o device ja estiver offline, novos ticks do monitor nao reenfileiram o mesmo alerta
+- quando o device volta a comunicar, a recuperacao deve ser sinalizada apenas uma vez na transicao `offline -> online`
+- quando houver oscilacao curta e repetida de conectividade dentro da janela configurada, o backend deve trocar a dupla `offline/online` por um aviso unico de `instabilidade`
+- enquanto o alerta de `instabilidade` estiver em cooldown, novos `offline/online` do mesmo device devem ficar silenciosos para evitar spam
+- se o equipamento ficar alternando entre offline e online em janela curta, a plataforma deve preferir um aviso unico de instabilidade em vez de spammar o cliente com varias mensagens
 
 ### Temperatura fora da faixa
 

@@ -153,6 +153,10 @@ Esperado:
 
 - device marcado como `isOffline=true`
 - `offlineSince` preenchido
+- quando o device voltar a enviar leitura, o painel deve retornar para online
+- a operacao pode usar um alerta de recuperacao para confirmar que nao e mais necessario deslocamento imediato
+- se o equipamento alternar `offline/online` varias vezes em janela curta, o comportamento esperado deixa de ser varios avisos tecnicos e passa a ser um alerta unico de `instabilidade de conectividade`
+- depois desse alerta de instabilidade, o backend deve respeitar cooldown e evitar nova rajada de mensagens repetidas
 
 ## 3. Modulo acionamento
 
@@ -320,6 +324,14 @@ Considerar aprovado quando:
 - a mensagem sai pelo `Evolution`
 - o responsavel recebe o `WhatsApp`
 - a equipe consegue entender o que aconteceu sem depender de explicacao tecnica extra
+
+Observacao operacional importante:
+
+- nesta fase, sucesso no `HTTP Request` do `n8n` ou status `PENDING` na Evolution nao devem ser tratados como entrega confirmada
+- em `17/03/2026`, no caso `Cuidare`, houve atraso perceptivel entre a execucao bem-sucedida no fluxo e a chegada efetiva da mensagem no `WhatsApp`
+- por isso, em alertas criticos, confirmar sempre a entrega final ao destinatario antes de encerrar a validacao
+- no fluxo de `offline`, validar tambem se o nome do equipamento esta legivel na mensagem final; em um dos testes iniciais ele apareceu como `undefined`
+- quando houver varios ciclos curtos de queda e retorno, validar se a plataforma envia um aviso de instabilidade em vez de acumular `offline` + `online` em excesso
 
 ## 6. Checklist rapido de pos-deploy em producao
 

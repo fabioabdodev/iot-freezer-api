@@ -428,4 +428,72 @@ npm run test:e2e -- --runInBand test/actuators.e2e-spec.ts
     - cenario critico
     - offline
   - evitar voltar a comandos com `localhost` ou devices genericos quando a conta em foco for `Cuidare`
+- em `17/03/2026` o caso `Cuidare` fechou a primeira validacao ponta a ponta do alerta real saindo da plataforma:
+  - perfil do cliente foi atualizado com `WhatsApp` contendo `55`
+  - `deviceApiKey` da conta foi gerada e usada no laboratorio
+  - simulacao critica da conta `cuidare-vacinas` foi executada com `freezer_vacinas_01`
+  - a API recebeu leituras criticas em producao com sucesso
+  - o workflow `IoT - Alerta de Temperatura - WhatsApp` no `n8n` recebeu execucoes reais da plataforma
+  - a Evolution aceitou o envio e o `WhatsApp` chegou no telefone correto do cliente
+- aprendizados operacionais importantes desta validacao:
+  - o fluxo real depende de numero salvo com `55`; antes disso a Evolution tratava o destino como inexistente
+  - o backend foi corrigido para normalizar telefone brasileiro com `55` ao salvar clientes
+  - no `n8n`, o campo `recipient_phone` precisava usar `recipient_phone`, nao `device_id`
+  - a mensagem inicial chegou feia para uso real e foi refinada para um tom mais urgente e objetivo
+  - houve atraso perceptivel entre o sucesso do workflow no `n8n`/Evolution e a entrega no `WhatsApp`
+- alerta operacional que nao pode se perder:
+  - cliente nao pode ficar sem receber alerta critico
+  - sucesso no `HTTP Request` ou status `PENDING` na Evolution nao deve ser tratado como entrega confirmada
+  - sempre que validar alerta critico, confirmar tambem a chegada efetiva no `WhatsApp`
+  - a latencia observada nesta rodada deve continuar sendo monitorada em testes futuros
+- proximo passo recomendado apos esta validacao:
+  - criar workflow de `offline` seguindo o padrao do alerta de temperatura
+  - validar se o atraso de entrega tambem aparece no alerta de `offline`
+  - revisar se o dashboard/laboratorio precisam destacar melhor que `n8n` e Evolution podem ter atraso operacional antes da chegada no cliente
+- em `17/03/2026` o fluxo de `offline` tambem foi validado ponta a ponta:
+  - workflow `IoT - Device Offline - WhatsApp` criado no `n8n`
+  - webhook de producao `https://webhookworkflow.virtuagil.com.br/webhook/device-offline` validado
+  - payload manual publicado acionou o workflow corretamente
+  - `WhatsApp` chegou ao destinatario final
+- detalhe importante descoberto nesta etapa:
+  - a primeira mensagem de `offline` chegou com nome do equipamento como `undefined`
+  - a causa provavel foi depender de `device_label` recem-criado no mesmo `Edit Fields`
+  - direcao recomendada:
+    - montar o nome humano diretamente na expressao de `message`
+    - nao depender de campo intermediario quando o comportamento do `n8n` gerar inconsistencias
+- estado atual recomendado para continuidade:
+  - `temperatura` validado ponta a ponta
+  - `offline` validado ponta a ponta
+  - backend preparado para webhook de recuperacao `offline -> online`
+  - proximo foco deve migrar de integracao basica para:
+    - qualidade da mensagem
+    - clareza do laboratorio
+    - reducao de atrito de demonstracao comercial
+- em `17/03/2026` foi adicionada a base de backend para alerta de recuperacao:
+  - quando um device que estava `offline` volta a enviar leitura, a ingestao agora pode enfileirar `device_back_online`
+  - a nova integracao usa `N8N_ONLINE_WEBHOOK_URL`
+  - motivacao operacional:
+    - evitar que o cliente se apavore com uma queda breve de internet ou energia local
+    - sinalizar por `WhatsApp` que o equipamento voltou a comunicar
+  - proximo passo pratico desta frente:
+    - criar no `n8n` o workflow do webhook `device-online`
+    - validar mensagem humanizada de recuperacao no mesmo padrao de temperatura e offline
+- em `17/03/2026` a politica de conectividade foi endurecida para reduzir ruido operacional:
+  - a contagem de oscilacao agora considera transicoes de conectividade em janela curta, nao apenas recuperacoes isoladas
+  - quando o limiar configurado e atingido, o backend envia `device_connectivity_instability`
+  - enquanto esse alerta estiver em cooldown, novos `device_offline` e `device_back_online` do mesmo equipamento ficam silenciosos
+  - isso aproxima o comportamento esperado da operacao real:
+    - queda real: avisa `offline`
+    - recuperacao real: avisa `voltou a comunicar`
+    - sobe e cai varias vezes: avisa `ha instabilidade na conectividade`
+- a regra de conectividade foi refinada para evitar ruido:
+  - o backend agora pode detectar repeticao curta de `offline -> online`
+  - quando isso passar do limiar configurado na janela configurada, a fila pode emitir `device_connectivity_instability`
+  - objetivo:
+    - avisar instabilidade real de internet/conectividade
+    - evitar encher o cliente com uma sequencia cansativa de alertas redundantes
+  - variaveis novas:
+    - `CONNECTIVITY_FLAP_WINDOW_MINUTES`
+    - `CONNECTIVITY_FLAP_THRESHOLD`
+    - `CONNECTIVITY_INSTABILITY_ALERT_COOLDOWN_MINUTES`
 
