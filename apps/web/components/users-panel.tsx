@@ -1,8 +1,6 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -18,6 +16,7 @@ import { AccessNotice } from '@/components/ui/access-notice';
 import { Feedback } from '@/components/ui/feedback';
 import { Input, Select } from '@/components/ui/input';
 import { Panel } from '@/components/ui/panel';
+import { formatRelativeDateTime } from '@/lib/date';
 
 const formSchema = z.object({
   name: z.string().trim().min(2, 'Nome obrigatorio'),
@@ -316,10 +315,7 @@ export function UsersPanel({
                   </td>
                   <td className="text-muted">
                     {user.lastLoginAt
-                      ? formatDistanceToNow(new Date(user.lastLoginAt), {
-                          addSuffix: true,
-                          locale: ptBR,
-                        })
+                      ? formatRelativeDateTime(user.lastLoginAt)
                       : 'Sem login'}
                   </td>
                   <td className="text-right">

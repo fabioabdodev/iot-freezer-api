@@ -83,22 +83,29 @@ export function SimulationLabPanel({ clientId, client }: SimulationLabPanelProps
       title: 'Carga normal',
       description:
         'Mantem freezers operando dentro da faixa esperada para validar painel e historico.',
-      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset normal --ensure-devices --url ${simulatorUrl}${suffix} --api-key ${simulatorApiKey}`,
+      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset normal --url ${simulatorUrl}${suffix} --api-key ${simulatorApiKey}`,
       badge: 'baseline',
     },
     {
       title: 'Pre-alerta',
       description:
         'Aproxima as leituras do limite superior para conferir comportamento visual antes do disparo.',
-      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset alerta --ensure-devices --url ${simulatorUrl}${suffix} --api-key ${simulatorApiKey}`,
+      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset alerta --url ${simulatorUrl}${suffix} --api-key ${simulatorApiKey}`,
       badge: 'alerta',
     },
     {
       title: 'Cenario critico',
       description:
         'Gera valores fora da faixa para testar alerta de temperatura e resposta operacional.',
-      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset critico --ensure-devices --url ${simulatorUrl}${suffix} --api-key ${simulatorApiKey}`,
+      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset critico --url ${simulatorUrl}${suffix} --api-key ${simulatorApiKey}`,
       badge: 'critico',
+    },
+    {
+      title: 'Ensaio de offline',
+      description:
+        'Envia poucas leituras normais e depois para, para deixar o equipamento sem comunicar e validar o alerta de offline.',
+      command: `npm run simulate:iot -- --devices ${simulatorDevices} --preset normal --count 3 --url ${simulatorUrl}${suffix} --api-key ${simulatorApiKey}`,
+      badge: 'offline',
     },
     {
       title: 'Popular base demo',
@@ -202,6 +209,12 @@ export function SimulationLabPanel({ clientId, client }: SimulationLabPanelProps
             Use este fluxo quando quiser simular a chegada a um cliente real,
             percorrer as telas e observar onde a experiencia ainda precisa evoluir.
           </p>
+          <p className="mt-2 max-w-2xl text-xs text-muted">
+            Nos cenarios remotos da conta em foco, o laboratorio prioriza a
+            simulacao real e evita o `--ensure-devices`, porque esse passo
+            estrutural exige autenticacao administrativa e gera ruido desnecessario
+            na demonstracao.
+          </p>
 
           <div className="mt-4 space-y-3">
             {demoSteps.map((step) => {
@@ -301,6 +314,8 @@ export function SimulationLabPanel({ clientId, client }: SimulationLabPanelProps
                 <span className="text-xs text-muted">
                   {scenario.command.includes('SUA_CHAVE')
                     ? 'Ajuste `SUA_CHAVE` antes de executar.'
+                    : scenario.badge === 'offline'
+                      ? 'Depois do ultimo envio, aguarde o cutoff de offline para confirmar o alerta no painel e no WhatsApp.'
                     : 'Pronto para testar no terminal local.'}
                 </span>
               )}

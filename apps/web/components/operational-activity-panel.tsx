@@ -1,7 +1,5 @@
 'use client';
 
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import {
   Activity,
   AlertTriangle,
@@ -17,6 +15,7 @@ import { DeviceSummary } from '@/types/device';
 import { Badge } from '@/components/ui/badge';
 import { Feedback } from '@/components/ui/feedback';
 import { Panel } from '@/components/ui/panel';
+import { formatRelativeDateTime } from '@/lib/date';
 
 interface OperationalActivityPanelProps {
   clientId?: string;
@@ -197,10 +196,7 @@ export function OperationalActivityPanel({
                     </div>
                     <p className="mt-2 text-sm text-muted">
                       {device.lastReadingAt
-                        ? `Ultima leitura ${formatDistanceToNow(new Date(device.lastReadingAt), {
-                            addSuffix: true,
-                            locale: ptBR,
-                          })}.`
+                        ? `Ultima leitura ${formatRelativeDateTime(device.lastReadingAt)}.`
                         : 'Sem leitura recente.'}{' '}
                       {device.lastTemperature != null
                         ? `Temperatura atual: ${device.lastTemperature.toFixed(1)} C.`
@@ -264,11 +260,7 @@ export function OperationalActivityPanel({
                     </div>
                   </div>
                   <p className="mt-2 text-sm text-muted">
-                    Executado{' '}
-                    {formatDistanceToNow(new Date(command.executedAt), {
-                      addSuffix: true,
-                      locale: ptBR,
-                    })}
+                    Executado {formatRelativeDateTime(command.executedAt)}
                     {command.note ? `. Observacao: ${command.note}` : '.'}
                   </p>
                 </div>

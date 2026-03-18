@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { DataTable, DataTableWrapper } from '@/components/ui/data-table';
 import { Feedback } from '@/components/ui/feedback';
 import { Panel } from '@/components/ui/panel';
+import { formatHumanDateTime } from '@/lib/date';
 
 type DeviceHistoryPanelProps = {
   device: DeviceSummary;
@@ -43,9 +44,7 @@ export function DeviceHistoryPanel({
       (device.minTemperature != null && item.temperature < device.minTemperature) ||
       (device.maxTemperature != null && item.temperature > device.maxTemperature),
     label: format(new Date(item.createdAt), 'HH:mm'),
-    fullLabel: format(new Date(item.createdAt), 'dd/MM HH:mm', {
-      locale: ptBR,
-    }),
+    fullLabel: formatHumanDateTime(item.createdAt),
   }));
   const pointsOutOfRange = points.filter((point) => point.isOutOfRange).length;
   const latestPoint = points[points.length - 1];

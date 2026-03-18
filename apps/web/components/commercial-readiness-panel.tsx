@@ -9,8 +9,6 @@ import {
   ToggleRight,
   Wrench,
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { useActuators } from '@/hooks/use-actuators';
 import { useAlertRules } from '@/hooks/use-alert-rules';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +18,7 @@ import { AuthUser } from '@/types/auth';
 import { ClientSummary } from '@/types/client';
 import { ClientModule } from '@/types/client-module';
 import { DeviceSummary } from '@/types/device';
+import { formatRelativeDateTime } from '@/lib/date';
 
 interface CommercialReadinessPanelProps {
   clientId?: string;
@@ -253,10 +252,7 @@ export function CommercialReadinessPanel({
                 : null}
               {client?.adminName && client?.updatedAt ? ' ' : null}
               {client?.updatedAt
-                ? `Cadastro revisado ${formatDistanceToNow(new Date(client.updatedAt), {
-                    addSuffix: true,
-                    locale: ptBR,
-                  })}.`
+                ? `Cadastro revisado ${formatRelativeDateTime(client.updatedAt)}.`
                 : 'Use este bloco para consolidar o estado comercial da conta.'}
             </p>
             <p className="mt-2 text-xs text-muted">

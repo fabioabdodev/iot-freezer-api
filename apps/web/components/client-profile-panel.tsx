@@ -1,8 +1,6 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { Copy, RefreshCcw, Save } from 'lucide-react';
 import { isValidCpfOrCnpj, isValidEmail, isValidPhone } from '@/lib/client-form';
 import { useClient } from '@/hooks/use-client';
@@ -15,6 +13,7 @@ import { Feedback } from '@/components/ui/feedback';
 import { Input, Select } from '@/components/ui/input';
 import { Panel } from '@/components/ui/panel';
 import { AccessNotice } from '@/components/ui/access-notice';
+import { formatRelativeDateTime } from '@/lib/date';
 
 interface ClientProfilePanelProps {
   clientId?: string;
@@ -236,10 +235,7 @@ export function ClientProfilePanel({
                 Atualizado
               </p>
               <p className="mt-2 text-sm font-medium text-ink">
-                {formatDistanceToNow(new Date(data.updatedAt), {
-                  addSuffix: true,
-                  locale: ptBR,
-                })}
+                {formatRelativeDateTime(data.updatedAt)}
               </p>
             </div>
             <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">

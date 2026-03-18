@@ -15,8 +15,6 @@ import {
   Snowflake,
   Thermometer,
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import Image from 'next/image';
 import { DeviceForm } from '@/components/device-form';
 import { DeviceHistoryPanel } from '@/components/device-history-panel';
@@ -52,6 +50,7 @@ import { useAlertRules } from '@/hooks/use-alert-rules';
 import { useDeviceMutations } from '@/hooks/use-device-mutations';
 import { useDevices } from '@/hooks/use-devices';
 import { useClientModules } from '@/hooks/use-client-modules';
+import { formatHumanDateTime, formatRelativeDateTime } from '@/lib/date';
 
 function statusClass(isOffline: boolean) {
   return isOffline
@@ -589,10 +588,7 @@ function DashboardContent() {
           title="Atualizacao"
           value={
             <span className="text-sm font-medium sm:text-base">
-              {new Date().toLocaleTimeString('pt-BR', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+              {formatHumanDateTime(new Date())}
             </span>
           }
           icon={<Thermometer className="h-5 w-5 text-[hsl(var(--accent-2))]" />}
@@ -869,13 +865,7 @@ function DashboardContent() {
                       </td>
                       <td className="text-muted">
                         {device.lastReadingAt
-                          ? formatDistanceToNow(
-                              new Date(device.lastReadingAt),
-                              {
-                                addSuffix: true,
-                                locale: ptBR,
-                              },
-                            )
+                          ? formatRelativeDateTime(device.lastReadingAt)
                           : 'Sem leitura'}
                       </td>
                       <td className="text-right">

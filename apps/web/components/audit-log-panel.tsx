@@ -1,8 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { FileSearch, ShieldCheck } from 'lucide-react';
 import { useAuditLogs } from '@/hooks/use-audit-logs';
 import { AuthUser } from '@/types/auth';
@@ -13,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Feedback } from '@/components/ui/feedback';
 import { Input, Select } from '@/components/ui/input';
 import { Panel } from '@/components/ui/panel';
+import { formatRelativeDateTime } from '@/lib/date';
 
 type AuditLogPanelProps = {
   clientId?: string;
@@ -177,10 +176,7 @@ export function AuditLogPanel({
                 </div>
                 <Badge>
                   <FileSearch className="h-3.5 w-3.5 text-accent" />
-                  {formatDistanceToNow(new Date(entry.createdAt), {
-                    addSuffix: true,
-                    locale: ptBR,
-                  })}
+                  {formatRelativeDateTime(entry.createdAt)}
                 </Badge>
               </div>
 

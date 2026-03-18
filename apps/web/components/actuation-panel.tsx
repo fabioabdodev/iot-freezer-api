@@ -1,8 +1,6 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { Power, RadioTower, ScrollText, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -22,6 +20,7 @@ import { Input, Select } from '@/components/ui/input';
 import { Panel } from '@/components/ui/panel';
 import { SetupGuideCard } from '@/components/setup-guide-card';
 import { ActuationSchedulesPanel } from '@/components/actuation-schedules-panel';
+import { formatRelativeDateTime } from '@/lib/date';
 
 const formSchema = z.object({
   id: z
@@ -412,15 +411,7 @@ export function ActuationPanel({
                         <td className="text-muted">
                           {actuator.lastCommandAt ? (
                             <div className="flex flex-col">
-                              <span>
-                                {formatDistanceToNow(
-                                  new Date(actuator.lastCommandAt),
-                                  {
-                                    addSuffix: true,
-                                    locale: ptBR,
-                                  },
-                                )}
-                              </span>
+                              <span>{formatRelativeDateTime(actuator.lastCommandAt)}</span>
                               <span className="text-xs">
                                 por {actuator.lastCommandBy ?? 'manual'}
                               </span>
@@ -574,10 +565,7 @@ export function ActuationPanel({
                           </div>
                           <div className="flex items-center gap-2 text-xs text-muted">
                             <RadioTower className="h-3.5 w-3.5" />
-                            {formatDistanceToNow(new Date(command.executedAt), {
-                              addSuffix: true,
-                              locale: ptBR,
-                            })}
+                            {formatRelativeDateTime(command.executedAt)}
                           </div>
                         </div>
                       ))}
