@@ -38,6 +38,9 @@ Importante para continuidade:
 - `iot-virtuagil-firmware/` e a base local de outro projeto, o futuro repositorio de firmware/hardware
 - `estudos de caso/` na raiz do projeto e uma pasta local de apoio comercial e operacional
 - essas pastas nao devem guiar mudancas do backend/dashboard, a menos que o pedido do usuario seja explicitamente sobre elas
+- quando a tarefa envolver helper comercial por `WhatsApp`, bot de atendimento, FAQ institucional, onboarding conversacional ou agente de IA voltado a apresentar a Virtuagil e seus servicos, considerar tambem `institucional-site/` como fonte principal de estrategia futura
+- esse tipo de helper pode nascer operacionalmente em fluxos `n8n + Evolution + OpenAI`, mas a frente comercial e institucional dele pode evoluir como parte do projeto separado do site institucional
+- quando esse helper tocar runtime embarcado, polling de hardware, onboarding de device ou automacao fisica, considerar tambem `iot-virtuagil-firmware/` como contexto complementar
 - quando a tarefa envolver proposta comercial, onboarding, implantacao, jornada real de uso ou revisao de UX por cliente, consultar primeiro `estudos de caso/`
 - essa pasta e local, pode nao estar no Git e nao deve ser tratada como documentacao versionada do produto
 - o objetivo pratico dessa pasta e simular a chegada a um cliente real, percorrer o sistema como se a implantacao estivesse acontecendo e usar isso para conhecer as telas e sugerir melhorias de UI/UX
