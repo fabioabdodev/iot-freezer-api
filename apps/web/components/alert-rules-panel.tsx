@@ -371,13 +371,22 @@ export function AlertRulesPanel({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="mb-1 block text-xs text-muted">Sensor</label>
-              <Select {...register('sensorType')} className="bg-card/80">
+              <Select
+                {...register('sensorType')}
+                className="bg-card/80"
+                disabled={Boolean(editingRule)}
+              >
                 {SENSOR_OPTIONS.map((sensor) => (
                   <option key={sensor.value} value={sensor.value}>
                     {sensor.label}
                   </option>
                 ))}
               </Select>
+              {editingRule ? (
+                <p className="mt-1 text-xs text-muted">
+                  Para alterar o sensor, crie uma nova regra.
+                </p>
+              ) : null}
               {errors.sensorType ? (
                 <p className="mt-1 text-xs text-bad">{errors.sensorType.message}</p>
               ) : null}
