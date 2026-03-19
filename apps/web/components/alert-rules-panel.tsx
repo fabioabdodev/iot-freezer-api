@@ -78,6 +78,23 @@ type AlertRulesPanelProps = {
   blockedReason?: string;
 };
 
+const SENSOR_OPTIONS = [
+  { value: 'temperature', label: 'Temperatura' },
+  { value: 'umidade', label: 'Umidade' },
+  { value: 'gases', label: 'Gases' },
+  { value: 'corrente', label: 'Corrente' },
+  { value: 'tensao', label: 'Tensao' },
+  { value: 'consumo', label: 'Consumo' },
+] as const;
+
+function sensorTypeLabel(sensorType?: string | null) {
+  const normalized = sensorType?.trim().toLowerCase();
+  const option = SENSOR_OPTIONS.find((item) => item.value === normalized);
+  if (option) return option.label;
+  if (!normalized) return '-';
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
 export function AlertRulesPanel({
   clientId,
   client,
@@ -334,7 +351,7 @@ export function AlertRulesPanel({
                   <p className="text-xs uppercase tracking-[0.16em] text-muted">
                     Sensor
                   </p>
-                  <p className="mt-2 text-sm font-medium text-ink">temperature</p>
+                  <p className="mt-2 text-sm font-medium text-ink">Temperatura</p>
                 </div>
                 <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
                   <p className="text-xs uppercase tracking-[0.16em] text-muted">
@@ -354,11 +371,13 @@ export function AlertRulesPanel({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="mb-1 block text-xs text-muted">Sensor</label>
-              <Input
-                {...register('sensorType')}
-                placeholder="temperature"
-                className="bg-card/80"
-              />
+              <Select {...register('sensorType')} className="bg-card/80">
+                {SENSOR_OPTIONS.map((sensor) => (
+                  <option key={sensor.value} value={sensor.value}>
+                    {sensor.label}
+                  </option>
+                ))}
+              </Select>
               {errors.sensorType ? (
                 <p className="mt-1 text-xs text-bad">{errors.sensorType.message}</p>
               ) : null}
@@ -537,7 +556,7 @@ export function AlertRulesPanel({
             <tbody>
               {rules.map((rule) => (
                 <tr key={rule.id}>
-                  <td>{rule.sensorType}</td>
+                  <td>{sensorTypeLabel(rule.sensorType)}</td>
                   <td className="text-muted">
                     {rule.deviceId ?? 'Todos'}
                   </td>
