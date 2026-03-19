@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { IngestController } from '../src/modules/ingest/ingest.controller';
 import { IngestService } from '../src/modules/ingest/ingest.service';
+import { RuntimeDeviceKeyService } from '../src/infra/runtime-auth/runtime-device-key.service';
 
 describe('Ingest Auth (e2e)', () => {
   let app: INestApplication;
@@ -18,9 +19,14 @@ describe('Ingest Auth (e2e)', () => {
       controllers: [IngestController],
       providers: [
         { provide: IngestService, useValue: fakeIngestService },
+        { provide: ConfigService, useValue: { get: jest.fn() } },
         {
-          provide: ConfigService,
-          useValue: { get: jest.fn().mockReturnValue('expected-key') },
+          provide: RuntimeDeviceKeyService,
+          useValue: {
+            isValidForIngest: jest.fn((deviceKey: string | undefined) =>
+              Promise.resolve(deviceKey === 'expected-key'),
+            ),
+          },
         },
       ],
     }).compile();
@@ -37,7 +43,7 @@ describe('Ingest Auth (e2e)', () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) await app.close();
   });
 
   it('POST /iot/temperature should return 401 without x-device-key', async () => {

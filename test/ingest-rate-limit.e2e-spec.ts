@@ -6,18 +6,24 @@ import { IngestController } from '../src/modules/ingest/ingest.controller';
 import { IngestService } from '../src/modules/ingest/ingest.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { CacheService } from '../src/infra/cache/cache.service';
+import { RuntimeDeviceKeyService } from '../src/infra/runtime-auth/runtime-device-key.service';
+import { AlertDeliveryQueueService } from '../src/infra/alerts/alert-delivery-queue.service';
+import { ConnectivityAlertPolicyService } from '../src/infra/alerts/connectivity-alert-policy.service';
 
 describe('Ingest Rate Limit (e2e)', () => {
   let app: INestApplication;
   let fakePrisma: {
     temperatureLog: { create: jest.Mock };
-    device: { upsert: jest.Mock };
+    device: { upsert: jest.Mock; findUnique: jest.Mock };
   };
 
   beforeEach(async () => {
     fakePrisma = {
       temperatureLog: { create: jest.fn().mockResolvedValue(undefined) },
-      device: { upsert: jest.fn().mockResolvedValue(undefined) },
+      device: {
+        upsert: jest.fn().mockResolvedValue(undefined),
+        findUnique: jest.fn().mockResolvedValue(null),
+      },
     };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -39,6 +45,22 @@ describe('Ingest Rate Limit (e2e)', () => {
         {
           provide: CacheService,
           useValue: { invalidatePrefix: jest.fn() },
+        },
+        {
+          provide: AlertDeliveryQueueService,
+          useValue: { enqueue: jest.fn() },
+        },
+        {
+          provide: ConnectivityAlertPolicyService,
+          useValue: { handleRecoveryTransition: jest.fn().mockReturnValue(null) },
+        },
+        {
+          provide: RuntimeDeviceKeyService,
+          useValue: {
+            isValidForIngest: jest.fn((deviceKey: string | undefined) =>
+              Promise.resolve(deviceKey === 'expected-key'),
+            ),
+          },
         },
       ],
     }).compile();

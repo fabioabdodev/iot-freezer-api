@@ -9,6 +9,7 @@ import { ModuleAccessGuard, SessionAuthGuard } from '../src/modules/auth/auth.gu
 import { IotActuationController } from '../src/modules/actuators/iot-actuation.controller';
 import { ConfigService } from '@nestjs/config';
 import { AuditTrailService } from '../src/infra/audit/audit-trail.service';
+import { RuntimeDeviceKeyService } from '../src/infra/runtime-auth/runtime-device-key.service';
 
 describe('Actuators (e2e)', () => {
   let app: INestApplication;
@@ -175,6 +176,17 @@ describe('Actuators (e2e)', () => {
           useValue: {
             get: jest.fn((key: string) =>
               key === 'DEVICE_API_KEY' ? 'expected-key' : undefined,
+            ),
+          },
+        },
+        {
+          provide: RuntimeDeviceKeyService,
+          useValue: {
+            isValidForDevice: jest.fn((deviceKey: string | undefined) =>
+              Promise.resolve(deviceKey === 'expected-key'),
+            ),
+            isValidForActuator: jest.fn((deviceKey: string | undefined) =>
+              Promise.resolve(deviceKey === 'expected-key'),
             ),
           },
         },

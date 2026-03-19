@@ -13,6 +13,7 @@ describe('ClientsService', () => {
         create: jest.fn(),
         findMany: jest.fn(),
         findUnique: jest.fn(),
+        findFirst: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
       },
@@ -29,21 +30,35 @@ describe('ClientsService', () => {
   });
 
   it('should create client', async () => {
+    fakePrisma.client.findUnique.mockResolvedValue(null);
+    fakePrisma.client.findFirst.mockResolvedValue(null);
     fakePrisma.client.create.mockResolvedValue({
       id: 'client_a',
       name: 'Client A',
       status: 'active',
+      adminName: 'Ana Gestora',
+      document: '11222333000181',
+      adminPhone: '5531999999999',
+      billingPhone: '5531988887777',
       billingEmail: 'financeiro@clientea.com',
     });
     const result = await service.create({
       id: 'client_a',
       name: 'Client A',
+      adminName: 'Ana Gestora',
+      document: '11.222.333/0001-81',
+      adminPhone: '(31) 99999-9999',
+      billingPhone: '(31) 98888-7777',
       billingEmail: 'financeiro@clientea.com',
     });
     expect(fakePrisma.client.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         id: 'client_a',
         name: 'Client A',
+        adminName: 'Ana Gestora',
+        document: '11222333000181',
+        adminPhone: '5531999999999',
+        billingPhone: '5531988887777',
         billingEmail: 'financeiro@clientea.com',
         status: 'active',
       }),
