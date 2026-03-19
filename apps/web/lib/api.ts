@@ -13,6 +13,7 @@ import {
   AuthUser,
   ConfirmPasswordResetInput,
   LoginInput,
+  PasswordResetRequestResult,
   PasswordResetValidation,
   RequestPasswordResetInput,
 } from '@/types/auth';
@@ -610,7 +611,7 @@ export async function loginUser(input: LoginInput): Promise<AuthSession> {
 
 export async function requestPasswordReset(
   input: RequestPasswordResetInput,
-): Promise<{ message: string }> {
+): Promise<PasswordResetRequestResult> {
   const response = await fetch(`${API_BASE_URL}/auth/password/forgot`, {
     method: 'POST',
     headers: {
@@ -625,7 +626,7 @@ export async function requestPasswordReset(
     );
   }
 
-  return response.json() as Promise<{ message: string }>;
+  return response.json() as Promise<PasswordResetRequestResult>;
 }
 
 export async function validatePasswordResetToken(

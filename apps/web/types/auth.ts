@@ -37,3 +37,9 @@ export type PasswordResetValidation = {
   emailHint: string;
   expiresAt: string;
 };
+
+export type PasswordResetRequestResult = {
+  message: string;
+  resetUrl?: string;
+  expiresAt?: string;
+};

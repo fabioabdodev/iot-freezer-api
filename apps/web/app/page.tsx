@@ -10,6 +10,7 @@ import {
   Boxes,
   ChartNoAxesCombined,
   CircleDot,
+  Copy,
   KeyRound,
   RefreshCw,
   Snowflake,
@@ -102,6 +103,9 @@ function DashboardContent() {
   );
   const [forgotEmailDraft, setForgotEmailDraft] = useState('');
   const [forgotSuccessMessage, setForgotSuccessMessage] = useState<string | null>(null);
+  const [forgotResetUrl, setForgotResetUrl] = useState<string | null>(null);
+  const [forgotResetExpiresAt, setForgotResetExpiresAt] = useState<string | null>(null);
+  const [forgotLinkCopied, setForgotLinkCopied] = useState(false);
   const [isRequestingReset, setIsRequestingReset] = useState(false);
   const [resetTokenDraft, setResetTokenDraft] = useState(queryResetToken);
   const [newPasswordDraft, setNewPasswordDraft] = useState('');
@@ -296,6 +300,9 @@ function DashboardContent() {
   async function handleRequestPasswordReset() {
     setAuthError(null);
     setForgotSuccessMessage(null);
+    setForgotResetUrl(null);
+    setForgotResetExpiresAt(null);
+    setForgotLinkCopied(false);
     if (!forgotEmailDraft.trim()) {
       setAuthError('Informe o e-mail para recuperar a senha.');
       return;
@@ -315,6 +322,8 @@ function DashboardContent() {
         result.message ??
           'Se o e-mail existir, voce recebera um link de recuperacao.',
       );
+      setForgotResetUrl(result.resetUrl ?? null);
+      setForgotResetExpiresAt(result.expiresAt ?? null);
     } catch (error) {
       setAuthError(
         error instanceof Error ? error.message : 'Falha ao solicitar recuperacao.',
@@ -325,6 +334,18 @@ function DashboardContent() {
       }
       setTurnstileToken(null);
       setIsRequestingReset(false);
+    }
+  }
+
+  async function handleCopyForgotResetLink() {
+    if (!forgotResetUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(forgotResetUrl);
+      setForgotLinkCopied(true);
+      window.setTimeout(() => setForgotLinkCopied(false), 1800);
+    } catch {
+      setForgotLinkCopied(false);
     }
   }
 
@@ -589,11 +610,20 @@ function DashboardContent() {
                       className="w-full"
                       onClick={() => {
                         setAuthError(null);
+                        setForgotSuccessMessage(null);
+                        setForgotResetUrl(null);
+                        setForgotResetExpiresAt(null);
+                        setForgotLinkCopied(false);
                         setAuthFlow('login');
                       }}
                     >
                       Voltar para login
                     </Button>
+
+                    <p className="text-xs leading-6 text-muted">
+                      Se o e-mail nao chegar, verifique Spam/Promocoes. Em ultimo caso,
+                      o administrador pode gerar um novo link em `Usuarios`.
+                    </p>
                   </div>
                 ) : null}
 
@@ -671,6 +701,38 @@ function DashboardContent() {
                   <Feedback variant="success" className="mt-4">
                     {forgotSuccessMessage}
                   </Feedback>
+                ) : null}
+                {authFlow === 'forgot' && forgotResetUrl ? (
+                  <Panel className="mt-4 p-3">
+                    <p className="text-xs text-muted">
+                      Link de fallback gerado para suporte rapido
+                      {forgotResetExpiresAt
+                        ? ` (expira ${formatRelativeDateTime(forgotResetExpiresAt)})`
+                        : ''}
+                      .
+                    </p>
+                    <div className="mt-2 rounded-2xl border border-line/70 bg-bg/40 p-3 font-mono text-xs text-ink">
+                      {forgotResetUrl}
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          void handleCopyForgotResetLink();
+                        }}
+                      >
+                        <Copy className="mr-2 h-3.5 w-3.5" />
+                        Copiar link
+                      </Button>
+                      <span className="text-xs text-muted">
+                        {forgotLinkCopied
+                          ? 'Link copiado.'
+                          : 'Use apenas quando o e-mail nao chegar.'}
+                      </span>
+                    </div>
+                  </Panel>
                 ) : null}
                 {resetValidationMessage ? (
                   <Feedback className="mt-4">{resetValidationMessage}</Feedback>
