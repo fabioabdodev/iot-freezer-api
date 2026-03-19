@@ -134,9 +134,65 @@ jobs:
               exit 1
             fi
 
+            DUPLICATED_KEYS="$(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' .env.prod | cut -d= -f1 | sort | uniq -d || true)"
+            if [ -n "${DUPLICATED_KEYS}" ]; then
+              echo "Falha: .env.prod possui chaves duplicadas. Isso pode sobrescrever valores e causar incidentes."
+              echo "${DUPLICATED_KEYS}"
+              exit 1
+            fi
+
             set -a
             . ./.env.prod
             set +a
+
+            trim_var() {
+              local key="$1"
+              local value="${!key:-}"
+              local trimmed
+              trimmed="$(printf '%s' "$value" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+              export "$key=$trimmed"
+            }
+
+            validate_optional_url() {
+              local key="$1"
+              local value="${!key:-}"
+              if [ -n "$value" ] && ! printf '%s' "$value" | grep -Eq '^https?://'; then
+                echo "Falha: ${key} invalida. Use URL completa iniciando com http:// ou https://"
+                exit 1
+              fi
+            }
+
+            trim_var DATABASE_URL
+            trim_var DIRECT_DATABASE_URL
+            trim_var N8N_OFFLINE_WEBHOOK_URL
+            trim_var N8N_ONLINE_WEBHOOK_URL
+            trim_var N8N_TEMPERATURE_ALERT_WEBHOOK_URL
+
+            if [ -z "${DATABASE_URL:-}" ]; then
+              echo "Falha: DATABASE_URL nao pode ficar vazia."
+              exit 1
+            fi
+
+            if ! printf '%s' "${DATABASE_URL}" | grep -Eq '^(postgresql|postgres|prisma)://'; then
+              echo "Falha: DATABASE_URL precisa iniciar com postgresql://, postgres:// ou prisma://"
+              exit 1
+            fi
+
+            if [ -n "${DIRECT_DATABASE_URL:-}" ] && ! printf '%s' "${DIRECT_DATABASE_URL}" | grep -Eq '^(postgresql|postgres)://'; then
+              echo "Falha: DIRECT_DATABASE_URL precisa iniciar com postgresql:// ou postgres://"
+              exit 1
+            fi
+
+            if printf '%s' "${DATABASE_URL}" | grep -Eq '^prisma://'; then
+              if [ -z "${DIRECT_DATABASE_URL:-}" ]; then
+                echo "Falha: quando DATABASE_URL usa prisma://, DIRECT_DATABASE_URL deve estar definida."
+                exit 1
+              fi
+            fi
+
+            validate_optional_url N8N_OFFLINE_WEBHOOK_URL
+            validate_optional_url N8N_ONLINE_WEBHOOK_URL
+            validate_optional_url N8N_TEMPERATURE_ALERT_WEBHOOK_URL
 
             export IMAGE_TAG="${{ needs.build-and-push.outputs.image_tag }}"
             export API_IMAGE="${{ needs.build-and-push.outputs.api_image }}"
