@@ -63,6 +63,11 @@ export function ClientProfilePanel({
   const [status, setStatus] = useState<ClientStatus>('active');
   const [notes, setNotes] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [copiedDeviceApiKey, setCopiedDeviceApiKey] = useState(false);
+
+  const maskedDeviceApiKey = deviceApiKey
+    ? '•'.repeat(Math.max(12, deviceApiKey.length))
+    : '';
 
   useEffect(() => {
     if (!data) return;
@@ -170,6 +175,10 @@ export function ClientProfilePanel({
 
     try {
       await navigator.clipboard.writeText(deviceApiKey);
+      setCopiedDeviceApiKey(true);
+      window.setTimeout(() => {
+        setCopiedDeviceApiKey(false);
+      }, 1600);
     } catch {
       setFormError('Nao foi possivel copiar a chave do device.');
     }
@@ -291,22 +300,29 @@ export function ClientProfilePanel({
               </div>
               <div>
                 <label className="mb-1 block text-xs text-muted">Chave do device da conta</label>
-                <Input
-                  value={deviceApiKey}
-                  readOnly
-                  placeholder="Gerada automaticamente por cliente"
-                />
-                <div className="mt-2 flex gap-2">
+                <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+                  <Input
+                    type="password"
+                    value={maskedDeviceApiKey}
+                    readOnly
+                    autoComplete="off"
+                    spellCheck={false}
+                    placeholder="Gerada automaticamente por cliente"
+                    className="sm:flex-1"
+                  />
                   <Button
                     type="button"
                     variant="secondary"
                     size="sm"
                     onClick={() => void handleCopyDeviceApiKey()}
                     disabled={!deviceApiKey}
+                    className="sm:self-stretch"
                   >
                     <Copy className="mr-2 h-3.5 w-3.5" />
                     Copiar
                   </Button>
+                </div>
+                <div className="mt-2 flex gap-2">
                   <Button
                     type="button"
                     variant="secondary"
@@ -318,6 +334,13 @@ export function ClientProfilePanel({
                     Gerar nova chave
                   </Button>
                 </div>
+                {copiedDeviceApiKey ? (
+                  <p className="mt-1 text-xs text-ok">Chave copiada.</p>
+                ) : (
+                  <p className="mt-1 text-xs text-muted">
+                    A chave permanece protegida na tela e pode ser copiada para uso no firmware.
+                  </p>
+                )}
               </div>
               <div>
                 <label className="mb-2 flex items-center gap-2 text-xs text-muted">
