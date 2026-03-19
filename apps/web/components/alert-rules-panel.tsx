@@ -18,9 +18,21 @@ import { Feedback } from '@/components/ui/feedback';
 import { Input, Select } from '@/components/ui/input';
 import { Panel } from '@/components/ui/panel';
 
+const SENSOR_VALUES = [
+  'temperature',
+  'umidade',
+  'gases',
+  'corrente',
+  'tensao',
+  'consumo',
+] as const;
+
 const formSchema = z
   .object({
-    sensorType: z.string().trim().min(1, 'Sensor obrigatorio'),
+    sensorType: z.enum(SENSOR_VALUES, {
+      required_error: 'Sensor obrigatorio',
+      invalid_type_error: 'Sensor obrigatorio',
+    }),
     deviceId: z
       .string()
       .trim()
@@ -85,14 +97,22 @@ const SENSOR_OPTIONS = [
   { value: 'corrente', label: 'Corrente' },
   { value: 'tensao', label: 'Tensao' },
   { value: 'consumo', label: 'Consumo' },
-] as const;
+] as const satisfies ReadonlyArray<{ value: (typeof SENSOR_VALUES)[number]; label: string }>;
+
+type SensorType = (typeof SENSOR_VALUES)[number];
+
+function normalizeSensorType(sensorType?: string | null): SensorType {
+  const normalized = sensorType?.trim().toLowerCase();
+  return SENSOR_VALUES.includes(normalized as SensorType)
+    ? (normalized as SensorType)
+    : 'temperature';
+}
 
 function sensorTypeLabel(sensorType?: string | null) {
-  const normalized = sensorType?.trim().toLowerCase();
+  const normalized = normalizeSensorType(sensorType);
   const option = SENSOR_OPTIONS.find((item) => item.value === normalized);
   if (option) return option.label;
-  if (!normalized) return '-';
-  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  return 'Temperatura';
 }
 
 export function AlertRulesPanel({
@@ -157,7 +177,7 @@ export function AlertRulesPanel({
     setIsCreateOpen(true);
 
     reset({
-      sensorType: editingRule.sensorType,
+      sensorType: normalizeSensorType(editingRule.sensorType),
       deviceId: editingRule.deviceId ?? '',
       minValue:
         editingRule.minValue != null ? String(editingRule.minValue) : '',
