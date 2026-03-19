@@ -13,12 +13,14 @@ import { ConnectivityAlertPolicyService } from '../src/infra/alerts/connectivity
 describe('Ingest Rate Limit (e2e)', () => {
   let app: INestApplication;
   let fakePrisma: {
+    sensorReading: { create: jest.Mock };
     temperatureLog: { create: jest.Mock };
     device: { upsert: jest.Mock; findUnique: jest.Mock };
   };
 
   beforeEach(async () => {
     fakePrisma = {
+      sensorReading: { create: jest.fn().mockResolvedValue(undefined) },
       temperatureLog: { create: jest.fn().mockResolvedValue(undefined) },
       device: {
         upsert: jest.fn().mockResolvedValue(undefined),

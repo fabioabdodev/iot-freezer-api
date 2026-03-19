@@ -8,11 +8,15 @@ import { RuntimeDeviceKeyService } from '../src/infra/runtime-auth/runtime-devic
 
 describe('Ingest Auth (e2e)', () => {
   let app: INestApplication;
-  let fakeIngestService: { ingestTemperature: jest.Mock };
+  let fakeIngestService: {
+    ingestTemperature: jest.Mock;
+    ingestReading: jest.Mock;
+  };
 
   beforeEach(async () => {
     fakeIngestService = {
       ingestTemperature: jest.fn().mockResolvedValue(undefined),
+      ingestReading: jest.fn().mockResolvedValue(undefined),
     };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -86,5 +90,19 @@ describe('Ingest Auth (e2e)', () => {
       .expect(400);
 
     expect(fakeIngestService.ingestTemperature).not.toHaveBeenCalled();
+  });
+
+  it('POST /iot/readings should return 200 with valid x-device-key', async () => {
+    await request(app.getHttpServer())
+      .post('/iot/readings')
+      .set('x-device-key', 'expected-key')
+      .send({ device_id: 'freezer_01', sensor_type: 'umidade', value: 64.1 })
+      .expect(200);
+
+    expect(fakeIngestService.ingestReading).toHaveBeenCalledWith({
+      device_id: 'freezer_01',
+      sensor_type: 'umidade',
+      value: 64.1,
+    });
   });
 });

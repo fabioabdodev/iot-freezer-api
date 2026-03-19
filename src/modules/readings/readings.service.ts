@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CacheService } from '../../infra/cache/cache.service';
@@ -29,30 +29,50 @@ export class ReadingsService {
 
     const normalizedLimit = Number.isFinite(limit) ? limit : 100;
     const safeLimit = Math.max(1, Math.min(normalizedLimit, 500));
+    const normalizedSensorType = sensorType.trim().toLowerCase() || 'temperature';
 
-    if (sensorType !== 'temperature') {
-      return [];
-    }
-
-    const cacheKey = `readings:${deviceId}:${clientId ?? 'all'}:${sensorType}:${safeLimit}:${resolution ?? 'raw'}`;
+    const cacheKey = `readings:${deviceId}:${clientId ?? 'all'}:${normalizedSensorType}:${safeLimit}:${resolution ?? 'raw'}`;
     const cached = this.cache.get<any[]>(cacheKey);
     if (cached) return cached;
 
-    const rows = await this.prisma.temperatureLog.findMany({
-      where: { deviceId },
+    const sensorRows = await this.prisma.sensorReading.findMany({
+      where: {
+        deviceId,
+        sensorType: normalizedSensorType,
+      },
       orderBy: { createdAt: 'desc' },
       take: safeLimit,
-    });
+    } as any);
 
-    const normalized = rows
+    let normalized = sensorRows
       .slice()
       .reverse()
-      .map((row) => ({
+      .map((row: any) => ({
         deviceId: row.deviceId,
-        sensorType: 'temperature',
-        value: row.temperature,
+        sensorType: row.sensorType,
+        value: row.value,
+        unit: row.unit ?? null,
         createdAt: row.createdAt,
       }));
+
+    if (normalized.length === 0 && normalizedSensorType === 'temperature') {
+      const temperatureRows = await this.prisma.temperatureLog.findMany({
+        where: { deviceId },
+        orderBy: { createdAt: 'desc' },
+        take: safeLimit,
+      });
+
+      normalized = temperatureRows
+        .slice()
+        .reverse()
+        .map((row) => ({
+          deviceId: row.deviceId,
+          sensorType: 'temperature',
+          value: row.temperature,
+          unit: 'celsius',
+          createdAt: row.createdAt,
+        }));
+    }
 
     const payload = resolution
       ? this.aggregateByResolution(normalized, resolution)
@@ -71,6 +91,7 @@ export class ReadingsService {
       deviceId: string;
       sensorType: string;
       value: number;
+      unit?: string | null;
       createdAt: Date;
     }>,
     resolution: string,
@@ -83,6 +104,7 @@ export class ReadingsService {
       {
         deviceId: string;
         sensorType: string;
+        unit?: string | null;
         sum: number;
         count: number;
         min: number;
@@ -98,6 +120,7 @@ export class ReadingsService {
         buckets.set(bucketStart, {
           deviceId: row.deviceId,
           sensorType: row.sensorType,
+          unit: row.unit ?? null,
           sum: row.value,
           count: 1,
           min: row.value,
@@ -116,6 +139,7 @@ export class ReadingsService {
       .map(([bucketStart, bucket]) => ({
         deviceId: bucket.deviceId,
         sensorType: bucket.sensorType,
+        unit: bucket.unit ?? null,
         value: Number((bucket.sum / bucket.count).toFixed(3)),
         createdAt: new Date(bucketStart),
         count: bucket.count,

@@ -1,7 +1,8 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+﻿import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TemperatureDto } from './dto/temperature.dto';
+import { ReadingDto } from './dto/reading.dto';
 import { CacheService } from '../../infra/cache/cache.service';
 import { AlertDeliveryQueueService } from '../../infra/alerts/alert-delivery-queue.service';
 import { ConnectivityAlertPolicyService } from '../../infra/alerts/connectivity-alert-policy.service';
@@ -20,6 +21,16 @@ export class IngestService {
   ) {}
 
   async ingestTemperature(body: TemperatureDto) {
+    await this.ingestReading({
+      client_id: body.client_id,
+      device_id: body.device_id,
+      sensor_type: 'temperature',
+      value: body.temperature,
+      unit: 'celsius',
+    });
+  }
+
+  async ingestReading(body: ReadingDto) {
     this.enforceDeviceRateLimit(body.device_id);
 
     const receivedAt = new Date();
@@ -27,12 +38,23 @@ export class IngestService {
       where: { id: body.device_id },
     } as any);
 
-    await this.prisma.temperatureLog.create({
+    await this.prisma.sensorReading.create({
       data: {
         deviceId: body.device_id,
-        temperature: body.temperature,
+        sensorType: body.sensor_type,
+        value: body.value,
+        unit: body.unit ?? null,
       },
-    });
+    } as any);
+
+    if (body.sensor_type === 'temperature') {
+      await this.prisma.temperatureLog.create({
+        data: {
+          deviceId: body.device_id,
+          temperature: body.value,
+        },
+      });
+    }
 
     await this.prisma.device.upsert({
       where: { id: body.device_id },
@@ -78,7 +100,7 @@ export class IngestService {
     this.cache.invalidatePrefix('readings:');
 
     this.logger.debug(
-      `Persisted temperature for device_id=${body.device_id} temperature=${body.temperature} receivedAt=${receivedAt.toISOString()}`,
+      `Persisted reading for device_id=${body.device_id} sensor=${body.sensor_type} value=${body.value} receivedAt=${receivedAt.toISOString()}`,
     );
   }
 

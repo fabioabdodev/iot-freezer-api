@@ -17,6 +17,7 @@ describe('IngestService', () => {
 
   beforeEach(async () => {
     fakePrisma = {
+      sensorReading: { create: jest.fn().mockResolvedValue(undefined) },
       temperatureLog: { create: jest.fn().mockResolvedValue(undefined) },
       device: {
         findUnique: jest.fn().mockResolvedValue(null),
@@ -74,6 +75,25 @@ describe('IngestService', () => {
       expect(error).toBeInstanceOf(HttpException);
       expect((error as HttpException).getStatus()).toBe(429);
     }
+  });
+
+  it('should persist generic reading without writing temperatureLog for non-temperature sensors', async () => {
+    await service.ingestReading({
+      device_id: 'freezer_01',
+      sensor_type: 'umidade',
+      value: 61.2,
+    });
+
+    expect(fakePrisma.sensorReading.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          deviceId: 'freezer_01',
+          sensorType: 'umidade',
+          value: 61.2,
+        }),
+      }),
+    );
+    expect(fakePrisma.temperatureLog.create).not.toHaveBeenCalled();
   });
 
   it('should enqueue back online alert when device recovers from offline state', async () => {

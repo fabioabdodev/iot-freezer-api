@@ -18,6 +18,18 @@ model TemperatureLog {
   @@index([deviceId, createdAt])
 }
 
+model SensorReading {
+  id         String   @id @default(uuid())
+  deviceId   String
+  sensorType String
+  value      Float
+  unit       String?
+  createdAt  DateTime @default(now())
+
+  @@index([deviceId, sensorType, createdAt])
+  @@index([deviceId, createdAt])
+}
+
 model Device {
   id       String    @id
   clientId String?

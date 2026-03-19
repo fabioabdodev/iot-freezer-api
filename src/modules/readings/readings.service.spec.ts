@@ -13,6 +13,7 @@ describe('ReadingsService', () => {
   beforeEach(async () => {
     fakePrisma = {
       device: { findUnique: jest.fn() },
+      sensorReading: { findMany: jest.fn() },
       temperatureLog: { findMany: jest.fn() },
     };
     fakeCache = {
@@ -40,6 +41,7 @@ describe('ReadingsService', () => {
 
   it('should return normalized temperature readings', async () => {
     const now = new Date();
+    fakePrisma.sensorReading.findMany.mockResolvedValue([]);
     fakePrisma.temperatureLog.findMany.mockResolvedValue([
       { deviceId: 'freezer_01', temperature: -10, createdAt: now },
     ]);
@@ -56,20 +58,40 @@ describe('ReadingsService', () => {
         deviceId: 'freezer_01',
         sensorType: 'temperature',
         value: -10,
+        unit: 'celsius',
         createdAt: now,
       },
     ]);
   });
 
-  it('should return empty array for unsupported sensor type', async () => {
+  it('should return readings for non-temperature sensors from sensorReading', async () => {
+    const now = new Date();
+    fakePrisma.sensorReading.findMany.mockResolvedValue([
+      {
+        deviceId: 'freezer_01',
+        sensorType: 'umidade',
+        value: 61.1,
+        unit: '%',
+        createdAt: now,
+      },
+    ]);
+
     const result = await service.listByDevice(
       'freezer_01',
       undefined,
-      'humidity',
+      'umidade',
       10,
     );
-    expect(result).toEqual([]);
-    expect(fakePrisma.temperatureLog.findMany).not.toHaveBeenCalled();
+    expect(result).toEqual([
+      {
+        deviceId: 'freezer_01',
+        sensorType: 'umidade',
+        value: 61.1,
+        unit: '%',
+        createdAt: now,
+      },
+    ]);
+    expect(fakePrisma.sensorReading.findMany).toHaveBeenCalled();
   });
 
   it('should throw when device does not belong to informed client', async () => {
@@ -86,6 +108,7 @@ describe('ReadingsService', () => {
   });
 
   it('should aggregate readings when resolution is provided', async () => {
+    fakePrisma.sensorReading.findMany.mockResolvedValue([]);
     fakePrisma.temperatureLog.findMany.mockResolvedValue([
       {
         deviceId: 'freezer_01',

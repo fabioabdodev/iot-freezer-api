@@ -6,12 +6,16 @@ import { RuntimeDeviceKeyService } from '../../infra/runtime-auth/runtime-device
 
 describe('IngestController', () => {
   let controller: IngestController;
-  let fakeIngestService: { ingestTemperature: jest.Mock };
+  let fakeIngestService: {
+    ingestTemperature: jest.Mock;
+    ingestReading: jest.Mock;
+  };
   let fakeRuntimeDeviceKeyService: { isValidForIngest: jest.Mock };
 
   beforeEach(async () => {
     fakeIngestService = {
       ingestTemperature: jest.fn(),
+      ingestReading: jest.fn(),
     };
 
     fakeRuntimeDeviceKeyService = {
@@ -73,5 +77,24 @@ describe('IngestController', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
 
     expect(fakeIngestService.ingestTemperature).not.toHaveBeenCalled();
+  });
+
+  it('should ingest generic reading when x-device-key is valid', async () => {
+    fakeRuntimeDeviceKeyService.isValidForIngest.mockResolvedValue(true);
+    fakeIngestService.ingestReading.mockResolvedValue(undefined);
+
+    await expect(
+      controller.readings('expected-key', {
+        device_id: 'freezer_01',
+        sensor_type: 'umidade',
+        value: 65.4,
+      }),
+    ).resolves.toEqual({ ok: true });
+
+    expect(fakeIngestService.ingestReading).toHaveBeenCalledWith({
+      device_id: 'freezer_01',
+      sensor_type: 'umidade',
+      value: 65.4,
+    });
   });
 });
