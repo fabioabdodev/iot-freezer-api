@@ -165,6 +165,8 @@ Resultado esperado no ponto atual:
   - a primeira verificacao deve ser `docker system df`
   - a limpeza inicial mais segura para imagens antigas e `docker image prune -a`
   - evitar `docker volume prune` sem revisar persistencia de dados
+  - no terminal PowerShell deste ambiente, evitar `&&` (gera erro de parser)
+  - para encadear comandos no PowerShell local, usar `;`
 
 ## Supabase
 
