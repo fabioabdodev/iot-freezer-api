@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   Copy,
   Eye,
+  EyeOff,
   MapPinned,
   PlayCircle,
   ShieldAlert,
@@ -47,6 +48,7 @@ function resolveSimulationDevices(clientId?: string) {
 export function SimulationLabPanel({ clientId, client }: SimulationLabPanelProps) {
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
   const [adminSessionToken, setAdminSessionToken] = useState('');
+  const [showAdminSessionToken, setShowAdminSessionToken] = useState(false);
 
   const suffix = clientId ? ` --client-id ${clientId}` : '';
   const demoTenant = client?.name ?? clientId ?? 'conta-demo';
@@ -251,22 +253,38 @@ export function SimulationLabPanel({ clientId, client }: SimulationLabPanelProps
         </p>
         <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
           <Input
-            type="password"
+            type={showAdminSessionToken ? 'text' : 'password'}
             value={adminSessionToken}
             onChange={(event) => setAdminSessionToken(event.target.value)}
             autoComplete="off"
             spellCheck={false}
             placeholder="Bearer eyJ..."
           />
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => setAdminSessionToken('')}
-            disabled={!adminSessionToken}
-          >
-            Limpar token
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowAdminSessionToken((current) => !current)}
+              disabled={!adminSessionToken}
+            >
+              {showAdminSessionToken ? (
+                <EyeOff className="mr-2 h-3.5 w-3.5" />
+              ) : (
+                <Eye className="mr-2 h-3.5 w-3.5" />
+              )}
+              {showAdminSessionToken ? 'Ocultar' : 'Mostrar'}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setAdminSessionToken('')}
+              disabled={!adminSessionToken}
+            >
+              Limpar token
+            </Button>
+          </div>
         </div>
       </Panel>
 

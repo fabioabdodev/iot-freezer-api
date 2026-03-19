@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import { Copy, RefreshCcw, Save } from 'lucide-react';
+import { Copy, Eye, EyeOff, RefreshCcw, Save } from 'lucide-react';
 import { isValidCpfOrCnpj, isValidEmail, isValidPhone } from '@/lib/client-form';
 import { useClient } from '@/hooks/use-client';
 import { useClientMutations } from '@/hooks/use-client-mutations';
@@ -64,10 +64,7 @@ export function ClientProfilePanel({
   const [notes, setNotes] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [copiedDeviceApiKey, setCopiedDeviceApiKey] = useState(false);
-
-  const maskedDeviceApiKey = deviceApiKey
-    ? '•'.repeat(Math.max(12, deviceApiKey.length))
-    : '';
+  const [showDeviceApiKey, setShowDeviceApiKey] = useState(false);
 
   useEffect(() => {
     if (!data) return;
@@ -302,14 +299,29 @@ export function ClientProfilePanel({
                 <label className="mb-1 block text-xs text-muted">Chave do device da conta</label>
                 <div className="mt-1 flex flex-col gap-2 sm:flex-row">
                   <Input
-                    type="password"
-                    value={maskedDeviceApiKey}
+                    type={showDeviceApiKey ? 'text' : 'password'}
+                    value={deviceApiKey}
                     readOnly
                     autoComplete="off"
                     spellCheck={false}
                     placeholder="Gerada automaticamente por cliente"
                     className="sm:flex-1"
                   />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowDeviceApiKey((current) => !current)}
+                    disabled={!deviceApiKey}
+                    className="sm:self-stretch"
+                  >
+                    {showDeviceApiKey ? (
+                      <EyeOff className="mr-2 h-3.5 w-3.5" />
+                    ) : (
+                      <Eye className="mr-2 h-3.5 w-3.5" />
+                    )}
+                    {showDeviceApiKey ? 'Ocultar' : 'Mostrar'}
+                  </Button>
                   <Button
                     type="button"
                     variant="secondary"
