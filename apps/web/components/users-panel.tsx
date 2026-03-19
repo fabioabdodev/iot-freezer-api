@@ -185,7 +185,7 @@ export function UsersPanel({
         <div>
           <h2 className="text-lg font-semibold">Usuarios</h2>
           <p className="mt-1 text-sm text-muted">
-            Gestao inicial de acessos do cliente.
+            Gestao inicial de acessos do cliente (admin e funcionario/operator).
           </p>
         </div>
         <Badge>{currentUser?.role ?? 'sem sessao'}</Badge>
@@ -300,7 +300,7 @@ export function UsersPanel({
               <span className="text-xs text-ok">Link copiado.</span>
             ) : (
               <span className="text-xs text-muted">
-                Envie este link ao usuario para ele definir a propria senha.
+                Envie este link ao usuario para ele definir ou recuperar a propria senha.
               </span>
             )}
           </div>
@@ -371,7 +371,7 @@ export function UsersPanel({
                         void generateSetupLink(user.id);
                       }}
                     >
-                      Gerar link
+                      {user.lastLoginAt ? 'Reenviar link' : 'Primeiro acesso'}
                     </Button>
                   </td>
                   <td className="text-right">
