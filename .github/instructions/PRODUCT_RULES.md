@@ -91,3 +91,15 @@ Estado atual dessa regra:
 ## Evolucao esperada
 
 Ver `.github/instructions/ROADMAP.md` para a sequencia planejada de fases.
+
+## Camada de modulos de solucao (direcao oficial)
+
+Direcao consolidada:
+
+- criar camada comercial de **modulos de solucao** que combina itens dos modulos base
+- vender solucao de negocio (ex.: `cadeia_fria`) em vez de apenas modulos tecnicos isolados
+- manter implementacao desacoplada e versionada por solucao
+
+Documento de referencia:
+
+- `.github/instructions/SOLUTION_MODULES_ARCHITECTURE.md`

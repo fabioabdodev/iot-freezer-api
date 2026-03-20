@@ -137,3 +137,24 @@ Proximo ponto de continuidade:
 - relatorios
 - planos
 - API publica
+
+### Fase 13 - Modulos de solucao comerciais
+
+Objetivo:
+
+- criar camada de solucao vendavel composta por itens de modulos base
+
+Primeira solucao alvo:
+
+- `cadeia_fria@v1`
+
+Entregas esperadas:
+
+1. receita de solucao versionada
+2. aplicacao de itens base por composicao (sem acoplamento forte)
+3. painel de prontidao comercial por solucao
+4. estudo de caso dedicado (incluindo cenario multiunidade)
+
+Referencia tecnica:
+
+- `.github/instructions/SOLUTION_MODULES_ARCHITECTURE.md`

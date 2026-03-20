@@ -44,6 +44,10 @@ Fechamentos e ajustes desta rodada:
 - playbook operacional de campo criado para evitar improviso em incidentes de conectividade:
   - arquivo: `.github/instructions/OPS_FIELD_PLAYBOOK.md`
   - cobre rotacao de `deviceApiKey` e troca de Wi-Fi no estabelecimento
+- direcao de produto adicionada para camada comercial de modulos de solucao:
+  - objetivo de vender pacotes compostos por itens de modulos base
+  - primeira solucao alvo: `cadeia_fria@v1`
+  - referencia: `.github/instructions/SOLUTION_MODULES_ARCHITECTURE.md`
 
 Resumo do ponto de parada para retomar no proximo chat/agente:
 
