@@ -342,6 +342,12 @@ Observacao operacional importante:
 - no fluxo de `offline`, validar tambem se o nome do equipamento esta legivel na mensagem final; em um dos testes iniciais ele apareceu como `undefined`
 - quando houver varios ciclos curtos de queda e retorno, validar se a plataforma envia um aviso de instabilidade em vez de acumular `offline` + `online` em excesso
 
+Comando pronto para o estudo de caso `sabor-serra-restaurante` (PowerShell):
+
+```powershell
+.\scripts\lab-sabor-serra.ps1 -Token "SEU_TOKEN" -DeviceKey "SUA_DEVICE_KEY" -ClientId "sabor-serra-restaurante" -DeviceId "adega_vinhos_01" -ActuatorId "rele_luzes_salao_01" -TriggerCriticalGas -RunActuation -CheckN8n
+```
+
 ## 6. Checklist rapido de pos-deploy em producao
 
 Use este bloco quando o deploy ja subiu, mas voce quer confirmar rapidamente se o ambiente ficou certo.

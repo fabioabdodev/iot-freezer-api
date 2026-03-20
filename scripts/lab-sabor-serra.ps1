@@ -7,9 +7,12 @@ param(
 
   [string]$ClientId = 'sabor-serra-restaurante',
   [string]$DeviceId = 'adega_vinhos_01',
+  [string]$ActuatorId = 'rele_luzes_salao_01',
   [string]$ApiBaseUrl = 'https://api-monitor.virtuagil.com.br',
   [switch]$OnlyReadings,
-  [switch]$TriggerCriticalGas
+  [switch]$TriggerCriticalGas,
+  [switch]$RunActuation,
+  [switch]$CheckN8n
 )
 
 $ErrorActionPreference = 'Stop'
@@ -64,6 +67,27 @@ function Invoke-ApiPost {
   }
 }
 
+function Invoke-ApiPostAuth {
+  param(
+    [string]$Uri,
+    [hashtable]$Headers,
+    [string]$Body,
+    [string]$Label
+  )
+
+  try {
+    $response = Invoke-WebRequest -Uri $Uri -Method Post -ContentType 'application/json' -Headers $Headers -Body $Body
+    Write-Host "POST $Label -> $($response.StatusCode)"
+    Write-Host $response.Content
+    Write-Host ""
+  } catch {
+    Write-Host "POST $Label -> ERROR"
+    Write-Host $_.Exception.Message
+    Write-Host ""
+    throw
+  }
+}
+
 $normalizedToken = Normalize-Token -RawToken $Token
 $normalizedKey = Normalize-Key -RawKey $DeviceKey
 
@@ -79,10 +103,20 @@ Write-Host "Token length: $($normalizedToken.Length)"
 Write-Host "Device key length: $($normalizedKey.Length)"
 Write-Host "Cliente: $ClientId"
 Write-Host "Device: $DeviceId"
+Write-Host "Actuator: $ActuatorId"
 Write-Host ""
 
 $authHeaders = @{ Authorization = "Bearer $normalizedToken" }
 $deviceHeaders = @{ 'x-device-key' = $normalizedKey }
+
+if ($CheckN8n) {
+  Write-Host "Validando webhooks n8n (modo estrito)..."
+  npm run alerts:check:n8n -- --ping --strict --timeout-ms=15000
+  if ($LASTEXITCODE -ne 0) {
+    throw "Falha na validacao dos webhooks n8n em modo estrito."
+  }
+  Write-Host ""
+}
 
 $readings = @(
   @{ sensor_type = 'temperature'; value = 14.2; unit = 'celsius' },
@@ -119,6 +153,27 @@ if ($TriggerCriticalGas) {
 
   Invoke-ApiPost -Uri "$ApiBaseUrl/iot/readings" -Headers $deviceHeaders -Body $criticalPayload -Label 'gases-critico'
   Invoke-ApiGet -Uri "${ApiBaseUrl}/readings/${DeviceId}?sensor=gases&limit=5&clientId=${ClientId}" -Headers $authHeaders
+}
+
+if ($RunActuation) {
+  Write-Host "Executando teste de acionamento ON/OFF..."
+
+  $onPayload = @{
+    desiredState = 'on'
+    source = 'lab-sabor-serra'
+    note = 'Teste ON do estudo de caso restaurante'
+  } | ConvertTo-Json -Compress
+
+  $offPayload = @{
+    desiredState = 'off'
+    source = 'lab-sabor-serra'
+    note = 'Teste OFF do estudo de caso restaurante'
+  } | ConvertTo-Json -Compress
+
+  Invoke-ApiPostAuth -Uri "$ApiBaseUrl/actuators/$ActuatorId/commands" -Headers $authHeaders -Body $onPayload -Label 'actuation-on'
+  Start-Sleep -Seconds 1
+  Invoke-ApiPostAuth -Uri "$ApiBaseUrl/actuators/$ActuatorId/commands" -Headers $authHeaders -Body $offPayload -Label 'actuation-off'
+  Invoke-ApiGet -Uri "$ApiBaseUrl/actuators/$ActuatorId/commands" -Headers $authHeaders
 }
 
 Write-Host 'Fluxo finalizado com sucesso.'
