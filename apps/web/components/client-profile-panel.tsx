@@ -37,6 +37,33 @@ const statusBadgeClassName: Record<ClientStatus, string> = {
 };
 
 type PhoneField = 'adminPhone' | 'alertPhone' | 'billingPhone';
+type NotifyIntensity = 'low' | 'medium' | 'high';
+
+const NOTIFY_COOLDOWN_PRESETS: Array<{
+  key: NotifyIntensity;
+  label: string;
+  description: string;
+  minutes: number;
+}> = [
+  {
+    key: 'low',
+    label: 'Pouco',
+    description: 'Menos mensagens (anti-spam forte)',
+    minutes: 15,
+  },
+  {
+    key: 'medium',
+    label: 'Medio',
+    description: 'Equilibrado para operacao diaria',
+    minutes: 5,
+  },
+  {
+    key: 'high',
+    label: 'Muito',
+    description: 'Mais mensagens (maior sensibilidade)',
+    minutes: 1,
+  },
+];
 
 export function ClientProfilePanel({
   clientId,
@@ -60,6 +87,8 @@ export function ClientProfilePanel({
   const [deviceApiKey, setDeviceApiKey] = useState('');
   const [billingName, setBillingName] = useState('');
   const [billingPhone, setBillingPhone] = useState('');
+  const [actuationNotifyCooldownMinutes, setActuationNotifyCooldownMinutes] =
+    useState('15');
   const [useSameAlertPhone, setUseSameAlertPhone] = useState(true);
   const [useSameBillingPhone, setUseSameBillingPhone] = useState(true);
   const [billingEmail, setBillingEmail] = useState('');
@@ -87,6 +116,9 @@ export function ClientProfilePanel({
     setDeviceApiKey(data.deviceApiKey ?? '');
     setBillingName(nextBillingName);
     setBillingPhone(nextBillingPhone);
+    setActuationNotifyCooldownMinutes(
+      String(data.actuationNotifyCooldownMinutes ?? 15),
+    );
     setUseSameAlertPhone(nextAlertPhone === nextAdminPhone);
     setUseSameBillingPhone(nextBillingPhone === nextAdminPhone);
     setBillingEmail(data.billingEmail ?? '');
@@ -190,6 +222,20 @@ export function ClientProfilePanel({
       return;
     }
 
+    const parsedActuationNotifyCooldownMinutes = Number(
+      actuationNotifyCooldownMinutes,
+    );
+    if (
+      !Number.isFinite(parsedActuationNotifyCooldownMinutes) ||
+      parsedActuationNotifyCooldownMinutes < 1 ||
+      parsedActuationNotifyCooldownMinutes > 240
+    ) {
+      setFormError(
+        'Cooldown de acionamento invalido. Use um valor entre 1 e 240 minutos.',
+      );
+      return;
+    }
+
     await updateMutation.mutateAsync({
       name: name.trim() || undefined,
       adminName: adminName.trim() || undefined,
@@ -199,6 +245,9 @@ export function ClientProfilePanel({
       billingName: (useSameBillingPhone ? adminName : billingName).trim() || undefined,
       billingPhone: nextBillingPhone.trim() || undefined,
       billingEmail: billingEmail.trim() || undefined,
+      actuationNotifyCooldownMinutes: Math.floor(
+        parsedActuationNotifyCooldownMinutes,
+      ),
       status,
       notes: notes.trim() || undefined,
     });
@@ -432,6 +481,57 @@ export function ClientProfilePanel({
                     A chave permanece protegida na tela e pode ser copiada para uso no firmware.
                   </p>
                 )}
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-muted">
+                  Anti-spam de acionamento (minutos)
+                </label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={240}
+                  step={1}
+                  value={actuationNotifyCooldownMinutes}
+                  onChange={(event) =>
+                    setActuationNotifyCooldownMinutes(event.target.value)
+                  }
+                  placeholder="Ex.: 5"
+                />
+                <p className="mt-1 text-xs text-muted">
+                  Evita mensagens repetidas de ligar/desligar em pouco tempo.
+                </p>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-muted">
+                  Intensidade de mensagens
+                </label>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {NOTIFY_COOLDOWN_PRESETS.map((preset) => {
+                    const isActive =
+                      Number(actuationNotifyCooldownMinutes) === preset.minutes;
+
+                    return (
+                      <button
+                        key={preset.key}
+                        type="button"
+                        onClick={() =>
+                          setActuationNotifyCooldownMinutes(String(preset.minutes))
+                        }
+                        className={`rounded-xl border px-3 py-2 text-left transition ${
+                          isActive
+                            ? 'border-accent bg-accent/15 text-ink'
+                            : 'border-line/70 bg-bg/30 text-muted hover:border-accent/60'
+                        }`}
+                      >
+                        <p className="text-sm font-medium">{preset.label}</p>
+                        <p className="mt-1 text-xs">{preset.description}</p>
+                        <p className="mt-1 text-xs">
+                          {preset.minutes} min
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <div>
                 <label className="mb-2 flex items-center gap-2 text-xs text-muted">

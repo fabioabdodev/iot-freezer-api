@@ -103,6 +103,17 @@ Esperado:
 
 Se esse modulo ja foi validado anteriormente, use esta parte apenas como revisao rapida.
 
+Campos recomendados no cadastro de `Equipamentos` para estudo de caso:
+
+- obrigatorios:
+  - `id`
+- recomendados (nao omitir no onboarding comercial):
+  - `name`
+  - `location`
+  - `minTemperature`
+  - `maxTemperature`
+  - cliente em foco correto no filtro
+
 ### Listar devices
 
 - metodo: `GET`
@@ -310,6 +321,24 @@ Considerar fechado quando:
 - endpoint de comandos recentes responde
 - dashboard reflete o estado sem hardware fisico
 
+### Acionamento com n8n (opcional, para pacote comercial)
+
+Se quiser notificar comandos no WhatsApp com controle de ruido:
+
+1. configurar variaveis na API:
+   - `N8N_ACTUATION_WEBHOOK_URL`
+   - `ACTUATION_NOTIFY_ENABLED=true`
+   - `ACTUATION_NOTIFY_SOURCES=dashboard`
+   - `ACTUATION_NOTIFY_COOLDOWN_SECONDS=900`
+2. publicar workflow de acionamento no n8n
+3. testar `ligar/desligar` no painel
+4. validar destino correto por unidade
+
+Recomendacao operacional:
+
+- nao notificar todo comando de rotina
+- priorizar eventos relevantes para evitar spam ao cliente
+
 ## 5. Regra pratica para continuidade
 
 Enquanto nao houver hardware:
@@ -375,6 +404,21 @@ Observacao operacional importante:
 - por isso, em alertas criticos, confirmar sempre a entrega final ao destinatario antes de encerrar a validacao
 - no fluxo de `offline`, validar tambem se o nome do equipamento esta legivel na mensagem final; em um dos testes iniciais ele apareceu como `undefined`
 - quando houver varios ciclos curtos de queda e retorno, validar se a plataforma envia um aviso de instabilidade em vez de acumular `offline` + `online` em excesso
+
+Padrao recomendado para template do workflow `online` no n8n (2026-03-20):
+
+- manter um unico bloco cobrindo:
+  - `device_back_online`
+  - `device_connectivity_instability`
+- priorizar campos em `camelCase` com fallback para `snake_case`
+- incluir sempre contexto operacional:
+  - cliente
+  - unidade
+  - equipamento
+- evitar `nao informado` quando possivel:
+  - usar fallback de datas (`offlineSince` -> `lastSeenAt`)
+  - validar data antes de formatar para nao gerar `Invalid Date`
+- usar acentuacao correta nas mensagens finais ao cliente (`não`, `é`, `último`, `recuperação`)
 
 Comando pronto para o estudo de caso `sabor-serra-restaurante` (PowerShell):
 

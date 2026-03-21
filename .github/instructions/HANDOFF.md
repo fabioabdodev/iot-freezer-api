@@ -44,6 +44,32 @@ Fechamentos e ajustes desta rodada:
 - playbook operacional de campo criado para evitar improviso em incidentes de conectividade:
   - arquivo: `.github/instructions/OPS_FIELD_PLAYBOOK.md`
   - cobre rotacao de `deviceApiKey` e troca de Wi-Fi no estabelecimento
+- refinamento de template no n8n para conectividade (online + instabilidade):
+  - consolidado em expressao unica no workflow `online`
+  - com contexto de `cliente + unidade + equipamento`
+  - com acentuacao revisada e fallback de datas/campos
+  - objetivo: reduzir mensagens com `nao informado` e evitar `Invalid Date`
+- preferencia operacional explicita do usuario:
+  - nao repetir orientacoes incompletas entre chats
+  - nao omitir campos de formulario durante passo a passo
+  - manter registro de status de cada bloco para continuidade sem retrabalho
+- status atual do estudo multiunidade `cadeia_fria@v1`:
+  - dois equipamentos criados no Monitor:
+    - `adega_centro_01`
+    - `adega_bairro_01`
+- backend agora suporta webhook opcional de acionamento para n8n:
+  - envs novas:
+    - `N8N_ACTUATION_WEBHOOK_URL`
+    - `ACTUATION_NOTIFY_ENABLED`
+    - `ACTUATION_NOTIFY_SOURCES`
+    - `ACTUATION_NOTIFY_COOLDOWN_SECONDS`
+  - comportamento padrao seguro:
+    - notificacao de acionamento desabilitada por padrao
+    - quando habilitada, cooldown por atuador/estado para reduzir ruido
+- regra operacional nova consolidada com usuario:
+  - ao criar modulo novo, avaliar necessidade de fluxo de alerta no n8n
+  - se houver notificacao ao cliente, criar workflow dedicado no n8n
+  - incluir URL de webhook de producao no `.env.prod` da VPS antes do go-live
 - direcao de produto adicionada para camada comercial de modulos de solucao:
   - objetivo de vender pacotes compostos por itens de modulos base
   - primeira solucao alvo: `cadeia_fria@v1`

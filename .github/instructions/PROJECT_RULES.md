@@ -210,6 +210,12 @@ Fluxo ponta a ponta esperado nesta fase:
 5. o `Evolution` entrega a mensagem no `WhatsApp`
 6. o cliente recebe o alerta fora do dashboard
 
+Regra obrigatoria para novos modulos:
+
+- sempre que um modulo novo exigir notificacao ao cliente, criar fluxo dedicado no `n8n`
+- antes de publicar em producao, incluir a URL do webhook correspondente no `.env.prod` da VPS
+- sem variavel de webhook configurada no ambiente de producao, o modulo nao deve ser tratado como pronto para go-live comercial
+
 ### Acionamento sem hardware
 
 Enquanto nao houver hardware fisico:
@@ -218,6 +224,15 @@ Enquanto nao houver hardware fisico:
 - `POST /actuators/:id/commands` atualiza estado e historico no backend
 - nao assumir confirmacao eletrica real da carga
 - tratar `currentState` como estado operacional registrado pela plataforma
+
+Webhook opcional de acionamento (pacote comercial):
+
+- `N8N_ACTUATION_WEBHOOK_URL` habilita envio de evento de comando para n8n
+- para evitar spam, usar:
+  - `ACTUATION_NOTIFY_ENABLED=true`
+  - `ACTUATION_NOTIFY_SOURCES=dashboard`
+  - `ACTUATION_NOTIFY_COOLDOWN_SECONDS=900`
+- quando desabilitado, o acionamento continua funcional no painel/historico sem notificacao externa
 - integracao com rele, ESP32 ou retorno fisico fica para fase posterior
 
 ### Autenticacao e autorizacao
@@ -370,6 +385,14 @@ Padrao operacional atual:
 - fase imediata: roteamento por `device_id` ou `device_location` no `n8n`
 - fase nativa: evoluir dominio para `Client -> Unit -> Device`
 - documento de referencia: `.github/instructions/case-studies/MULTI_UNIT_WHATSAPP_PATTERN.md`
+
+Padrao de mensagem no n8n para eventos de conectividade:
+
+- tratar `device_back_online` e `device_connectivity_instability` no mesmo template
+- incluir contexto `cliente + unidade + equipamento`
+- usar fallback robusto de campos (`camelCase` + `snake_case`)
+- formatar datas em `pt-BR` com timezone `America/Sao_Paulo`
+- evitar texto final com `nao informado` quando houver fallback confiavel
 
 ## Direcao de continuidade por estudo de caso
 

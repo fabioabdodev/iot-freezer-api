@@ -70,6 +70,10 @@ Importante para continuidade:
   - consultar `.github/instructions/case-studies/MULTI_UNIT_WHATSAPP_PATTERN.md`
 - para eventos de campo com impacto de conectividade (rotacao de chave ou troca de Wi-Fi), consultar:
   - `.github/instructions/OPS_FIELD_PLAYBOOK.md`
+- regra de execucao para evitar retrabalho com o usuario:
+  - nao omitir campos de formulario quando orientar cadastro
+  - sempre listar `campos obrigatorios` e `campos recomendados`
+  - antes de avancar para o proximo passo, confirmar explicitamente o status do bloco atual (ex.: equipamentos, regras, acionamento)
 - evitar expor na UI termos internos como `tenant`, `clientId`, `device` ou nomes de arquitetura quando houver equivalente mais claro para negocio
 - usar termos como `cliente`, `conta`, `equipamento`, `codigo interno` e `painel` quando isso nao esconder uma necessidade tecnica real
 

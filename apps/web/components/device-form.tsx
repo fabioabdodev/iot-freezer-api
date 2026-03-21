@@ -17,8 +17,8 @@ const formSchema = z
     id: z
       .string()
       .trim()
-      .min(3, 'ID deve ter pelo menos 3 caracteres')
-      .max(50, 'ID deve ter no maximo 50 caracteres')
+      .min(3, 'Codigo tecnico deve ter pelo menos 3 caracteres')
+      .max(50, 'Codigo tecnico deve ter no maximo 50 caracteres')
       .regex(deviceIdRegex, 'Use apenas letras, numeros, _ e -'),
     clientId: z
       .string()
@@ -216,15 +216,21 @@ export function DeviceForm({
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs text-muted">ID unico</label>
+            <label className="mb-1 block text-xs text-muted">Codigo tecnico (imutavel)</label>
             <Input
               {...register('id')}
               disabled={mode === 'edit'}
               placeholder="freezer_vacinas_01"
             />
             <p className="mt-1 text-xs text-muted">
-              Identificador tecnico unico do equipamento.
+              Usado em API, firmware e integracoes. Escolha com cuidado.
             </p>
+            {mode === 'edit' ? (
+              <p className="mt-1 text-xs text-muted">
+                O codigo tecnico e imutavel apos o cadastro. Para trocar, crie um novo
+                equipamento e desative/remova o anterior.
+              </p>
+            ) : null}
             {errors.id ? (
               <p className="mt-1 text-xs text-bad">{errors.id.message}</p>
             ) : null}

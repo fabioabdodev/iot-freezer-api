@@ -7,6 +7,7 @@ export interface ClientSummary {
   adminName: string | null;
   adminPhone: string | null;
   alertPhone: string | null;
+  actuationNotifyCooldownMinutes: number | null;
   deviceApiKey: string | null;
   billingName: string | null;
   billingPhone: string | null;
@@ -24,6 +25,7 @@ export interface ClientInput {
   document?: string;
   adminPhone?: string;
   alertPhone?: string;
+  actuationNotifyCooldownMinutes?: number;
   deviceApiKey?: string;
   regenerateDeviceApiKey?: boolean;
   billingName?: string;
@@ -40,6 +42,7 @@ export interface CreateClientInput extends ClientInput {
   document: string;
   adminPhone: string;
   alertPhone?: string;
+  actuationNotifyCooldownMinutes?: number;
   deviceApiKey?: string;
   billingName?: string;
   billingPhone: string;

@@ -90,6 +90,9 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
   const isTurnstileEnabled = Boolean(turnstileSiteKey);
+  const appVersion = process.env.NEXT_PUBLIC_APP_VERSION ?? 'v1.0.0';
+  const showReleaseInfo = process.env.NEXT_PUBLIC_SHOW_RELEASE_INFO === 'true';
+  const copyrightYear = new Date().getFullYear();
 
   // O filtro principal vive na URL para facilitar refresh e compartilhamento do estado atual.
   const queryClientId = searchParams.get('clientId') ?? '';
@@ -1021,7 +1024,7 @@ function DashboardContent() {
                   setDeviceProgressMessage('Atualizando lista...');
                   await refetch();
                   setDeviceSuccessMessage(
-                    `Equipamento ${values.name ?? values.id} criado com sucesso.`,
+                    `Equipamento ${values.name ?? values.id} criado com sucesso (codigo tecnico: ${values.id}).`,
                   );
                   setFormMode('closed');
                 } finally {
@@ -1068,7 +1071,7 @@ function DashboardContent() {
                   setDeviceProgressMessage('Atualizando lista...');
                   await refetch();
                   setDeviceSuccessMessage(
-                    `Equipamento ${values.name ?? editingDevice.id} atualizado com sucesso.`,
+                    `Equipamento ${values.name ?? editingDevice.id} atualizado com sucesso (codigo tecnico: ${editingDevice.id}).`,
                   );
                   setEditingDeviceId(null);
                   setFormMode('closed');
@@ -1127,7 +1130,7 @@ function DashboardContent() {
               <DataTable>
                 <thead>
                   <tr>
-                    <th>Equipamento</th>
+                    <th>Equipamento / Codigo tecnico</th>
                     <th>Status</th>
                     <th>Temperatura</th>
                     <th>Faixa</th>
@@ -1153,7 +1156,9 @@ function DashboardContent() {
                       <td className="font-medium">
                         <div className="flex flex-col">
                           <span>{device.name ?? device.id}</span>
-                          <span className="text-xs text-muted">{device.id}</span>
+                          <span className="text-xs text-muted">
+                            codigo tecnico: {device.id}
+                          </span>
                         </div>
                       </td>
                       <td>
@@ -1597,7 +1602,16 @@ function DashboardContent() {
 
       <footer className="mt-8 border-t border-line/60 pt-6">
         <div className="flex flex-col gap-4 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>Virtuagil Monitor</p>
+          {showReleaseInfo ? (
+            <div>
+              <p>Virtuagil Monitor v{appVersion.replace(/^v/i, '')}</p>
+              <p className="text-xs text-muted/80">
+                Virtuagil® © {copyrightYear} Virtuagil. Todos os direitos reservados.
+              </p>
+            </div>
+          ) : (
+            <p>Virtuagil Monitor</p>
+          )}
           <nav className="flex flex-wrap items-center gap-2">
             <Link
               href="#resumo-operacional"

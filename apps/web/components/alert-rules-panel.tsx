@@ -76,6 +76,13 @@ const formSchema = z
       message: 'Min deve ser menor ou igual ao max',
       path: ['maxValue'],
     },
+  )
+  .refine(
+    (values) => values.minValue != null || values.maxValue != null,
+    {
+      message: 'Informe ao menos um limite (minimo ou maximo).',
+      path: ['minValue'],
+    },
   );
 
 type FormValues = z.input<typeof formSchema>;

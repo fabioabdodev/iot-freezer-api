@@ -2,10 +2,12 @@ import {
   IsBoolean,
   IsEmail,
   IsIn,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
   MaxLength,
+  Min,
 } from 'class-validator';
 import { IsClientDocument, IsClientPhone } from '../client-contact.validator';
 
@@ -38,6 +40,11 @@ export class UpdateClientDto {
   @MaxLength(30)
   @IsClientPhone()
   alertPhone?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  actuationNotifyCooldownMinutes?: number;
 
   @IsOptional()
   @IsString()

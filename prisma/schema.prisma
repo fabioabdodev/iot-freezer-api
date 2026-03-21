@@ -61,6 +61,7 @@ model Client {
   phone             String?
   adminPhone        String?
   alertPhone        String?
+  actuationNotifyCooldownMinutes Int?
   deviceApiKey      String?            @unique
   billingName       String?
   billingPhone      String?

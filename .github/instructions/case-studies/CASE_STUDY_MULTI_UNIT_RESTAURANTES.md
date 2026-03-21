@@ -35,6 +35,15 @@ Exemplo de equipamentos:
 - `adega_centro_01` com `location = restaurante-centro`
 - `adega_bairro_01` com `location = restaurante-bairro`
 
+Checklist de campos do formulario de equipamento (nao omitir):
+
+- `id` (obrigatorio)
+- `name`
+- `location`
+- `minTemperature`
+- `maxTemperature`
+- cliente correto selecionado no filtro do dashboard
+
 ## Roteamento no n8n (fase imediata)
 
 Criar regra de destino:

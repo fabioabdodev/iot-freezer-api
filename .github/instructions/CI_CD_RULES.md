@@ -70,6 +70,13 @@ Observacao:
 - o namespace de imagens atual e `ghcr.io/fabioabdodev/iot-virtuagil-api`
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` entra no build do web via GitHub Secrets
 - `TURNSTILE_SECRET_KEY` e `NEXT_PUBLIC_TURNSTILE_SITE_KEY` tambem devem existir em `/opt/iot-virtuagil-api/.env.prod`
+- para cada novo modulo com notificacao externa, incluir tambem no `/opt/iot-virtuagil-api/.env.prod`:
+  - variavel de webhook de producao correspondente (ex.: `N8N_*_WEBHOOK_URL`)
+  - flags de controle de ruido/cooldown quando aplicavel
+- regra de deploy: modulo com alerta novo so entra em go-live apos confirmar:
+  - workflow publicado no n8n
+  - variavel de webhook presente no `.env.prod`
+  - stack recebendo a variavel no servico `api`
 
 ## Regras de seguranca
 
