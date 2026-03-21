@@ -33,6 +33,26 @@ Para evitar orientacao incorreta durante suporte:
 
 No layout atual, nao existe um card principal separado chamado `Ambiental`.
 
+## Labels oficiais de formularios (UI atual)
+
+Para reduzir retrabalho entre chats/agentes, registrar e usar os labels exatamente como aparecem na tela:
+
+- Em `Equipamentos`:
+  - `Codigo tecnico (imutavel)`
+  - `Codigo interno do cliente`
+  - `Nome`
+  - `Localizacao`
+  - `Min temp (C)`
+  - `Max temp (C)`
+
+- Em `Regras de alerta`:
+  - `Sensor`
+  - `Equipamento (opcional)`
+  - `Min`
+  - `Max`
+  - `Cooldown (min)`
+  - `Tolerancia (min)`
+
 ## Preparacao
 
 Base local padrao:

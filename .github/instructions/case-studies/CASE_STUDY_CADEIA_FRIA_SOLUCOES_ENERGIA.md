@@ -56,6 +56,26 @@ No bloco `Regras de alerta`:
 
 - cadastrar regra critica de temperatura
 
+### Labels oficiais da UI (obrigatorio seguir)
+
+Para evitar erro de suporte entre chats/agentes, usar estes labels exatamente como no Monitor:
+
+- Equipamentos:
+  - `Codigo tecnico (imutavel)`
+  - `Codigo interno do cliente`
+  - `Nome`
+  - `Localizacao`
+  - `Min temp (C)`
+  - `Max temp (C)`
+
+- Regras de alerta:
+  - `Sensor`
+  - `Equipamento (opcional)`
+  - `Min`
+  - `Max`
+  - `Cooldown (min)`
+  - `Tolerancia (min)`
+
 ### Etapa 3 - Energia
 
 Enviar leituras para sensores:
