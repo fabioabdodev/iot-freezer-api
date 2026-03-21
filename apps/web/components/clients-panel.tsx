@@ -17,12 +17,12 @@ import { z } from 'zod';
 import { useClients } from '@/hooks/use-clients';
 import { useClientListMutations } from '@/hooks/use-client-list-mutations';
 import {
-  isValidClientId,
   isValidCpfOrCnpj,
   isValidEmail,
   isValidPhone,
   normalizeDigits,
 } from '@/lib/client-form';
+import { buildUniqueTechnicalId } from '@/lib/technical-id';
 import { ClientStatus } from '@/types/client';
 import { AuthUser } from '@/types/auth';
 import { AccessNotice } from '@/components/ui/access-notice';
@@ -35,12 +35,6 @@ import { Input, Select } from '@/components/ui/input';
 import { Panel } from '@/components/ui/panel';
 
 const formSchema = z.object({
-  id: z
-    .string()
-    .trim()
-    .min(3, 'ID obrigatorio')
-    .max(50, 'ID muito longo')
-    .refine((value) => isValidClientId(value), 'Use apenas letras, numeros, _ e -'),
   name: z.string().trim().min(2, 'Nome obrigatorio'),
   adminName: z.string().trim().min(2, 'Nome do administrador obrigatorio'),
   document: z
@@ -132,7 +126,6 @@ export function ClientsPanel({
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      id: '',
       name: '',
       adminName: '',
       document: '',
@@ -149,6 +142,7 @@ export function ClientsPanel({
   });
   const watchedUseSameBillingPhone = watch('useSameBillingPhone');
   const watchedUseSameAlertPhone = watch('useSameAlertPhone');
+  const watchedName = watch('name');
   const duplicateClientIds = useMemo(() => new Set(clients.map((client) => client.id)), [clients]);
   const duplicateDocuments = useMemo(
     () => new Set(clients.map((client) => normalizeDigits(client.document ?? '')).filter(Boolean)),
@@ -156,6 +150,13 @@ export function ClientsPanel({
   );
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const generatedClientId = useMemo(
+    () =>
+      buildUniqueTechnicalId(watchedName ?? '', duplicateClientIds, {
+        fallback: 'cliente',
+      }),
+    [watchedName, duplicateClientIds],
+  );
 
   async function handleDeleteClient(id: string) {
     setDeletingClientId(id);
@@ -329,12 +330,6 @@ export function ClientsPanel({
                 ? values.adminPhone
                 : values.alertPhone;
 
-              if (duplicateClientIds.has(values.id)) {
-                setFormError('Ja existe um cliente com este identificador tecnico.');
-                setIsCreateOpen(true);
-                return;
-              }
-
               if (duplicateDocuments.has(normalizedDocument)) {
                 setFormError('Ja existe um cliente com este CPF ou CNPJ.');
                 setIsCreateOpen(true);
@@ -342,7 +337,7 @@ export function ClientsPanel({
               }
 
               await createMutation.mutateAsync({
-                id: values.id,
+                id: generatedClientId,
                 name: values.name,
                 adminName: values.adminName,
                 document: values.document,
@@ -357,7 +352,7 @@ export function ClientsPanel({
                 notes: values.notes,
               });
               reset();
-              onSelectClient(values.id);
+              onSelectClient(generatedClientId);
               setSuccessMessage(`Cliente ${values.name} criado com sucesso.`);
               setIsCreateOpen(false);
             })}
@@ -373,17 +368,14 @@ export function ClientsPanel({
                 <p className="mb-3 text-xs uppercase tracking-[0.16em] text-muted">Dados principais</p>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <div>
-                    <label className="mb-1 block text-xs text-muted">Identificador tecnico *</label>
-                    <Input {...register('id')} placeholder="cuidare-vacinas" />
-                    <p className="mt-1 text-xs text-muted">
-                      Use um identificador unico, sem espacos. Ex.: `cuidare-vacinas`
-                    </p>
-                    {errors.id ? <p className="mt-1 text-xs text-bad">{errors.id.message}</p> : null}
-                  </div>
-
-                  <div>
                     <label className="mb-1 block text-xs text-muted">Nome do cliente *</label>
                     <Input {...register('name')} placeholder="Clinica Cuidare" />
+                    <p className="mt-1 text-xs text-muted">
+                      O identificador tecnico sera gerado automaticamente a partir do nome.
+                    </p>
+                    <p className="mt-1 text-xs text-muted">
+                      Identificador tecnico gerado: <strong>{generatedClientId}</strong>
+                    </p>
                     {errors.name ? <p className="mt-1 text-xs text-bad">{errors.name.message}</p> : null}
                   </div>
 

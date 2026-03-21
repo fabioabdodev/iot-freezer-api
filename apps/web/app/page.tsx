@@ -53,6 +53,7 @@ import {
   validatePasswordResetToken,
 } from '@/lib/api';
 import { useClient } from '@/hooks/use-client';
+import { useClients } from '@/hooks/use-clients';
 import { useActuators } from '@/hooks/use-actuators';
 import { useAlertRules } from '@/hooks/use-alert-rules';
 import { useDeviceMutations } from '@/hooks/use-device-mutations';
@@ -199,6 +200,10 @@ function DashboardContent() {
     Boolean(scopedClientId),
   );
   const {
+    data: clientsData,
+  } = useClients(authToken, Boolean(authToken && isPlatformAdmin));
+  const clients = clientsData ?? [];
+  const {
     data: clientModulesData,
     isLoading: isLoadingClientModules,
   } = useClientModules(scopedClientId, authToken);
@@ -267,7 +272,22 @@ function DashboardContent() {
 
   function applyFilters() {
     const params = new URLSearchParams(searchParams.toString());
-    const nextClientId = clientIdDraft.trim();
+    const draft = clientIdDraft.trim();
+    const normalizedDraft = draft.toLowerCase();
+    const matchedById = clients.find(
+      (client) => client.id.toLowerCase() === normalizedDraft,
+    );
+    const matchedByNameExact = clients.find(
+      (client) => client.name.toLowerCase() === normalizedDraft,
+    );
+    const matchedByNamePartial = clients.find((client) =>
+      client.name.toLowerCase().includes(normalizedDraft),
+    );
+    const nextClientId =
+      matchedById?.id ??
+      matchedByNameExact?.id ??
+      matchedByNamePartial?.id ??
+      draft;
 
     if (nextClientId) {
       params.set('clientId', nextClientId);
@@ -1016,6 +1036,7 @@ function DashboardContent() {
             <DeviceForm
               mode="create"
               clientId={scopedClientId}
+              existingIds={devices.map((item) => item.id)}
               loading={isCreatingDevice}
               allowStructureFields
               allowTemperatureFields
@@ -1030,7 +1051,7 @@ function DashboardContent() {
                   await createDevice(
                     {
                     ...values,
-                      clientId: values.clientId ?? scopedClientId,
+                      clientId: scopedClientId,
                     },
                     authToken,
                   );
@@ -1057,6 +1078,9 @@ function DashboardContent() {
             <DeviceForm
               mode="edit"
               clientId={scopedClientId}
+              existingIds={devices
+                .filter((item) => item.id !== editingDevice.id)
+                .map((item) => item.id)}
               device={editingDevice}
               loading={updateMutation.isPending}
               allowStructureFields={canEditDeviceStructure}
@@ -1074,7 +1098,7 @@ function DashboardContent() {
                   await updateMutation.mutateAsync({
                     id: editingDevice.id,
                     payload: {
-                      clientId: values.clientId,
+                      clientId: scopedClientId,
                       name: values.name,
                       location: values.location,
                       minTemperature: values.minTemperature,

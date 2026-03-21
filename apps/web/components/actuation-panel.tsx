@@ -21,14 +21,10 @@ import { Panel } from '@/components/ui/panel';
 import { SetupGuideCard } from '@/components/setup-guide-card';
 import { ActuationSchedulesPanel } from '@/components/actuation-schedules-panel';
 import { formatRelativeDateTime } from '@/lib/date';
+import { buildUniqueTechnicalId } from '@/lib/technical-id';
 
 const formSchema = z.object({
-  id: z
-    .string()
-    .trim()
-    .min(3, 'Id obrigatorio')
-    .regex(/^[a-zA-Z0-9_-]{3,50}$/, 'Use apenas letras, numeros, _ ou -'),
-  name: z.string().trim().min(1, 'Nome obrigatorio'),
+  name: z.string().trim().min(2, 'Nome obrigatorio'),
   deviceId: z
     .string()
     .trim()
@@ -106,11 +102,11 @@ export function ActuationPanel({
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      id: '',
       name: '',
       deviceId: '',
       location: '',
@@ -124,7 +120,6 @@ export function ActuationPanel({
   useEffect(() => {
     if (formMode === 'edit' && editingActuator) {
       reset({
-        id: editingActuator.id,
         name: editingActuator.name,
         deviceId: editingActuator.deviceId ?? '',
         location: editingActuator.location ?? '',
@@ -133,7 +128,6 @@ export function ActuationPanel({
     }
 
     reset({
-      id: '',
       name: '',
       deviceId: '',
       location: '',
@@ -177,6 +171,15 @@ export function ActuationPanel({
     setEditingActuatorId(actuator.id);
     setFormMode('edit');
   }
+
+  const watchedActuatorName = watch('name');
+  const generatedActuatorId = buildUniqueTechnicalId(
+    watchedActuatorName ?? '',
+    actuators
+      .filter((actuator) => !(formMode === 'edit' && actuator.id === editingActuator?.id))
+      .map((actuator) => actuator.id),
+    { fallback: 'acionamento' },
+  );
 
   return (
     <Panel className="animate-fade-up p-5 [animation-delay:300ms]">
@@ -245,7 +248,7 @@ export function ActuationPanel({
                   setFormMode('create');
                 } else {
                   await createMutation.mutateAsync({
-                    id: values.id,
+                    id: generatedActuatorId,
                     clientId,
                     deviceId: values.deviceId,
                     name: values.name,
@@ -260,22 +263,11 @@ export function ActuationPanel({
                 className="mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4"
               >
               <div>
-                <label className="mb-1 block text-xs text-muted">
-                  Codigo do acionamento
-                </label>
-                <Input
-                  {...register('id')}
-                  placeholder="sauna_main"
-                  disabled={formMode === 'edit'}
-                />
-                {errors.id ? (
-                  <p className="mt-1 text-xs text-bad">{errors.id.message}</p>
-                ) : null}
-              </div>
-
-              <div>
                 <label className="mb-1 block text-xs text-muted">Nome</label>
                 <Input {...register('name')} placeholder="Sauna principal" />
+                <p className="mt-1 text-xs text-muted">
+                  Codigo tecnico gerado automaticamente: <strong>{generatedActuatorId}</strong>
+                </p>
                 {errors.name ? (
                   <p className="mt-1 text-xs text-bad">{errors.name.message}</p>
                 ) : null}

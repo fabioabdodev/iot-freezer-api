@@ -46,7 +46,7 @@ export function DashboardHeader({
               <Input
                 value={clientIdDraft}
                 onChange={(event) => onClientIdDraftChange(event.target.value)}
-                placeholder="Buscar conta pelo codigo interno"
+                placeholder="Buscar conta por nome ou codigo"
                 className="min-h-[42px]"
               />
               <Button

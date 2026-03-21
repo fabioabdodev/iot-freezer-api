@@ -6,33 +6,17 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { DeviceSummary } from '@/types/device';
+import { buildUniqueTechnicalId } from '@/lib/technical-id';
 import { Feedback } from '@/components/ui/feedback';
 import { Input } from '@/components/ui/input';
 import { Panel } from '@/components/ui/panel';
 
-const deviceIdRegex = /^[a-zA-Z0-9_-]{3,50}$/;
-
 const formSchema = z
   .object({
-    id: z
-      .string()
-      .trim()
-      .min(3, 'Codigo tecnico deve ter pelo menos 3 caracteres')
-      .max(50, 'Codigo tecnico deve ter no maximo 50 caracteres')
-      .regex(deviceIdRegex, 'Use apenas letras, numeros, _ e -'),
-    clientId: z
-      .string()
-      .trim()
-      .optional()
-      .transform((value) => (value ? value : undefined))
-      .refine((value) => !value || deviceIdRegex.test(value), {
-        message: 'clientId invalido',
-      }),
     name: z
       .string()
       .trim()
-      .optional()
-      .transform((value) => (value ? value : undefined)),
+      .min(2, 'Nome obrigatorio'),
     location: z
       .string()
       .trim()
@@ -65,7 +49,14 @@ const formSchema = z
   );
 
 type DeviceFormValues = z.input<typeof formSchema>;
-type DeviceFormOutput = z.output<typeof formSchema>;
+type DeviceFormOutput = {
+  id: string;
+  clientId?: string;
+  name?: string;
+  location?: string;
+  minTemperature?: number;
+  maxTemperature?: number;
+};
 
 type DeviceFormProps = {
   mode: 'create' | 'edit';
@@ -74,6 +65,7 @@ type DeviceFormProps = {
   loading?: boolean;
   allowStructureFields?: boolean;
   allowTemperatureFields?: boolean;
+  existingIds?: string[];
   onSubmit: (values: DeviceFormOutput) => void | Promise<void>;
   onCancel?: () => void;
 };
@@ -85,15 +77,16 @@ export function DeviceForm({
   loading,
   allowStructureFields = true,
   allowTemperatureFields = true,
+  existingIds = [],
   onSubmit,
   onCancel,
 }: DeviceFormProps) {
-  const hasScopedClient = Boolean(clientId);
   const [submitHint, setSubmitHint] = useState<string | null>(null);
   const [submitStateLabel, setSubmitStateLabel] = useState<string | null>(null);
   const {
     register,
     getValues,
+    watch,
     reset,
     setError,
     clearErrors,
@@ -101,8 +94,6 @@ export function DeviceForm({
   } = useForm<DeviceFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      id: '',
-      clientId: clientId ?? '',
       name: '',
       location: '',
       minTemperature: '',
@@ -113,8 +104,6 @@ export function DeviceForm({
   useEffect(() => {
     if (mode === 'edit' && device) {
       reset({
-        id: device.id,
-        clientId: device.clientId ?? clientId ?? '',
         name: device.name ?? '',
         location: device.location ?? '',
         minTemperature:
@@ -126,14 +115,12 @@ export function DeviceForm({
     }
 
     reset({
-      id: '',
-      clientId: clientId ?? '',
       name: '',
       location: '',
       minTemperature: '',
       maxTemperature: '',
     });
-  }, [mode, device, clientId, reset]);
+  }, [mode, device, reset]);
 
   async function submitDeviceForm() {
     const result = formSchema.safeParse(getValues());
@@ -159,10 +146,17 @@ export function DeviceForm({
     setSubmitStateLabel('Enviando equipamento...');
 
     const parsed = result.data;
+    const generatedId =
+      mode === 'edit' && device
+        ? device.id
+        : buildUniqueTechnicalId(parsed.name, existingIds, {
+            fallback: 'equipamento',
+          });
     const nextValues = {
+      id: generatedId,
       ...parsed,
       clientId: allowStructureFields
-        ? parsed.clientId ?? clientId
+        ? clientId
         : undefined,
       name: allowStructureFields ? parsed.name : undefined,
       location: allowStructureFields ? parsed.location : undefined,
@@ -186,6 +180,14 @@ export function DeviceForm({
       );
     }
   }
+
+  const generatedIdPreview = buildUniqueTechnicalId(
+    watch('name') ?? '',
+    existingIds,
+    {
+      fallback: 'equipamento',
+    },
+  );
 
   return (
     <div className="">
@@ -215,47 +217,6 @@ export function DeviceForm({
         ) : null}
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-xs text-muted">Codigo tecnico (imutavel)</label>
-            <Input
-              {...register('id')}
-              disabled={mode === 'edit'}
-              placeholder="freezer_vacinas_01"
-            />
-            <p className="mt-1 text-xs text-muted">
-              Usado em API, firmware e integracoes. Escolha com cuidado.
-            </p>
-            {mode === 'edit' ? (
-              <p className="mt-1 text-xs text-muted">
-                O codigo tecnico e imutavel apos o cadastro. Para trocar, crie um novo
-                equipamento e desative/remova o anterior.
-              </p>
-            ) : null}
-            {errors.id ? (
-              <p className="mt-1 text-xs text-bad">{errors.id.message}</p>
-            ) : null}
-          </div>
-
-          {allowStructureFields ? (
-            <div>
-              <label className="mb-1 block text-xs text-muted">Codigo interno do cliente</label>
-              <Input
-                {...register('clientId')}
-                placeholder="cuidare-vacinas"
-                readOnly={hasScopedClient}
-                aria-readonly={hasScopedClient}
-              />
-              {hasScopedClient ? (
-                <p className="mt-1 text-xs text-muted">
-                  Definido pela conta selecionada no painel.
-                </p>
-              ) : null}
-              {errors.clientId ? (
-                <p className="mt-1 text-xs text-bad">{errors.clientId.message}</p>
-              ) : null}
-            </div>
-          ) : null}
-
           {allowStructureFields ? (
             <div>
               <label className="mb-1 block text-xs text-muted">Nome</label>
@@ -263,6 +224,14 @@ export function DeviceForm({
               <p className="mt-1 text-xs text-muted">
                 Use um nome claro para quem vai acompanhar a operacao no dia a dia.
               </p>
+              <p className="mt-1 text-xs text-muted">
+                Codigo tecnico gerado automaticamente: <strong>{generatedIdPreview}</strong>
+              </p>
+              {errors.name ? (
+                <p className="mt-1 text-xs text-bad">
+                  {errors.name.message}
+                </p>
+              ) : null}
             </div>
           ) : null}
 
