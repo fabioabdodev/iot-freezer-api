@@ -52,7 +52,7 @@ export function CaseStudyGuidePanel({
       .map((item) => item.itemKey),
   );
 
-  const hasExpectedClient = clientId === restaurantCase.clientId;
+  const hasSelectedClient = Boolean(clientId);
   const hasAmbientalBase =
     Boolean(ambientalModule?.enabled) && enabledAmbientalItems.has('temperatura');
   const hasAcionamentoBase =
@@ -75,42 +75,40 @@ export function CaseStudyGuidePanel({
 
   const steps = [
     {
-      title: '1. Criar a conta do cliente',
-      description: `Cadastre o cliente com \`${restaurantCase.clientName}\` e codigo interno \`${restaurantCase.clientId}\`.`,
-      done: hasExpectedClient,
+      title: '1. Selecionar conta ativa',
+      description: 'Escolha no topo a conta que sera usada na simulacao operacional.',
+      done: hasSelectedClient,
     },
     {
       title: '2. Fechar contratacao ambiental',
       description: 'Habilite a categoria `ambiental` com item `temperatura` para liberar monitoramento e alertas.',
-      done: hasExpectedClient && hasAmbientalBase,
+      done: hasSelectedClient && hasAmbientalBase,
     },
     {
       title: '3. Estruturar equipamentos do caso',
-      description: 'Cadastrar `freezer_cozinha_01` e `camara_fria_01` como base do modulo ambiental.',
-      done: hasExpectedClient && hasCoreDevices,
+      description: 'Manter pelo menos 2 equipamentos ativos. Se ja existirem, nao recadastrar.',
+      done: hasSelectedClient && devices.length >= 2,
     },
     {
       title: '4. Criar regras operacionais',
-      description: 'Definir limites de temperatura para os equipamentos do caso e deixar pelo menos 1 regra ativa.',
-      done: hasExpectedClient && hasCoreDevices && hasRule,
+      description: 'Garantir ao menos 1 regra ambiental ativa. Se ja existir, apenas revisar limites.',
+      done: hasSelectedClient && alertRules.length > 0 && hasRule,
     },
     {
       title: '5. Ensaiar a visita no laboratorio',
       description: 'Rodar `normal`, `alerta`, `critico` e `offline` para demonstrar ambiental ponta a ponta.',
-      done: hasExpectedClient && hasCoreDevices && hasRule && hasAnyCoreDeviceOnline,
+      done: hasSelectedClient && hasAnyCoreDeviceOnline && hasRule,
     },
     {
       title: '6. Preparar trilha de alerta no n8n',
       description: 'Validar webhook, execucao no n8n e entrega final no WhatsApp antes de fechar demonstracao.',
-      done: hasExpectedClient && hasCoreDevices && hasRule,
+      done: hasSelectedClient && hasRule,
     },
     {
       title: '7. Fechar acionamento para venda',
       description: 'Habilite `acionamento` com itens `rele`, `status_abertura`, `tempo_aberto` e cadastre ponto de comando.',
       done:
-        hasExpectedClient &&
-        hasCoreDevices &&
-        hasRule &&
+        hasSelectedClient &&
         hasAcionamentoBase &&
         actuationEnabled &&
         hasActuator,
@@ -128,7 +126,7 @@ export function CaseStudyGuidePanel({
             Roteiro pratico para chegada de cliente real
           </h2>
           <p className="mt-2 max-w-3xl text-sm text-muted">
-            Use este bloco como se o Restaurante Sabor da Serra tivesse chegado agora. Ele mostra a ordem de onboarding para fechar ambiental e acionamento com narrativa comercial.
+            Use este bloco para conduzir onboarding inicial ou continuidade sem recadastro. Ele organiza a ordem para fechar ambiental e acionamento com narrativa comercial.
           </p>
         </div>
         <Badge>
@@ -172,6 +170,7 @@ export function CaseStudyGuidePanel({
               <p><strong className="text-ink">Codigo interno:</strong> {restaurantCase.clientId}</p>
               <p><strong className="text-ink">Admin inicial:</strong> {restaurantCase.adminEmail}</p>
               <p><strong className="text-ink">Categorias:</strong> ambiental + acionamento</p>
+              <p><strong className="text-ink">Observacao:</strong> se a conta ja existir, use os dados atuais e pule recadastro.</p>
             </div>
           </div>
 
@@ -243,21 +242,21 @@ export function CaseStudyGuidePanel({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {!hasExpectedClient ? (
-          <Badge>Primeiro passo: abrir a conta {restaurantCase.clientId}</Badge>
+        {!hasSelectedClient ? (
+          <Badge>Primeiro passo: selecionar um cliente no filtro superior</Badge>
         ) : null}
-        {hasExpectedClient && !hasCoreDevices && onCreateDevice ? (
+        {hasSelectedClient && devices.length < 2 && onCreateDevice ? (
           <Button variant="primary" onClick={onCreateDevice}>
-            Cadastrar equipamentos do restaurante
+            Cadastrar equipamentos da conta
           </Button>
         ) : null}
-        {client && hasExpectedClient ? (
-          <Badge variant="success">Conta atual alinhada ao estudo de caso</Badge>
+        {client && hasSelectedClient ? (
+          <Badge variant="success">Conta atual pronta para continuidade do estudo de caso</Badge>
         ) : null}
-        {hasExpectedClient && hasAmbientalBase && hasCoreDevices && hasRule && hasAnyCoreDeviceOnline ? (
+        {hasSelectedClient && hasAmbientalBase && hasRule && hasAnyCoreDeviceOnline ? (
           <Badge variant="success">Ambiental pronto para venda assistida</Badge>
         ) : null}
-        {hasExpectedClient && hasAcionamentoBase && actuationEnabled && hasActuator ? (
+        {hasSelectedClient && hasAcionamentoBase && actuationEnabled && hasActuator ? (
           <Badge variant="success">Acionamento pronto para demonstracao comercial</Badge>
         ) : null}
       </div>

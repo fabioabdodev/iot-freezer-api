@@ -50,23 +50,25 @@ No bloco `Solucoes comerciais`:
 
 No bloco `Equipamentos`:
 
-- cadastrar pelo menos 2 equipamentos da conta
+- garantir pelo menos 2 equipamentos ativos na conta
+- se os equipamentos ja existirem, nao recadastrar
 
 No bloco `Regras de alerta`:
 
-- cadastrar regra critica de temperatura
+- garantir pelo menos 1 regra critica de temperatura
+- se a regra ja existir, apenas revisar limites e status
 
 ### Labels oficiais da UI (obrigatorio seguir)
 
 Para evitar erro de suporte entre chats/agentes, usar estes labels exatamente como no Monitor:
 
 - Equipamentos:
-  - `Codigo tecnico (imutavel)`
-  - `Codigo interno do cliente`
   - `Nome`
   - `Localizacao`
   - `Min temp (C)`
   - `Max temp (C)`
+  - observacao operacional:
+    - `Codigo tecnico (imutavel)` e `Codigo interno do cliente` podem ser gerados automaticamente a partir do `Nome` nos fluxos novos de cadastro
 
 - Regras de alerta:
   - `Sensor`
@@ -107,6 +109,19 @@ Considerar aprovado quando:
 2. painel de energia mostra dados recentes sem erro
 3. operador repete o roteiro sem apoio tecnico
 4. narrativa comercial fica clara em ate 7 minutos de demonstracao
+
+## Modo continuidade (sem recadastro)
+
+Quando cliente, equipamentos e regras ja estiverem criados, seguir este recorte:
+
+1. pular criacao estrutural e iniciar em `Solucoes comerciais`
+2. validar `Pronta para venda` da receita aplicada
+3. simular leituras de energia (`consumo`, `corrente`, `tensao`) para os equipamentos existentes
+4. validar no `Energia`:
+   - ultimo valor por sensor
+   - equipamentos com leitura recente
+   - historico por equipamento
+5. validar no `Prontidao comercial` o proximo passo para fechamento da venda
 
 ## Evidencias minimas
 
