@@ -631,6 +631,15 @@ Para evitar confusao de contexto:
 - o uso esperado dessa pasta e apoiar simulacoes de uso real do sistema, como se a equipe tivesse chegado ao cliente, para conhecer melhor as telas e levantar melhorias de UI/UX com base em contexto concreto
 - quando a tarefa for sobre a API ou o dashboard, nao misturar decisoes desses dois escopos paralelos
 
+## Diretriz de infraestrutura para projeto institucional
+
+Direcao registrada em 21/03/2026:
+
+- o site institucional deve ser implementado em `Next.js`
+- o deploy pode usar a mesma VPS e o mesmo ecossistema operacional (`Docker Swarm`, `Traefik`, `Cloudflare`)
+- mesmo compartilhando infraestrutura, o institucional deve rodar em stack separada, com dominio/rotas e variaveis proprias
+- nao acoplar deploy do institucional ao deploy do monitor/API no mesmo ciclo automatizado
+
 ## Regra transversal para novos modulos de cadastro
 
 Padrao oficial a reaplicar em todos os modulos novos (ambiental, acionamento, energia e proximos):

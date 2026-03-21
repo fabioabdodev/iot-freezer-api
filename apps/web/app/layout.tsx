@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Space_Grotesk, Manrope } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
+import { ReleaseFooter } from '@/components/release-footer';
 
 const display = Space_Grotesk({
   subsets: ['latin'],
@@ -41,7 +42,12 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${display.variable} ${body.variable}`}>
       <body className="font-[var(--font-body)] antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          <div className="flex min-h-screen flex-col">
+            <div className="flex-1">{children}</div>
+            <ReleaseFooter />
+          </div>
+        </Providers>
       </body>
     </html>
   );

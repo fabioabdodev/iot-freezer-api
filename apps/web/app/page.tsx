@@ -93,9 +93,6 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
   const isTurnstileEnabled = Boolean(turnstileSiteKey);
-  const appVersion = process.env.NEXT_PUBLIC_APP_VERSION ?? 'v1.0.0';
-  const showReleaseInfo = process.env.NEXT_PUBLIC_SHOW_RELEASE_INFO === 'true';
-  const copyrightYear = new Date().getFullYear();
 
   // O filtro principal vive na URL para facilitar refresh e compartilhamento do estado atual.
   const queryClientId = searchParams.get('clientId') ?? '';
@@ -1679,53 +1676,6 @@ function DashboardContent() {
           />
         </AccordionPanel>
       </div>
-
-      <footer className="mt-8 border-t border-line/60 pt-6">
-        <div className="flex flex-col gap-4 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
-          {showReleaseInfo ? (
-            <div>
-              <p>Virtuagil Monitor v{appVersion.replace(/^v/i, '')}</p>
-              <p className="text-xs text-muted/80">
-                Virtuagil® © {copyrightYear} Virtuagil. Todos os direitos reservados.
-              </p>
-            </div>
-          ) : (
-            <p>Virtuagil Monitor</p>
-          )}
-          <nav className="flex flex-wrap items-center gap-2">
-            <Link
-              href="#resumo-operacional"
-              className="rounded-2xl border border-line/70 bg-card/50 px-3 py-2 text-xs font-medium transition hover:border-accent/40 hover:text-ink"
-            >
-              Resumo
-            </Link>
-            <Link
-              href="#contas-modulos"
-              className="rounded-2xl border border-line/70 bg-card/50 px-3 py-2 text-xs font-medium transition hover:border-accent/40 hover:text-ink"
-            >
-              Contas
-            </Link>
-            <Link
-              href="#solucoes-comerciais"
-              className="rounded-2xl border border-line/70 bg-card/50 px-3 py-2 text-xs font-medium transition hover:border-accent/40 hover:text-ink"
-            >
-              Solucoes
-            </Link>
-            <Link
-              href="#energia"
-              className="rounded-2xl border border-line/70 bg-card/50 px-3 py-2 text-xs font-medium transition hover:border-accent/40 hover:text-ink"
-            >
-              Energia
-            </Link>
-            <Link
-              href="#auditoria"
-              className="rounded-2xl border border-line/70 bg-card/50 px-3 py-2 text-xs font-medium transition hover:border-accent/40 hover:text-ink"
-            >
-              Auditoria
-            </Link>
-          </nav>
-        </div>
-      </footer>
 
       </div>
     </main>
