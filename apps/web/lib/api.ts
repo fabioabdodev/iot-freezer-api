@@ -21,6 +21,13 @@ import { UserInput, UserSummary } from '@/types/user';
 import { ClientModule } from '@/types/client-module';
 import { ClientInput, ClientSummary, CreateClientInput } from '@/types/client';
 import { AuditLogEntry } from '@/types/audit-log';
+import { EnergyReading, EnergySummary } from '@/types/energy';
+import {
+  ApplySolutionInput,
+  ApplySolutionResult,
+  SolutionCatalogEntry,
+  SolutionReadinessEntry,
+} from '@/types/solution';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
@@ -950,4 +957,133 @@ export async function fetchAuditLogs(
   }
 
   return response.json() as Promise<AuditLogEntry[]>;
+}
+
+export async function fetchEnergyReadings(
+  deviceId: string,
+  options: {
+    clientId?: string;
+    sensor?: 'corrente' | 'tensao' | 'consumo';
+    limit?: number;
+    resolution?: '5m' | '15m' | '1h' | '1d';
+  },
+  authToken?: string,
+): Promise<EnergyReading[]> {
+  const query = new URLSearchParams();
+  if (options.clientId) query.set('clientId', options.clientId);
+  if (options.sensor) query.set('sensor', options.sensor);
+  if (options.limit) query.set('limit', String(options.limit));
+  if (options.resolution) query.set('resolution', options.resolution);
+
+  const response = await fetch(
+    `${API_BASE_URL}/energy/readings/${deviceId}?${query.toString()}`,
+    {
+      cache: 'no-store',
+      headers: buildAuthHeaders(authToken),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(
+        response,
+        'Falha ao carregar leituras do modulo energia',
+      ),
+    );
+  }
+
+  return response.json() as Promise<EnergyReading[]>;
+}
+
+export async function fetchEnergySummary(
+  options: {
+    clientId: string;
+    sensors?: string[];
+    recentHours?: number;
+  },
+  authToken?: string,
+): Promise<EnergySummary> {
+  const query = new URLSearchParams();
+  query.set('clientId', options.clientId);
+  if (options.sensors?.length) query.set('sensors', options.sensors.join(','));
+  if (options.recentHours) query.set('recentHours', String(options.recentHours));
+
+  const response = await fetch(`${API_BASE_URL}/energy/summary?${query.toString()}`, {
+    cache: 'no-store',
+    headers: buildAuthHeaders(authToken),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao carregar resumo de energia'),
+    );
+  }
+
+  return response.json() as Promise<EnergySummary>;
+}
+
+export async function fetchSolutionsCatalog(
+  authToken?: string,
+): Promise<SolutionCatalogEntry[]> {
+  const response = await fetch(`${API_BASE_URL}/solutions/catalog`, {
+    cache: 'no-store',
+    headers: buildAuthHeaders(authToken),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(
+        response,
+        'Falha ao carregar catalogo de solucoes',
+      ),
+    );
+  }
+
+  return response.json() as Promise<SolutionCatalogEntry[]>;
+}
+
+export async function fetchSolutionReadiness(
+  clientId: string,
+  authToken?: string,
+): Promise<SolutionReadinessEntry[]> {
+  const query = new URLSearchParams();
+  query.set('clientId', clientId);
+
+  const response = await fetch(`${API_BASE_URL}/solutions?${query.toString()}`, {
+    cache: 'no-store',
+    headers: buildAuthHeaders(authToken),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(
+        response,
+        'Falha ao carregar prontidao das solucoes',
+      ),
+    );
+  }
+
+  return response.json() as Promise<SolutionReadinessEntry[]>;
+}
+
+export async function applySolutionRecipe(
+  input: ApplySolutionInput,
+  authToken?: string,
+): Promise<ApplySolutionResult> {
+  const response = await fetch(`${API_BASE_URL}/solutions/apply`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...buildAuthHeaders(authToken),
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await extractApiErrorMessage(response, 'Falha ao aplicar solucao comercial'),
+    );
+  }
+
+  return response.json() as Promise<ApplySolutionResult>;
 }

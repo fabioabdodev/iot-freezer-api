@@ -28,7 +28,9 @@ import { ClientProfilePanel } from '@/components/client-profile-panel';
 import { ClientsPanel } from '@/components/clients-panel';
 import { AuditLogPanel } from '@/components/audit-log-panel';
 import { CaseStudyGuidePanel } from '@/components/case-study-guide-panel';
+import { EnergyPanel } from '@/components/energy-panel';
 import { SetupGuideCard } from '@/components/setup-guide-card';
+import { SolutionReadinessPanel } from '@/components/solution-readiness-panel';
 import { UsersPanel } from '@/components/users-panel';
 import { CommercialReadinessPanel } from '@/components/commercial-readiness-panel';
 import { OperationalActivityPanel } from '@/components/operational-activity-panel';
@@ -207,10 +209,21 @@ function DashboardContent() {
   const enabledAmbientalItems = (ambientalModule?.items ?? [])
     .filter((item) => item.enabled)
     .map((item) => item.itemKey);
+  const energiaModule = clientModules.find((module) => module.moduleKey === 'energia');
+  const enabledEnergyItems = (energiaModule?.items ?? [])
+    .filter((item) => item.enabled)
+    .map((item) => item.itemKey);
+  const historySensors = Array.from(
+    new Set([...enabledAmbientalItems, ...enabledEnergyItems]),
+  );
   const ambientalEnabled =
     scopedClientId == null
       ? true
       : ambientalModule?.enabled ?? false;
+  const energiaEnabled =
+    scopedClientId == null
+      ? true
+      : energiaModule?.enabled ?? false;
   const actuationEnabled =
     scopedClientId == null
       ? true
@@ -1267,7 +1280,7 @@ function DashboardContent() {
                 device={selectedDevice}
                 clientId={scopedClientId}
                 authToken={authToken}
-                availableSensors={enabledAmbientalItems}
+                availableSensors={historySensors}
               />
             ) : null}
           </div>
@@ -1369,6 +1382,48 @@ function DashboardContent() {
           />
         </div>
       </AccordionPanel>
+
+      <div id="solucoes-comerciais" className="mt-6 scroll-mt-28">
+        <AccordionPanel
+          title="Solucoes comerciais"
+          description="Aplique receitas prontas e acompanhe a prontidao para proposta."
+          defaultOpen={false}
+        >
+          <SolutionReadinessPanel
+            clientId={scopedClientId}
+            authToken={authToken}
+            currentUser={user}
+            client={selectedClient}
+          />
+        </AccordionPanel>
+      </div>
+
+      {energiaEnabled ? (
+        <div id="energia" className="mt-6 scroll-mt-28">
+          <AccordionPanel
+            title="Energia"
+            description="Acompanhe consumo, corrente e tensao com visao orientada a operacao."
+            defaultOpen={false}
+          >
+            <EnergyPanel
+              clientId={scopedClientId}
+              authToken={authToken}
+              client={selectedClient}
+              devices={devices}
+              clientModules={clientModules}
+            />
+          </AccordionPanel>
+        </div>
+      ) : (
+        <div className="mt-6">
+          <AccessNotice
+            title="Energia indisponivel"
+            description="O cliente atual ainda nao contratou o recurso de energia, por isso indicadores de consumo e saude eletrica ficam bloqueados."
+            badge="nao contratado"
+            hint="Habilite os itens do modulo energia para liberar leitura de corrente, tensao e consumo."
+          />
+        </div>
+      )}
 
       {!isPlatformAdmin ? (
         <AccordionPanel
@@ -1624,6 +1679,18 @@ function DashboardContent() {
               className="rounded-2xl border border-line/70 bg-card/50 px-3 py-2 text-xs font-medium transition hover:border-accent/40 hover:text-ink"
             >
               Contas
+            </Link>
+            <Link
+              href="#solucoes-comerciais"
+              className="rounded-2xl border border-line/70 bg-card/50 px-3 py-2 text-xs font-medium transition hover:border-accent/40 hover:text-ink"
+            >
+              Solucoes
+            </Link>
+            <Link
+              href="#energia"
+              className="rounded-2xl border border-line/70 bg-card/50 px-3 py-2 text-xs font-medium transition hover:border-accent/40 hover:text-ink"
+            >
+              Energia
             </Link>
             <Link
               href="#auditoria"
