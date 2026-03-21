@@ -631,3 +631,18 @@ Para evitar confusao de contexto:
 - o uso esperado dessa pasta e apoiar simulacoes de uso real do sistema, como se a equipe tivesse chegado ao cliente, para conhecer melhor as telas e levantar melhorias de UI/UX com base em contexto concreto
 - quando a tarefa for sobre a API ou o dashboard, nao misturar decisoes desses dois escopos paralelos
 
+## Regra transversal para novos modulos de cadastro
+
+Padrao oficial a reaplicar em todos os modulos novos (ambiental, acionamento, energia e proximos):
+
+- formularios de cadastro devem priorizar campo `Nome` como entrada principal de identificacao
+- `codigo tecnico (imutavel)` e `codigo interno do cliente` nao devem ser exigidos manualmente quando puderem ser derivados com seguranca
+- o codigo tecnico deve ser gerado automaticamente a partir do nome informado, com:
+  - normalizacao para `snake_case`
+  - remocao de acentos e caracteres especiais
+  - bloqueio de caracteres tecnicamente invalidos
+  - garantia de unicidade por sufixo incremental quando houver colisao
+- o codigo tecnico gerado deve permanecer imutavel apos criacao
+- filtros operacionais devem priorizar busca por `Nome`, mantendo compatibilidade por codigo
+- labels visiveis ao usuario devem permanecer em portugues e alinhados ao texto oficial da UI
+

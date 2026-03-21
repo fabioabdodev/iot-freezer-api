@@ -38,12 +38,12 @@ No layout atual, nao existe um card principal separado chamado `Ambiental`.
 Para reduzir retrabalho entre chats/agentes, registrar e usar os labels exatamente como aparecem na tela:
 
 - Em `Equipamentos`:
-  - `Codigo tecnico (imutavel)`
-  - `Codigo interno do cliente`
   - `Nome`
   - `Localizacao`
   - `Min temp (C)`
   - `Max temp (C)`
+  - observacao operacional:
+    - `Codigo tecnico (imutavel)` e `Codigo interno do cliente` sao gerados automaticamente a partir do `Nome` quando o fluxo de cadastro usar o padrao novo
 
 - Em `Regras de alerta`:
   - `Sensor`
@@ -126,9 +126,8 @@ Se esse modulo ja foi validado anteriormente, use esta parte apenas como revisao
 Campos recomendados no cadastro de `Equipamentos` para estudo de caso:
 
 - obrigatorios:
-  - `id`
-- recomendados (nao omitir no onboarding comercial):
   - `name`
+- recomendados (nao omitir no onboarding comercial):
   - `location`
   - `minTemperature`
   - `maxTemperature`
@@ -394,6 +393,82 @@ Esperado:
 
 - `200`
 - historico retornado para o sensor informado
+
+### Bloco unico com 6 payloads (Insomnia/Postman)
+
+Endpoint para todos:
+
+- metodo: `POST`
+- URL: `http://localhost:3000/iot/readings`
+- headers:
+  - `Content-Type: application/json`
+  - `x-device-key: SUA_CHAVE`
+
+Payload 1 - `freezer_camara_01` / `consumo`:
+
+```json
+{
+  "device_id": "freezer_camara_01",
+  "sensor_type": "consumo",
+  "value": 12.8,
+  "unit": "kWh"
+}
+```
+
+Payload 2 - `freezer_camara_01` / `corrente`:
+
+```json
+{
+  "device_id": "freezer_camara_01",
+  "sensor_type": "corrente",
+  "value": 4.6,
+  "unit": "A"
+}
+```
+
+Payload 3 - `freezer_camara_01` / `tensao`:
+
+```json
+{
+  "device_id": "freezer_camara_01",
+  "sensor_type": "tensao",
+  "value": 220.4,
+  "unit": "V"
+}
+```
+
+Payload 4 - `freezer_camara_02` / `consumo`:
+
+```json
+{
+  "device_id": "freezer_camara_02",
+  "sensor_type": "consumo",
+  "value": 15.1,
+  "unit": "kWh"
+}
+```
+
+Payload 5 - `freezer_camara_02` / `corrente`:
+
+```json
+{
+  "device_id": "freezer_camara_02",
+  "sensor_type": "corrente",
+  "value": 5.2,
+  "unit": "A"
+}
+```
+
+Payload 6 - `freezer_camara_02` / `tensao`:
+
+```json
+{
+  "device_id": "freezer_camara_02",
+  "sensor_type": "tensao",
+  "value": 219.7,
+  "unit": "V"
+}
+```
 
 ## 7. Solucoes comerciais (novo)
 

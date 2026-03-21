@@ -113,3 +113,19 @@ O frontend deve continuar preparado para:
 - multiplos sensores
 - filtros mais ricos
 - historico e relatorios
+
+## Regra obrigatoria para novos modulos de cadastro
+
+Padrao oficial para todos os novos formularios de cadastro no monitor UI:
+
+- exibir na UI apenas os campos operacionais em portugues (prioridade para `Nome`), alinhados com os labels oficiais usados no dashboard
+- nao exigir digitacao manual de `codigo tecnico (imutavel)` nem `codigo interno do cliente` em formularios onde o valor puder ser derivado com seguranca
+- gerar automaticamente o codigo tecnico a partir do `Nome`:
+  - converter para `snake_case`
+  - remover acentos e caracteres especiais
+  - impedir espacos e simbolos invalidos
+  - garantir unicidade com sufixo incremental quando necessario
+- manter o codigo tecnico imutavel apos criacao
+- em filtros de topo (`Aplicar filtro`), priorizar busca por `Nome` e manter busca por codigo como compatibilidade
+
+Essa regra deve ser reaproveitada em todos os modulos futuros (ambiental, acionamento, energia e proximos).
