@@ -42,7 +42,7 @@ No Monitor:
 
 No bloco `Solucoes comerciais`:
 
-1. aplicar `cadeia_fria@v1` (completa)
+1. aplicar `cadeia_fria@v1` (titulo comercial: `Controle Inteligente de Camaras Frias`)
 2. confirmar obrigatorios preenchidos
 3. confirmar status `Pronta para venda`
 
@@ -93,4 +93,3 @@ Considerar aprovado quando:
 1. print de `Solucoes comerciais` com receita aplicada
 2. print de `Energia` com ultimo valor por sensor
 3. print de `Prontidao comercial` com score e proximo passo
-

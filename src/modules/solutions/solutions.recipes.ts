@@ -16,10 +16,10 @@ export type SolutionRecipe = {
 export const SOLUTION_RECIPES: SolutionRecipe[] = [
   {
     key: 'cadeia_fria',
-    name: 'Solucao Cadeia Fria',
+    name: 'Controle Inteligente de Camaras Frias',
     version: 'v1',
     description:
-      'Pacote comercial para monitoramento ambiental de cadeia fria com base pronta para expansao operacional.',
+      'Pacote comercial para monitoramento proativo de camaras frias com foco em seguranca operacional e eficiencia energetica.',
     items: [
       { moduleKey: 'ambiental', itemKey: 'temperatura', required: true },
       { moduleKey: 'ambiental', itemKey: 'umidade', required: true },
