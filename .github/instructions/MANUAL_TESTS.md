@@ -366,6 +366,25 @@ Enquanto nao houver hardware:
 - tratar `currentState` como estado operacional registrado na plataforma
 - nao prometer confirmacao eletrica real da carga
 
+## 5.3 Inicio de bancada domestica (ESP32 + sensor de temperatura)
+
+Quando iniciar teste fisico em casa (geladeira/freezer), seguir este fluxo minimo:
+
+1. bancada segura e alimentacao estavel do ESP32
+2. validar leitura local do sensor por serial antes de integrar API
+3. configurar `x-device-key` valida do device
+4. enviar leitura real para `POST /iot/readings` com `sensor_type=temperature`
+5. confirmar no Monitor:
+   - equipamento online
+   - leitura recente aparecendo
+   - historico preenchendo
+6. testar variacao controlada de temperatura para validar alerta sem risco ao equipamento
+
+Regras de cuidado:
+
+- evitar testes com instalacao definitiva antes de fechar 1 ciclo completo de 24h
+- nao depender de apenas uma leitura pontual para concluir estabilidade
+
 ## 6. Modulo energia (novo)
 
 ### Consultar resumo de energia

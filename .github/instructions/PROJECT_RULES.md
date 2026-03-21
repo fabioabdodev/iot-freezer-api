@@ -646,3 +646,28 @@ Padrao oficial a reaplicar em todos os modulos novos (ambiental, acionamento, en
 - filtros operacionais devem priorizar busca por `Nome`, mantendo compatibilidade por codigo
 - labels visiveis ao usuario devem permanecer em portugues e alinhados ao texto oficial da UI
 
+## Regra de release e versionamento visual
+
+Para fechamento de cada ciclo pronto para inauguracao/comercializacao:
+
+- aplicar versao semantica no formato `vX.Y.Z` (exemplo inicial: `v1.0.0`)
+- registrar release notes com resumo funcional e validacoes executadas
+- exibir no rodape da UI:
+  - versao publicada
+  - data/hora de build
+  - identificador de release (commit/tag)
+- essa exibicao global no rodape deve ser feita apenas no fechamento final, para evitar ruido durante implementacoes em andamento
+
+## Inicio da fase de hardware real (2026-03-21)
+
+Estado registrado:
+
+- kit fisico recebido (ESP32, sensor de temperatura, caixa, fios e itens de bancada)
+- objetivo imediato: iniciar teste residencial controlado em geladeira/freezer
+
+Direcao pratica:
+
+- manter primeiro ciclo de testes com foco em seguranca e estabilidade de leitura
+- validar envio real para API em `POST /iot/readings` com `x-device-key`
+- usar ambiente controlado antes de qualquer instalacao em cliente
+
