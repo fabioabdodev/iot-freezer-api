@@ -31,6 +31,8 @@ export class AppService {
         clientCommercialProfile: true,
         actuationCommandsRecent: true,
         operationalActivityPanel: true,
+        solutionsCatalog: true,
+        energyModule: true,
       },
     };
   }
