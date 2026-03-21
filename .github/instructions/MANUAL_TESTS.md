@@ -1,4 +1,4 @@
----
+﻿---
 description: roteiro pratico de testes manuais no Insomnia para fechar os modulos principais
 applyTo: '**'
 ---
@@ -366,7 +366,7 @@ Enquanto nao houver hardware:
 - tratar `currentState` como estado operacional registrado na plataforma
 - nao prometer confirmacao eletrica real da carga
 
-## 5.3 Inicio de bancada domestica (ESP32 + sensor de temperatura)
+## 5.1 Inicio de bancada domestica (ESP32 + sensor de temperatura)
 
 Quando iniciar teste fisico em casa (geladeira/freezer), seguir este fluxo minimo:
 
@@ -538,7 +538,7 @@ Esperado:
 - `200`
 - status `ready` refletindo os itens obrigatorios da receita
 
-## 5.1 Padrao de execucao dos estudos de caso (UI-first)
+## 8. Padrao de execucao dos estudos de caso (UI-first)
 
 Regra oficial para novos atendimentos e demos:
 
@@ -561,7 +561,7 @@ Checklist do caso `sabor-serra-restaurante` no Monitor:
 
 Se `POST /actuators/:id/commands` retornar `404 Actuator not found`, primeiro revisar no Monitor se o `id` do atuador cadastrado e exatamente o mesmo usado no teste.
 
-## 5.2 Fluxo ponta a ponta com WhatsApp
+## 8.1 Fluxo ponta a ponta com WhatsApp
 
 Direcao atual do produto:
 
@@ -609,7 +609,7 @@ Padrao recomendado para template do workflow `online` no n8n (2026-03-20):
 - evitar `nao informado` quando possivel:
   - usar fallback de datas (`offlineSince` -> `lastSeenAt`)
   - validar data antes de formatar para nao gerar `Invalid Date`
-- usar acentuacao correta nas mensagens finais ao cliente (`não`, `é`, `último`, `recuperação`)
+- usar acentuacao correta nas mensagens finais ao cliente (`nao`, `e`, `ultimo`, `recuperacao`)
 
 Comando pronto para o estudo de caso `sabor-serra-restaurante` (PowerShell):
 
@@ -617,7 +617,7 @@ Comando pronto para o estudo de caso `sabor-serra-restaurante` (PowerShell):
 .\scripts\lab-sabor-serra.ps1 -Token "SEU_TOKEN" -DeviceKey "SUA_DEVICE_KEY" -ClientId "sabor-serra-restaurante" -DeviceId "adega_vinhos_01" -ActuatorId "rele_luzes_salao_01" -TriggerCriticalGas -RunActuation -CheckN8n
 ```
 
-## 6. Checklist rapido de pos-deploy em producao
+## 9. Checklist rapido de pos-deploy em producao
 
 Use este bloco quando o deploy ja subiu, mas voce quer confirmar rapidamente se o ambiente ficou certo.
 
@@ -640,7 +640,7 @@ Esperado:
 
 - `"status": "ok"`
 - `"environment": "production"`
-- `"release": "latest"` quando o deploy estiver usando imagem `latest`
+- `"release"` preenchido com identificador publicado (preferencialmente tag semantica, ex.: `v1.0.0`; ou `sha-...` quando essa for a estrategia do deploy)
 - `"buildTime"` preenchido com a data/hora mais recente do deploy
 - `"alertQueueDepth": 0` ou baixo
 

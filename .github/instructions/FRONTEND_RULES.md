@@ -1,4 +1,4 @@
----
+﻿---
 description: regras do frontend web do sistema de monitoramento
 applyTo: '**'
 ---
@@ -77,7 +77,7 @@ Entregar um dashboard moderno e util para operacao:
 
 Direcao combinada neste momento:
 
-- manter formulários simples como estao quando nao houver ganho claro na troca
+- manter formularios simples como estao quando nao houver ganho claro na troca
 - usar `React Hook Form + Zod` nos formularios novos
 - evoluir gradualmente os formularios mais importantes do dashboard para esse padrao
 

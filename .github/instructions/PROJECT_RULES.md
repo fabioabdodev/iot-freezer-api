@@ -583,8 +583,8 @@ Estado consolidado em 15/03/2026:
   - consolidar o roteiro final de demonstracao comercial dos modulos `ambiental` e `acionamento`
   - definir onde os dumps de backup serao armazenados fora da VPS principal
 - restricao importante:
-  - ainda nao existem hardwares fisicos disponiveis
-  - continuidade deve priorizar simulacao, contratos de API, dashboard e operacao manual
+  - no fechamento de 15/03/2026 ainda nao havia hardware fisico disponivel
+  - naquele momento, a continuidade precisava priorizar simulacao, contratos de API, dashboard e operacao manual
 - observacao operacional:
   - em 13/03/2026 o Cloudflare foi ajustado para `Full (strict)`; `monitor.virtuagil.com.br` ficou funcional com proxy e o dominio raiz apresentou `526` por falta de origem HTTPS valida
   - em 13/03/2026 `npm run db:verify-actuation` confirmou no banco real a migration `20260313013000_create_actuation_module` e as tabelas `Actuator` e `ActuationCommand`

@@ -37,12 +37,15 @@ Exemplo de equipamentos:
 
 Checklist de campos do formulario de equipamento (nao omitir):
 
-- `id` (obrigatorio)
-- `name`
+- `name` (obrigatorio)
 - `location`
 - `minTemperature`
 - `maxTemperature`
 - cliente correto selecionado no filtro do dashboard
+
+Observacao:
+
+- `codigo tecnico (imutavel)` e `codigo interno do cliente` podem ser gerados automaticamente a partir do `Nome` no padrao novo de cadastro
 
 ## Roteamento no n8n (fase imediata)
 
