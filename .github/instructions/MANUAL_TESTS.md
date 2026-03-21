@@ -347,6 +347,83 @@ Enquanto nao houver hardware:
 - tratar `currentState` como estado operacional registrado na plataforma
 - nao prometer confirmacao eletrica real da carga
 
+## 6. Modulo energia (novo)
+
+### Consultar resumo de energia
+
+- metodo: `GET`
+- URL: `http://localhost:3000/energy/summary?clientId=virtuagil&sensors=consumo,corrente,tensao`
+- header:
+  - `Authorization: Bearer SEU_TOKEN`
+
+Esperado:
+
+- `200`
+- `deviceCount`
+- `devicesWithRecentReadings`
+- `latestBySensor` com itens de energia
+
+### Consultar historico de energia por equipamento
+
+- metodo: `GET`
+- URL: `http://localhost:3000/energy/readings/freezer_01?clientId=virtuagil&sensor=consumo&limit=20`
+- header:
+  - `Authorization: Bearer SEU_TOKEN`
+
+Esperado:
+
+- `200`
+- historico retornado para o sensor informado
+
+## 7. Solucoes comerciais (novo)
+
+### Catalogo de solucoes
+
+- metodo: `GET`
+- URL: `http://localhost:3000/solutions/catalog`
+- header:
+  - `Authorization: Bearer SEU_TOKEN`
+
+Esperado:
+
+- `200`
+- ao menos `cadeia_fria@v1`
+
+### Aplicar receita de solucao
+
+- metodo: `POST`
+- URL: `http://localhost:3000/solutions/apply`
+- headers:
+  - `Content-Type: application/json`
+  - `Authorization: Bearer SEU_TOKEN`
+- body:
+
+```json
+{
+  "clientId": "virtuagil",
+  "solutionKey": "cadeia_fria",
+  "version": "v1",
+  "includeRecommended": true
+}
+```
+
+Esperado:
+
+- `201`
+- lista de `appliedItemKeys`
+
+### Validar prontidao por cliente
+
+- metodo: `GET`
+- URL: `http://localhost:3000/solutions?clientId=virtuagil`
+- header:
+  - `Authorization: Bearer SEU_TOKEN`
+
+Esperado:
+
+- `200`
+- status `ready` refletindo os itens obrigatorios da receita
+
 ## 5.1 Padrao de execucao dos estudos de caso (UI-first)
 
 Regra oficial para novos atendimentos e demos:
