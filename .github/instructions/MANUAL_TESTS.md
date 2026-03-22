@@ -596,6 +596,20 @@ Observacao operacional importante:
 - no fluxo de `offline`, validar tambem se o nome do equipamento esta legivel na mensagem final; em um dos testes iniciais ele apareceu como `undefined`
 - quando houver varios ciclos curtos de queda e retorno, validar se a plataforma envia um aviso de instabilidade em vez de acumular `offline` + `online` em excesso
 
+## Regra de nomenclatura obrigatoria (Laboratorio UI)
+
+Para evitar retrabalho e perda de tempo entre chats:
+
+- sempre orientar os testes usando exatamente os nomes exibidos no card `Laboratorio` da UI atual
+- nomes oficiais atuais:
+  - `Carga normal`
+  - `Pre-alerta`
+  - `Cenario critico`
+  - `Ensaio de offline`
+  - `Confirmar fluxos do n8n`
+  - `Ping real dos webhooks n8n`
+- nao trocar os nomes por sinonimos durante suporte operacional
+
 Padrao recomendado para template do workflow `online` no n8n (2026-03-20):
 
 - manter um unico bloco cobrindo:
