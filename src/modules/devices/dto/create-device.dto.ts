@@ -1,5 +1,12 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsOptional, IsString, Matches } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
 export class CreateDeviceDto {
   @IsString()
@@ -7,15 +14,15 @@ export class CreateDeviceDto {
   @Matches(/^[a-zA-Z0-9_-]{3,50}$/)
   id: string;
 
-  @IsOptional()
   @IsString()
   @IsNotEmpty()
   @Matches(/^[a-zA-Z0-9_-]{3,50}$/)
-  clientId?: string;
+  clientId: string;
 
-  @IsOptional()
   @IsString()
-  name?: string;
+  @IsNotEmpty()
+  @MinLength(2)
+  name: string;
 
   @IsOptional()
   @IsString()

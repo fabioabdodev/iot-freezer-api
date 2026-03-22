@@ -11,6 +11,38 @@ Nota de terminologia ativa:
 
 ## Atualizacao complementar (2026-03-20)
 
+## Atualizacao complementar (2026-03-22)
+
+Fechamentos desta rodada para evitar regressao de cadastro e duplicidade:
+
+- `devices` agora bloqueia cadastro incompleto:
+  - `clientId` obrigatorio
+  - `name` obrigatorio (com trim)
+- `devices` agora bloqueia duplicidade por nome no mesmo cliente
+  - comparacao normalizada (sem acento, case-insensitive, `_`/`-` equivalentes)
+- `actuators` recebeu a mesma blindagem:
+  - `name` obrigatorio (create/update)
+  - nome unico por cliente com comparacao normalizada
+- `alert-rules` agora exige pelo menos um limite (`minValue` ou `maxValue`)
+- `clients` e `users` receberam validacao adicional de campos textuais com trim para nao aceitar payload vazio
+
+Fechamento operacional n8n/Evolution registrado:
+
+- diretriz de validacao de webhook por `POST` (nao por `GET`) consolidada
+- resposta de referencia para webhook ativo: `{"message":"Workflow was started"}`
+- mapeamento de erros comuns consolidado:
+  - `exists:false` no Evolution => numero de destino invalido
+  - `undefined` em mensagem => fallback de campos incorreto no template n8n
+  - sem execucao no n8n => workflow inativo ou variavel de webhook ausente na API
+- ordem oficial de teste do Laboratorio mantida com nomes exatos da UI:
+  - `Carga normal`, `Pre-alerta`, `Cenario critico`, `Ensaio de offline`
+
+Regra operacional importante para estudos de caso no Monitor:
+
+- antes de validar fluxo de alertas, remover cadastros duplicados de equipamentos no cliente em foco
+- manter apenas os `deviceId` realmente usados no simulador/laboratorio
+- se houver duplicado antigo, limpar via botao `Excluir` no UI antes da rodada de testes
+
 Fechamentos e ajustes desta rodada:
 
 - estudo de caso `sabor-serra-restaurante` foi validado novamente com sucesso:

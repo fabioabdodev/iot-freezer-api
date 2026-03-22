@@ -1,5 +1,12 @@
 import { Type } from 'class-transformer';
-import { IsOptional, IsString, IsNumber, IsNotEmpty, Matches } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsNotEmpty,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
 export class UpdateDeviceDto {
   @IsOptional()
@@ -10,6 +17,8 @@ export class UpdateDeviceDto {
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
+  @MinLength(2)
   name?: string;
 
   @IsOptional()

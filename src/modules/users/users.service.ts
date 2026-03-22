@@ -17,6 +17,11 @@ export class UsersService {
   ) {}
 
   async create(dto: CreateUserDto) {
+    const trimmedName = dto.name?.trim();
+    if (!trimmedName) {
+      throw new BadRequestException('name is required');
+    }
+
     await this.ensureClientExists(dto.clientId);
 
     const normalizedPassword =
@@ -27,11 +32,11 @@ export class UsersService {
     return this.prisma.user.create({
       data: {
         clientId: dto.clientId,
-        name: dto.name,
+        name: trimmedName,
         email: dto.email.toLowerCase().trim(),
         passwordHash: this.authService.hashPassword(normalizedPassword),
         role: dto.role ?? 'operator',
-        phone: dto.phone,
+        phone: dto.phone?.trim() || undefined,
         isActive: dto.isActive ?? true,
       } as any,
     });
@@ -61,18 +66,22 @@ export class UsersService {
   async update(id: string, dto: UpdateUserDto, clientId?: string) {
     await this.findOne(id, clientId);
     await this.ensureClientExists(dto.clientId);
+    const nextName = dto.name?.trim();
+    if (dto.name !== undefined && !nextName) {
+      throw new BadRequestException('name is required');
+    }
 
     return this.prisma.user.update({
       where: { id },
       data: {
         clientId: dto.clientId,
-        name: dto.name,
+        name: nextName,
         email: dto.email?.toLowerCase().trim(),
         passwordHash: dto.password
           ? this.authService.hashPassword(dto.password)
           : undefined,
         role: dto.role,
-        phone: dto.phone,
+        phone: dto.phone?.trim() || undefined,
         isActive: dto.isActive,
       } as any,
       select: this.userSelect(),

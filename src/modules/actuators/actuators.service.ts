@@ -12,16 +12,25 @@ export class ActuatorsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateActuatorDto) {
+    const trimmedName = dto.name?.trim();
+    if (!trimmedName) {
+      throw new BadRequestException('name is required');
+    }
+
     await this.ensureClientExists(dto.clientId);
     await this.ensureDeviceBelongsToClient(dto.deviceId, dto.clientId);
+    await this.ensureUniqueActuatorNamePerClient({
+      clientId: dto.clientId,
+      name: trimmedName,
+    });
 
     return this.prisma.actuator.create({
       data: {
         id: dto.id,
         clientId: dto.clientId,
         deviceId: dto.deviceId,
-        name: dto.name,
-        location: dto.location,
+        name: trimmedName,
+        location: dto.location?.trim() || undefined,
         currentState: 'off',
       } as any,
     });
@@ -69,17 +78,28 @@ export class ActuatorsService {
     const nextClientId = clientId ?? dto.clientId ?? (existing as any).clientId;
     const nextDeviceId =
       dto.deviceId === undefined ? (existing as any).deviceId : dto.deviceId;
+    const nextName =
+      dto.name === undefined ? (existing as any).name : dto.name?.trim();
+
+    if (!nextName) {
+      throw new BadRequestException('name is required');
+    }
 
     await this.ensureClientExists(nextClientId);
     await this.ensureDeviceBelongsToClient(nextDeviceId ?? undefined, nextClientId);
+    await this.ensureUniqueActuatorNamePerClient({
+      clientId: nextClientId,
+      name: nextName,
+      ignoreActuatorId: id,
+    });
 
     return this.prisma.actuator.update({
       where: { id },
       data: {
         clientId: nextClientId,
         deviceId: nextDeviceId,
-        name: dto.name,
-        location: dto.location,
+        name: nextName,
+        location: dto.location?.trim() ?? undefined,
       } as any,
     });
   }
@@ -396,5 +416,45 @@ export class ActuatorsService {
       minute: '2-digit',
       second: '2-digit',
     });
+  }
+
+  private async ensureUniqueActuatorNamePerClient(params: {
+    clientId: string;
+    name: string;
+    ignoreActuatorId?: string;
+  }) {
+    const normalizedName = this.normalizeEntityName(params.name);
+    if (!normalizedName) return;
+
+    const actuators = await this.prisma.actuator.findMany({
+      where: { clientId: params.clientId },
+      select: { id: true, name: true },
+      take: 500,
+      orderBy: { id: 'asc' },
+    } as any);
+
+    const duplicate = actuators.find((actuator) => {
+      if (params.ignoreActuatorId && actuator.id === params.ignoreActuatorId) {
+        return false;
+      }
+      return this.normalizeEntityName(actuator.name) === normalizedName;
+    });
+
+    if (duplicate) {
+      throw new BadRequestException(
+        'Ja existe ponto de acionamento com este nome neste cliente. Use outro nome.',
+      );
+    }
+  }
+
+  private normalizeEntityName(value?: string | null) {
+    if (!value) return '';
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 }

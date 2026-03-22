@@ -13,6 +13,11 @@ export class AlertRulesService {
   ) {}
 
   async create(dto: CreateAlertRuleDto, actor?: SessionUser) {
+    const sensorType = dto.sensorType?.trim();
+    if (!sensorType) {
+      throw new BadRequestException('sensorType is required');
+    }
+
     this.validateBounds(dto.minValue, dto.maxValue);
     await this.ensureClientExists(dto.clientId);
     await this.ensureDeviceBelongsToClient(dto.deviceId, dto.clientId);
@@ -21,7 +26,7 @@ export class AlertRulesService {
       data: {
         clientId: dto.clientId,
         deviceId: dto.deviceId,
-        sensorType: dto.sensorType,
+        sensorType,
         minValue: dto.minValue,
         maxValue: dto.maxValue,
         cooldownMinutes: dto.cooldownMinutes ?? 5,
@@ -81,6 +86,14 @@ export class AlertRulesService {
     const nextDeviceId = dto.deviceId ?? (existing as any).deviceId;
     const nextMin = dto.minValue ?? (existing as any).minValue ?? undefined;
     const nextMax = dto.maxValue ?? (existing as any).maxValue ?? undefined;
+    const nextSensorType =
+      dto.sensorType === undefined
+        ? (existing as any).sensorType
+        : dto.sensorType?.trim();
+
+    if (!nextSensorType) {
+      throw new BadRequestException('sensorType is required');
+    }
 
     this.validateBounds(nextMin, nextMax);
     await this.ensureClientExists(nextClientId);
@@ -91,7 +104,7 @@ export class AlertRulesService {
       data: {
         clientId: nextClientId,
         deviceId: nextDeviceId,
-        sensorType: dto.sensorType,
+        sensorType: nextSensorType,
         minValue: dto.minValue,
         maxValue: dto.maxValue,
         cooldownMinutes: dto.cooldownMinutes,
@@ -130,6 +143,12 @@ export class AlertRulesService {
   }
 
   private validateBounds(minValue?: number, maxValue?: number) {
+    if (minValue == null && maxValue == null) {
+      throw new BadRequestException(
+        'Configure pelo menos um limite: minValue ou maxValue',
+      );
+    }
+
     if (minValue != null && maxValue != null && minValue > maxValue) {
       throw new BadRequestException(
         'minValue must be less than or equal to maxValue',

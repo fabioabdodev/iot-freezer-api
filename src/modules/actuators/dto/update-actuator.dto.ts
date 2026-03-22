@@ -15,6 +15,7 @@ export class UpdateActuatorDto {
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   name?: string;
 
   @IsOptional()

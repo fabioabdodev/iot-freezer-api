@@ -155,6 +155,30 @@ Campos importantes:
 
 ## Regras de negocio atuais
 
+### Regras obrigatorias de cadastro (antirruido operacional)
+
+Direcao consolidada para todos os modulos de cadastro:
+
+- nao permitir salvar cadastro estrutural sem campos minimos obrigatorios
+- bloquear duplicidade por nome no mesmo cliente quando o item representa o mesmo recurso operacional
+- aplicar comparacao normalizada para duplicidade:
+  - ignorar maiusculas/minusculas
+  - ignorar acentos
+  - tratar `_` e `-` como separadores equivalentes
+  - compactar espacos
+- garantir que os campos textuais relevantes sejam `trim()` antes de persistir
+
+Aplicacao minima obrigatoria nesta fase:
+
+- `devices`: `clientId` e `name` obrigatorios; nome unico por cliente
+- `actuators`: `clientId` e `name` obrigatorios; nome unico por cliente
+- `alert-rules`: obrigatorio informar ao menos um limite (`minValue` ou `maxValue`)
+
+Objetivo:
+
+- evitar duplicidades que geram paines incoerentes (`online` e `offline` para o mesmo ativo)
+- impedir cadastro "vazio" que vira `Sem dados`, `Sem leitura` ou `undefined` na operacao
+
 ### Ingestao
 
 Ao receber uma leitura valida:

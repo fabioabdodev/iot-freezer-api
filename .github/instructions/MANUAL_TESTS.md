@@ -318,6 +318,64 @@ Esperado:
 
 ## 4. Criterio de fechamento dos modulos
 
+## 5. n8n + Evolution (padrao operacional consolidado)
+
+### Webhooks obrigatorios na API (producao)
+
+No `.env.prod` da API devem existir:
+
+- `N8N_OFFLINE_WEBHOOK_URL`
+- `N8N_ONLINE_WEBHOOK_URL`
+- `N8N_TEMPERATURE_ALERT_WEBHOOK_URL`
+- `N8N_ACTUATION_WEBHOOK_URL` (quando notificacao de acionamento estiver habilitada)
+
+Sem essas variaveis, os testes de alerta podem ficar sem execucao no n8n mesmo com ingestao em `200`.
+
+### URLs de referencia (ambiente atual)
+
+- `https://webhookworkflow.virtuagil.com.br/webhook/device-offline`
+- `https://webhookworkflow.virtuagil.com.br/webhook/device-online`
+- `https://webhookworkflow.virtuagil.com.br/webhook/temperature-alert`
+- `https://webhookworkflow.virtuagil.com.br/webhook/actuation-command`
+
+Importante:
+
+- `GET` nessas URLs pode retornar `404` e nao invalida o fluxo
+- validacao correta e com `POST` payload JSON
+- resposta esperada para webhook ativo: `{"message":"Workflow was started"}`
+
+### Ordem oficial de teste no Laboratorio (usar nomes da UI)
+
+- `Carga normal`
+- `Pre-alerta`
+- `Cenario critico`
+- `Ensaio de offline`
+- retorno para `Carga normal` para confirmar online novamente
+
+### Comportamentos esperados
+
+- `Carga normal` sem `--count` roda continuo ate `Ctrl + C`
+- `Ensaio de offline` pode gerar 2 mensagens se 2 devices forem para offline
+- se device ja estava offline, pode nao gerar novo evento offline ate transicao `online -> offline`
+
+### Erros comuns e leitura rapida
+
+- mensagem no WhatsApp com `undefined` ou `nao informado`:
+  - template do n8n lendo campo errado (preferir fallback de `$json.body` e raiz)
+- n8n `400 exists:false`:
+  - numero de destino nao existe no WhatsApp
+- sem execucao no n8n:
+  - workflow nao publicado/ativo ou webhook URL ausente no `.env.prod`
+- mensagem atrasada:
+  - pode ser delay de Evolution/WhatsApp; validar se n8n concluiu com `HTTP 200/201`
+
+### Regra de qualidade para templates n8n
+
+- sempre usar fallback de campos:
+  - `client_name`, `device_name` (ou `device_id`), `device_location`
+  - datas com fallback `nao disponivel`
+- nunca deixar expressao que possa renderizar `undefined` no texto final
+
 ### Ambiental (item temperatura)
 
 Considerar fechado quando:

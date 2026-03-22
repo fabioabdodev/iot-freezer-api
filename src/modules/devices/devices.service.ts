@@ -32,6 +32,14 @@ export class DevicesService {
   ) {}
 
   async create(dto: CreateDeviceDto) {
+    if (!dto.clientId) {
+      throw new BadRequestException('clientId is required');
+    }
+
+    if (!dto.name?.trim()) {
+      throw new BadRequestException('name is required');
+    }
+
     // Evita cadastrar limites invertidos, o que quebraria monitoramento e UI.
     if (
       dto.minTemperature != null &&
@@ -46,12 +54,17 @@ export class DevicesService {
     const data: any = {
       id: dto.id,
       clientId: dto.clientId,
-      name: dto.name,
+      name: dto.name?.trim(),
       location: dto.location,
       minTemperature: dto.minTemperature,
       maxTemperature: dto.maxTemperature,
       isOffline: false,
     };
+
+    await this.ensureUniqueDeviceNamePerClient({
+      clientId: dto.clientId,
+      name: dto.name,
+    });
 
     this.logger.log(
       `Creating device id=${dto.id} clientId=${dto.clientId ?? 'null'}`,
@@ -231,6 +244,12 @@ export class DevicesService {
       throw new NotFoundException('Device not found');
     }
 
+    await this.ensureUniqueDeviceNamePerClient({
+      clientId: clientId ?? dto.clientId ?? existing?.clientId ?? undefined,
+      name: dto.name,
+      ignoreDeviceId: existing?.id ?? id,
+    });
+
     const data: any = {
       clientId: clientId ?? dto.clientId,
       name: dto.name,
@@ -321,5 +340,45 @@ export class DevicesService {
     this.cache.invalidatePrefix('devices:dashboard:');
     this.cache.invalidatePrefix('devices:history:');
     this.cache.invalidatePrefix('readings:');
+  }
+
+  private async ensureUniqueDeviceNamePerClient(params: {
+    clientId?: string;
+    name?: string;
+    ignoreDeviceId?: string;
+  }) {
+    const normalizedName = this.normalizeDeviceName(params.name);
+    if (!params.clientId || !normalizedName) return;
+
+    const devices = await this.prisma.device.findMany({
+      where: { clientId: params.clientId },
+      select: { id: true, name: true },
+      take: 500,
+      orderBy: { id: 'asc' },
+    });
+
+    const duplicate = devices.find((device) => {
+      if (params.ignoreDeviceId && device.id === params.ignoreDeviceId) {
+        return false;
+      }
+      return this.normalizeDeviceName(device.name) === normalizedName;
+    });
+
+    if (duplicate) {
+      throw new BadRequestException(
+        'Ja existe equipamento com este nome neste cliente. Use outro nome.',
+      );
+    }
+  }
+
+  private normalizeDeviceName(value?: string | null) {
+    if (!value) return '';
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 }

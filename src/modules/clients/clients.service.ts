@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
@@ -13,6 +18,19 @@ export class ClientsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateClientDto) {
+    const trimmedName = dto.name?.trim();
+    const trimmedAdminName = dto.adminName?.trim();
+    const trimmedBillingEmail = dto.billingEmail?.trim();
+    if (!trimmedName) {
+      throw new BadRequestException('Nome do cliente obrigatorio');
+    }
+    if (!trimmedAdminName) {
+      throw new BadRequestException('Nome do administrador obrigatorio');
+    }
+    if (!trimmedBillingEmail) {
+      throw new BadRequestException('Email financeiro obrigatorio');
+    }
+
     const document = normalizeClientDocument(dto.document);
     const adminPhone = normalizeClientPhone(dto.adminPhone);
     const alertPhone =
@@ -50,17 +68,17 @@ export class ClientsService {
     return this.prisma.client.create({
       data: {
         id: dto.id,
-        name: dto.name,
-        adminName: dto.adminName.trim(),
+        name: trimmedName,
+        adminName: trimmedAdminName,
         document,
         phone: adminPhone,
         adminPhone,
         alertPhone,
         actuationNotifyCooldownMinutes: dto.actuationNotifyCooldownMinutes,
         deviceApiKey,
-        billingName: dto.billingName?.trim() ?? dto.adminName.trim(),
+        billingName: dto.billingName?.trim() ?? trimmedAdminName,
         billingPhone,
-        billingEmail: dto.billingEmail.trim(),
+        billingEmail: trimmedBillingEmail,
         status: dto.status ?? 'active',
         notes: dto.notes,
       },
@@ -81,6 +99,19 @@ export class ClientsService {
 
   async update(id: string, dto: UpdateClientDto) {
     const existing = await this.findOne(id);
+    const nextName = dto.name?.trim();
+    const nextAdminName = dto.adminName?.trim();
+    const nextBillingEmail = dto.billingEmail?.trim();
+
+    if (dto.name !== undefined && !nextName) {
+      throw new BadRequestException('Nome do cliente obrigatorio');
+    }
+    if (dto.adminName !== undefined && !nextAdminName) {
+      throw new BadRequestException('Nome do administrador obrigatorio');
+    }
+    if (dto.billingEmail !== undefined && !nextBillingEmail) {
+      throw new BadRequestException('Email financeiro obrigatorio');
+    }
 
     const document = normalizeClientDocument(dto.document);
     if (document) {
@@ -130,8 +161,8 @@ export class ClientsService {
     return this.prisma.client.update({
       where: { id },
       data: {
-        name: dto.name,
-        adminName: dto.adminName?.trim(),
+        name: nextName,
+        adminName: nextAdminName,
         document,
         phone: dto.adminPhone != null ? adminPhone : undefined,
         adminPhone: dto.adminPhone != null ? adminPhone : undefined,
@@ -140,7 +171,7 @@ export class ClientsService {
         deviceApiKey,
         billingName: dto.billingName?.trim(),
         billingPhone: dto.billingPhone != null ? billingPhone : undefined,
-        billingEmail: dto.billingEmail?.trim(),
+        billingEmail: nextBillingEmail,
         status: dto.status,
         notes: dto.notes,
       },

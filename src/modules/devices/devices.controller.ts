@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -34,7 +35,11 @@ export class DevicesController {
   async createDevice(@Body() dto: CreateDeviceDto, @CurrentUser() authUser: SessionUser) {
     // Cria o cadastro base do device antes que ele comece a enviar leitura.
     assertPlatformAdmin(authUser, 'Only platform admin can create devices');
-    dto.clientId = resolveScopedClientId(authUser, dto.clientId);
+    const scopedClientId = resolveScopedClientId(authUser, dto.clientId);
+    if (!scopedClientId) {
+      throw new BadRequestException('clientId is required');
+    }
+    dto.clientId = scopedClientId;
     return this.service.create(dto);
   }
 
