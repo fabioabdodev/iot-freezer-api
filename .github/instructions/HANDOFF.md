@@ -911,3 +911,61 @@ Esses casos sao para treino operacional (ficticio) e podem virar base de onboard
 3. no primeiro cliente real:
    - receber bloco de contexto (nome, clientId, modulos/itens, devices, regras, contatos, usuarios)
    - abrir estudo de caso dedicado e conduzir onboarding no painel
+
+## Registro Jade (2026-03-23)
+
+Objetivo consolidado com usuario:
+
+- criar assistente virtual comercial da Virtuagil chamado `Jade`
+- operar via WhatsApp, com OpenAI, Supabase, n8n e Evolution
+- suportar texto, imagem e audio
+- bloquear video
+- usar buffer de mensagens para comportamento humano (evitar resposta por mensagem quebrada)
+- usar memoria persistente em Postgres/Supabase
+- usar base de conhecimento em Google Docs via gateway
+
+Entregas registradas:
+
+- workflow `Jade` em JSON unico:
+  - `tmp/workflows-fix/fixed/Virtuagil - Jade - Assistente Virtual - FIXED.json`
+- schema SQL para Supabase:
+  - `tmp/workflows-fix/fixed/jade-supabase-schema.sql`
+- documentos base locais para copiar/colar no Google Docs:
+  - `docs/jade-knowledge/README.md`
+  - `docs/jade-knowledge/JADE_SOBRE_EMPRESA.md`
+  - `docs/jade-knowledge/JADE_PRODUTOS_E_PLANOS.md`
+  - `docs/jade-knowledge/JADE_PRECOS_E_PROMOCOES.md`
+
+Decisoes operacionais importantes:
+
+- bloquear mensagens de grupo (`@g.us` / `isGroup`) e nao responder grupo
+- bloquear video e solicitar texto/audio/imagem
+- fluxo com orquestrador + subrotas (`sales`, `followup`, `human_support`)
+- follow-up e handoff humano persistidos no Supabase
+- memoria de conversa via tabelas (`jade_conversations`, `jade_messages`)
+- buffer rapido de entrada com Redis antes da inferencia do agente
+
+Variaveis esperadas no n8n para Jade:
+
+- `OPENAI_API_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `EVOLUTION_BASE_URL`
+- `EVOLUTION_INSTANCE`
+- `EVOLUTION_API_KEY`
+- `JADE_DOCS_GATEWAY_URL`
+- `JADE_DOCS_GATEWAY_KEY`
+- `JADE_OPENAI_MODEL`
+
+Processo oficial para manter conteudo da Jade:
+
+1. atualizar arquivos em `docs/jade-knowledge/`
+2. copiar/colar para os docs correspondentes no Google Docs
+3. manter `versao` e `ultima_atualizacao` no topo
+4. em mudanca comercial sensivel, atualizar primeiro precos/promocoes
+
+Diretriz para proximos agentes:
+
+- nao inventar preco/condicao comercial fora de docs
+- se faltarem dados em docs, direcionar para suporte humano
+- sempre validar fluxo sem responder grupos
