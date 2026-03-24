@@ -71,6 +71,7 @@ describe('DevicesService', () => {
       minTemperature: -20,
       maxTemperature: -10,
     };
+    fakePrisma.device.findMany.mockResolvedValue([]);
     fakePrisma.device.create.mockResolvedValue(dto);
 
     const result = await service.create(dto as any);

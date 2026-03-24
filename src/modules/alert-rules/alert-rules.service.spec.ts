@@ -78,6 +78,7 @@ describe('AlertRulesService', () => {
       id: 'rule_1',
       clientId: 'client_a',
       deviceId: 'freezer_01',
+      sensorType: 'temperature',
       minValue: -20,
       maxValue: -10,
     });
