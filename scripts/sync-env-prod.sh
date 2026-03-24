@@ -97,7 +97,7 @@ extract_service_env() {
   local service="$1"
   docker service inspect "$service" \
     --format '{{range .Spec.TaskTemplate.ContainerSpec.Env}}{{println .}}{{end}}' 2>/dev/null \
-    | awk -F= '/^[A-Za-z_][A-Za-z0-9_]*=/{print $1"="$2}'
+    | awk '/^[A-Za-z_][A-Za-z0-9_]*=/{k=substr($0,1,index($0,"=")-1); v=substr($0,index($0,"=")+1); print k"="v}'
 }
 
 say "[3/7] Coletando env efetivo do Swarm..."
@@ -120,6 +120,10 @@ grep -oE '\$\{[A-Za-z_][A-Za-z0-9_]*(:-[^}]*)?\}' "$STACK_FILE" \
 grep -vE '^(APP_RELEASE|APP_BUILD_TIME)$' "$managed_keys_tmp" > "${managed_keys_tmp}.filtered" || true
 mv "${managed_keys_tmp}.filtered" "$managed_keys_tmp"
 
+# Chaves de interpolacao da stack, nao viram env dentro do container.
+grep -vE '^(API_IMAGE|WEB_IMAGE)$' "$managed_keys_tmp" > "${managed_keys_tmp}.filtered" || true
+mv "${managed_keys_tmp}.filtered" "$managed_keys_tmp"
+
 grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$ENV_FILE" | sed -E 's/[[:space:]]+$//' \
   | awk -F= 'NR==FNR {k[$1]=1; next} ($1 in k) {print $0}' "$managed_keys_tmp" - \
   | sort -u > "$env_prod_tmp"
@@ -131,7 +135,7 @@ comm -23 <(cut -d= -f1 "$env_prod_tmp" | sort) <(cut -d= -f1 "$service_env_tmp" 
 
 # chaves extras no servico (fora do gerenciamento da stack + runtime esperadas)
 comm -13 <(cut -d= -f1 "$env_prod_tmp" | sort) <(cut -d= -f1 "$service_env_tmp" | sort) \
-  | grep -vE '^(NODE_ENV|PORT)$' > "$extra_tmp" || true
+  | grep -vE '^(NODE_ENV|PORT|APP_RELEASE|APP_BUILD_TIME)$' > "$extra_tmp" || true
 
 # chaves com valor divergente
 awk -F= '
