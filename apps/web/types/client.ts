@@ -4,9 +4,10 @@ export interface ClientSummary {
   id: string;
   name: string;
   document: string | null;
-  adminName: string | null;
-  adminPhone: string | null;
-  alertPhone: string | null;
+  adminName: string;
+  alertContactName: string;
+  adminPhone: string;
+  alertPhone: string;
   actuationNotifyCooldownMinutes: number | null;
   deviceApiKey: string | null;
   billingName: string | null;
@@ -22,6 +23,7 @@ export interface ClientSummary {
 export interface ClientInput {
   name?: string;
   adminName?: string;
+  alertContactName?: string;
   document?: string;
   adminPhone?: string;
   alertPhone?: string;
@@ -39,9 +41,10 @@ export interface CreateClientInput extends ClientInput {
   id: string;
   name: string;
   adminName: string;
+  alertContactName: string;
   document: string;
   adminPhone: string;
-  alertPhone?: string;
+  alertPhone: string;
   actuationNotifyCooldownMinutes?: number;
   deviceApiKey?: string;
   billingName?: string;

@@ -81,6 +81,7 @@ export function ClientProfilePanel({
 
   const [name, setName] = useState('');
   const [adminName, setAdminName] = useState('');
+  const [alertContactName, setAlertContactName] = useState('');
   const [document, setDocument] = useState('');
   const [adminPhone, setAdminPhone] = useState('');
   const [alertPhone, setAlertPhone] = useState('');
@@ -106,6 +107,7 @@ export function ClientProfilePanel({
     if (!data) return;
     setName(data.name ?? '');
     setAdminName(data.adminName ?? '');
+    setAlertContactName(data.alertContactName ?? data.adminName ?? '');
     setDocument(data.document ?? '');
     const nextAdminPhone = data.adminPhone ?? data.phone ?? '';
     const nextAlertPhone = data.alertPhone ?? nextAdminPhone;
@@ -190,7 +192,13 @@ export function ClientProfilePanel({
     }
 
     if (!adminName.trim()) {
-      setFormError('Informe o nome do administrador.');
+      setFormError('Informe o nome do contato principal.');
+      return;
+    }
+
+    const nextAlertContactName = useSameAlertPhone ? adminName : alertContactName;
+    if (!nextAlertContactName.trim()) {
+      setFormError('Informe o nome do contato de alertas.');
       return;
     }
 
@@ -239,6 +247,7 @@ export function ClientProfilePanel({
     await updateMutation.mutateAsync({
       name: name.trim() || undefined,
       adminName: adminName.trim() || undefined,
+      alertContactName: nextAlertContactName.trim() || undefined,
       document: document.trim() || undefined,
       adminPhone: adminPhone.trim() || undefined,
       alertPhone: nextAlertPhone.trim() || undefined,
@@ -575,6 +584,17 @@ export function ClientProfilePanel({
                 {phoneFieldError === 'alertPhone' && phoneFieldErrorMessage ? (
                   <p className="mt-1 text-xs text-bad">{phoneFieldErrorMessage}</p>
                 ) : null}
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-muted">
+                  Nome do contato WhatsApp de alertas {useSameAlertPhone ? '' : '*'}
+                </label>
+                <Input
+                  value={useSameAlertPhone ? adminName : alertContactName}
+                  onChange={(event) => setAlertContactName(event.target.value)}
+                  disabled={useSameAlertPhone}
+                  placeholder="Operacao Cadeia Fria"
+                />
               </div>
               <div>
                 <label className="mb-2 flex items-center gap-2 text-xs text-muted">

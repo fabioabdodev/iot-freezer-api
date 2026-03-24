@@ -57,10 +57,11 @@ model Client {
   id                String             @id
   name              String
   document          String?
-  adminName         String?
+  adminName         String
+  alertContactName  String
   phone             String?
-  adminPhone        String?
-  alertPhone        String?
+  adminPhone        String
+  alertPhone        String
   actuationNotifyCooldownMinutes Int?
   deviceApiKey      String?            @unique
   billingName       String?

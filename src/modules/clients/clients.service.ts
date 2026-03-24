@@ -20,12 +20,16 @@ export class ClientsService {
   async create(dto: CreateClientDto) {
     const trimmedName = dto.name?.trim();
     const trimmedAdminName = dto.adminName?.trim();
+    const trimmedAlertContactName = dto.alertContactName?.trim();
     const trimmedBillingEmail = dto.billingEmail?.trim();
     if (!trimmedName) {
       throw new BadRequestException('Nome do cliente obrigatorio');
     }
     if (!trimmedAdminName) {
-      throw new BadRequestException('Nome do administrador obrigatorio');
+      throw new BadRequestException('Nome do contato principal obrigatorio');
+    }
+    if (!trimmedAlertContactName) {
+      throw new BadRequestException('Nome do contato de alertas obrigatorio');
     }
     if (!trimmedBillingEmail) {
       throw new BadRequestException('Email financeiro obrigatorio');
@@ -33,10 +37,7 @@ export class ClientsService {
 
     const document = normalizeClientDocument(dto.document);
     const adminPhone = normalizeClientPhone(dto.adminPhone);
-    const alertPhone =
-      dto.alertPhone != null
-        ? normalizeClientPhone(dto.alertPhone)
-        : adminPhone;
+    const alertPhone = normalizeClientPhone(dto.alertPhone);
     const billingPhone = normalizeClientPhone(dto.billingPhone);
     const duplicatedId = await this.prisma.client.findUnique({
       where: { id: dto.id },
@@ -70,6 +71,7 @@ export class ClientsService {
         id: dto.id,
         name: trimmedName,
         adminName: trimmedAdminName,
+        alertContactName: trimmedAlertContactName,
         document,
         phone: adminPhone,
         adminPhone,
@@ -99,15 +101,24 @@ export class ClientsService {
 
   async update(id: string, dto: UpdateClientDto) {
     const existing = await this.findOne(id);
-    const nextName = dto.name?.trim();
-    const nextAdminName = dto.adminName?.trim();
+    const nextName =
+      dto.name !== undefined ? dto.name.trim() : existing.name?.trim();
+    const nextAdminName =
+      dto.adminName !== undefined ? dto.adminName.trim() : existing.adminName?.trim();
+    const nextAlertContactName =
+      dto.alertContactName !== undefined
+        ? dto.alertContactName.trim()
+        : existing.alertContactName?.trim() ?? existing.adminName?.trim();
     const nextBillingEmail = dto.billingEmail?.trim();
 
-    if (dto.name !== undefined && !nextName) {
+    if (!nextName) {
       throw new BadRequestException('Nome do cliente obrigatorio');
     }
-    if (dto.adminName !== undefined && !nextAdminName) {
-      throw new BadRequestException('Nome do administrador obrigatorio');
+    if (!nextAdminName) {
+      throw new BadRequestException('Nome do contato principal obrigatorio');
+    }
+    if (!nextAlertContactName) {
+      throw new BadRequestException('Nome do contato de alertas obrigatorio');
     }
     if (dto.billingEmail !== undefined && !nextBillingEmail) {
       throw new BadRequestException('Email financeiro obrigatorio');
@@ -130,15 +141,22 @@ export class ClientsService {
     const adminPhone =
       dto.adminPhone != null
         ? normalizeClientPhone(dto.adminPhone)
-        : existing.adminPhone ?? existing.phone ?? undefined;
+        : existing.adminPhone ?? existing.phone ?? '';
     const alertPhone =
       dto.alertPhone != null
         ? normalizeClientPhone(dto.alertPhone)
-        : existing.alertPhone ?? adminPhone ?? existing.adminPhone ?? existing.phone ?? undefined;
+        : existing.alertPhone ?? adminPhone ?? existing.adminPhone ?? existing.phone ?? '';
     const billingPhone =
       dto.billingPhone != null
         ? normalizeClientPhone(dto.billingPhone)
         : existing.billingPhone ?? undefined;
+
+    if (!adminPhone) {
+      throw new BadRequestException('WhatsApp do contato principal obrigatorio');
+    }
+    if (!alertPhone) {
+      throw new BadRequestException('WhatsApp principal para alertas obrigatorio');
+    }
 
     await this.ensurePhonesAreUnique(
       {
@@ -163,10 +181,11 @@ export class ClientsService {
       data: {
         name: nextName,
         adminName: nextAdminName,
+        alertContactName: nextAlertContactName,
         document,
-        phone: dto.adminPhone != null ? adminPhone : undefined,
-        adminPhone: dto.adminPhone != null ? adminPhone : undefined,
-        alertPhone: dto.alertPhone != null ? alertPhone : undefined,
+        phone: adminPhone,
+        adminPhone,
+        alertPhone,
         actuationNotifyCooldownMinutes: dto.actuationNotifyCooldownMinutes,
         deviceApiKey,
         billingName: dto.billingName?.trim(),
@@ -192,7 +211,7 @@ export class ClientsService {
     ignoredClientId?: string,
   ) {
     const phoneEntries = [
-      { key: 'adminPhone', label: 'Contato do administrador', value: phones.adminPhone },
+      { key: 'adminPhone', label: 'WhatsApp do contato principal', value: phones.adminPhone },
       { key: 'alertPhone', label: 'WhatsApp principal para alertas', value: phones.alertPhone },
       { key: 'billingPhone', label: 'Contato financeiro', value: phones.billingPhone },
     ].filter((entry): entry is { key: string; label: string; value: string } => Boolean(entry.value));

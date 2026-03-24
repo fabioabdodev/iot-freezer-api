@@ -25,6 +25,12 @@ export class UpdateClientDto {
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(120)
+  alertContactName?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(40)
   @IsClientDocument()
   document?: string;

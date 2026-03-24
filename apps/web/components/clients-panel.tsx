@@ -36,7 +36,12 @@ import { Panel } from '@/components/ui/panel';
 
 const formSchema = z.object({
   name: z.string().trim().min(2, 'Nome obrigatorio'),
-  adminName: z.string().trim().min(2, 'Nome do administrador obrigatorio'),
+  adminName: z.string().trim().min(2, 'Nome do contato principal obrigatorio'),
+  alertContactName: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => value || undefined),
   document: z
     .string()
     .trim()
@@ -45,8 +50,8 @@ const formSchema = z.object({
   adminPhone: z
     .string()
     .trim()
-    .min(1, 'Contato do administrador obrigatorio')
-    .refine((value) => isValidPhone(value), 'Telefone do administrador invalido'),
+    .min(1, 'WhatsApp do contato principal obrigatorio')
+    .refine((value) => isValidPhone(value), 'WhatsApp do contato principal invalido'),
   alertPhone: z
     .string()
     .trim()
@@ -70,19 +75,27 @@ const formSchema = z.object({
   status: z.enum(['active', 'inactive', 'delinquent']).default('active'),
   notes: z.string().trim().optional().transform((value) => value || undefined),
 }).superRefine((values, context) => {
-  if (!values.useSameAlertPhone && !values.alertPhone) {
-    context.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'WhatsApp de alertas obrigatorio',
-      path: ['alertPhone'],
-    });
-  }
-
   if (!values.useSameBillingPhone && !values.billingPhone) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'Contato financeiro obrigatorio',
       path: ['billingPhone'],
+    });
+  }
+
+  if (!values.useSameAlertPhone && !values.alertContactName) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Nome do contato de alertas obrigatorio',
+      path: ['alertContactName'],
+    });
+  }
+
+  if (!values.useSameAlertPhone && !values.alertPhone) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'WhatsApp de alertas obrigatorio',
+      path: ['alertPhone'],
     });
   }
 });
@@ -128,6 +141,7 @@ export function ClientsPanel({
     defaultValues: {
       name: '',
       adminName: '',
+      alertContactName: '',
       document: '',
       adminPhone: '',
       alertPhone: '',
@@ -328,7 +342,10 @@ export function ClientsPanel({
                 : values.billingPhone;
               const alertPhone = values.useSameAlertPhone
                 ? values.adminPhone
-                : values.alertPhone;
+                : (values.alertPhone ?? values.adminPhone);
+              const alertContactName = (values.useSameAlertPhone
+                ? values.adminName
+                : values.alertContactName) ?? values.adminName;
 
               if (duplicateDocuments.has(normalizedDocument)) {
                 setFormError('Ja existe um cliente com este CPF ou CNPJ.');
@@ -340,9 +357,10 @@ export function ClientsPanel({
                 id: generatedClientId,
                 name: values.name,
                 adminName: values.adminName,
+                alertContactName,
                 document: values.document,
                 adminPhone: values.adminPhone,
-                alertPhone: alertPhone ?? values.adminPhone,
+                alertPhone,
                 billingName: values.useSameBillingPhone
                   ? values.adminName
                   : values.billingName,
@@ -446,6 +464,20 @@ export function ClientsPanel({
                     />
                     {errors.alertPhone ? (
                       <p className="mt-1 text-xs text-bad">{errors.alertPhone.message}</p>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs text-muted">
+                      Nome do contato WhatsApp de alertas {watchedUseSameAlertPhone ? '' : '*'}
+                    </label>
+                    <Input
+                      {...register('alertContactName')}
+                      placeholder="Operacao Cadeia Fria"
+                      disabled={watchedUseSameAlertPhone}
+                    />
+                    {errors.alertContactName ? (
+                      <p className="mt-1 text-xs text-bad">{errors.alertContactName.message}</p>
                     ) : null}
                   </div>
 
@@ -584,6 +616,9 @@ export function ClientsPanel({
                       <span>{client.billingEmail ?? 'Sem email financeiro'}</span>
                       <span className="text-xs">
                         admin: {client.adminName ?? 'Sem nome'} | {client.adminPhone ?? client.phone ?? 'Sem telefone'}
+                      </span>
+                      <span className="text-xs">
+                        contato alertas: {client.alertContactName ?? client.adminName ?? 'Sem nome'}
                       </span>
                       <span className="text-xs">
                         financeiro: {client.billingName ?? client.adminName ?? 'Sem nome'} | {client.billingPhone ?? client.adminPhone ?? client.phone ?? 'Sem telefone'}

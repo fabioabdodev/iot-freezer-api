@@ -29,6 +29,11 @@ export class CreateClientDto {
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(120)
+  alertContactName: string;
+
+  @IsString()
+  @IsNotEmpty()
   @MaxLength(40)
   @IsClientDocument()
   document: string;
@@ -39,11 +44,11 @@ export class CreateClientDto {
   @IsClientPhone()
   adminPhone: string;
 
-  @IsOptional()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(30)
   @IsClientPhone()
-  alertPhone?: string;
+  alertPhone: string;
 
   @IsOptional()
   @IsInt()

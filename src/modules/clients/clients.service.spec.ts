@@ -37,8 +37,10 @@ describe('ClientsService', () => {
       name: 'Client A',
       status: 'active',
       adminName: 'Ana Gestora',
+      alertContactName: 'Operacao Cliente A',
       document: '11222333000181',
       adminPhone: '5531999999999',
+      alertPhone: '5531999999999',
       billingPhone: '5531988887777',
       billingEmail: 'financeiro@clientea.com',
     });
@@ -46,8 +48,10 @@ describe('ClientsService', () => {
       id: 'client_a',
       name: 'Client A',
       adminName: 'Ana Gestora',
+      alertContactName: 'Operacao Cliente A',
       document: '11.222.333/0001-81',
       adminPhone: '(31) 99999-9999',
+      alertPhone: '(31) 99999-9999',
       billingPhone: '(31) 98888-7777',
       billingEmail: 'financeiro@clientea.com',
     });
@@ -56,8 +60,10 @@ describe('ClientsService', () => {
         id: 'client_a',
         name: 'Client A',
         adminName: 'Ana Gestora',
+        alertContactName: 'Operacao Cliente A',
         document: '11222333000181',
         adminPhone: '5531999999999',
+        alertPhone: '5531999999999',
         billingPhone: '5531988887777',
         billingEmail: 'financeiro@clientea.com',
         status: 'active',
@@ -92,14 +98,16 @@ describe('ClientsService', () => {
         id: 'client_novo',
         name: 'Client Novo',
         adminName: 'Novo Admin',
+        alertContactName: 'Operacao Cliente Novo',
         document: '11.222.333/0001-81',
         adminPhone: '(31) 99999-9999',
+        alertPhone: '(31) 99999-9999',
         billingPhone: '(31) 98888-7777',
         billingEmail: 'financeiro@clientenovo.com',
       }),
     ).rejects.toMatchObject<Partial<ConflictException>>({
       message:
-        'Ja existe um cliente com este telefone: Cliente Duplicado (cliente-duplicado). Campos: Contato do administrador, WhatsApp principal para alertas. [field:adminPhone|alertPhone]',
+        'Ja existe um cliente com este telefone: Cliente Duplicado (cliente-duplicado). Campos: WhatsApp do contato principal, WhatsApp principal para alertas. [field:adminPhone|alertPhone]',
     });
   });
 });
