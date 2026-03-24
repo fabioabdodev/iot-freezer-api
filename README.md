@@ -174,6 +174,43 @@ Ele:
 - detecta divergencias de valor
 - no modo `--apply`, reaplica o deploy usando apenas `.env.prod`
 
+### Hardening operacional (2026-03-24)
+
+- Fonte unica de configuracao: `/opt/iot-virtuagil-api/.env.prod`.
+- Nao usar `Update stack` manual no Portainer com variaveis customizadas para `iot-monitor`.
+- Sempre validar e aplicar via script:
+
+```bash
+bash scripts/sync-env-prod.sh --strict
+APP_RELEASE=manual-$(date +%s) APP_BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ) bash scripts/sync-env-prod.sh --apply
+```
+
+- O frontend depende de `NEXT_PUBLIC_API_BASE_URL` no build da imagem web.
+- Health web para validacao de sessao/API: `https://monitor.virtuagil.com.br/api/health` (esperado: `{"ok":true}`).
+- Se a interface ficar opaca/travada apos login, validar em aba anonima para eliminar cache/token stale antes de investigar backend.
+
+### Jade n8n: anti-duplicacao de entrada
+
+Arquivo de referencia local:
+
+- `tmp/workflows-fix/fixed/Virtuagil - Jade - Assistente Virtual - FIXED.json`
+
+Regras aplicadas no fluxo:
+
+- `Normalize Input` agora marca:
+  - `is_from_me`
+  - `has_user_content`
+  - `skip_inbound`
+  - `message_id`
+- `IF Group Message` usa `skip_inbound=true` para ignorar:
+  - mensagens de grupo
+  - eco do proprio numero (`fromMe`)
+  - eventos sem conteudo real de usuario
+- Novo guard de idempotencia:
+  - `Dedup Inbound Event` (Code)
+  - `IF Duplicate Inbound` (IF)
+- Resultado esperado: 1 mensagem recebida valida => 1 resposta no WhatsApp.
+
 ## Banco e backup
 
 O projeto usa PostgreSQL no Supabase.
