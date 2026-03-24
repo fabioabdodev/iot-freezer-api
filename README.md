@@ -158,6 +158,22 @@ npm run start:dev
 npm run db:seed
 ```
 
+## Deploy Seguro (Fonte Unica de Env)
+
+Para evitar conflito entre variaveis da stack no Portainer e `.env.prod`, use o script:
+
+```bash
+bash scripts/sync-env-prod.sh --strict
+bash scripts/sync-env-prod.sh --apply --strict
+```
+
+Ele:
+
+- valida chaves duplicadas no `.env.prod`
+- compara `.env.prod` com env efetivo dos servicos Swarm
+- detecta divergencias de valor
+- no modo `--apply`, reaplica o deploy usando apenas `.env.prod`
+
 ## Banco e backup
 
 O projeto usa PostgreSQL no Supabase.
