@@ -4,8 +4,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_DATABASE_URL")
 }
 
@@ -46,56 +46,56 @@ model Device {
   minTemperature Float? // null => no lower limit
   maxTemperature Float? // null => no upper limit
 
-  alertRules AlertRule[]
+  alertRules      AlertRule[]
   alertRuleStates AlertRuleState[]
-  actuators Actuator[]
+  actuators       Actuator[]
 
   @@index([clientId])
 }
 
 model Client {
-  id                String             @id
-  name              String
-  document          String?
-  adminName         String
-  alertContactName  String
-  phone             String?
-  adminPhone        String
-  alertPhone        String
+  id                             String              @id
+  name                           String
+  document                       String?
+  adminName                      String
+  alertContactName               String
+  phone                          String?
+  adminPhone                     String
+  alertPhone                     String
   actuationNotifyCooldownMinutes Int?
-  deviceApiKey      String?            @unique
-  billingName       String?
-  billingPhone      String?
-  billingEmail      String?
-  status            String             @default("active")
-  notes             String?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  devices           Device[]
-  alertRules        AlertRule[]
-  actuators         Actuator[]
-  actuationCommands ActuationCommand[]
-  actuationSchedules ActuationSchedule[]
-  users             User[]
-  modules           ClientModule[]
-  moduleItemAccesses ClientModuleItem[]
+  deviceApiKey                   String?             @unique
+  billingName                    String?
+  billingPhone                   String?
+  billingEmail                   String?
+  status                         String              @default("active")
+  notes                          String?
+  createdAt                      DateTime            @default(now())
+  updatedAt                      DateTime            @updatedAt
+  devices                        Device[]
+  alertRules                     AlertRule[]
+  actuators                      Actuator[]
+  actuationCommands              ActuationCommand[]
+  actuationSchedules             ActuationSchedule[]
+  users                          User[]
+  modules                        ClientModule[]
+  moduleItemAccesses             ClientModuleItem[]
 }
 
 model AlertRule {
-  id              String   @id @default(uuid())
-  clientId        String
-  deviceId        String?
-  sensorType      String
-  minValue        Float?
-  maxValue        Float?
-  cooldownMinutes Int      @default(5)
-  toleranceMinutes Int     @default(0)
-  enabled         Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id               String   @id @default(uuid())
+  clientId         String
+  deviceId         String?
+  sensorType       String
+  minValue         Float?
+  maxValue         Float?
+  cooldownMinutes  Int      @default(5)
+  toleranceMinutes Int      @default(0)
+  enabled          Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  device Device? @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  client Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  device Device?          @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   states AlertRuleState[]
 
   @@index([clientId])
@@ -104,13 +104,13 @@ model AlertRule {
 }
 
 model AlertRuleState {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   ruleId          String
   deviceId        String
   breachStartedAt DateTime?
   lastTriggeredAt DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   rule   AlertRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
   device Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
@@ -121,20 +121,20 @@ model AlertRuleState {
 }
 
 model Actuator {
-  id              String             @id
-  clientId        String
-  deviceId        String?
-  name            String
-  location        String?
-  currentState    String             @default("off")
-  lastCommandAt   DateTime?
-  lastCommandBy   String?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-  client          Client             @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  device          Device?            @relation(fields: [deviceId], references: [id], onDelete: SetNull)
-  commands        ActuationCommand[]
-  schedules       ActuationSchedule[]
+  id            String              @id
+  clientId      String
+  deviceId      String?
+  name          String
+  location      String?
+  currentState  String              @default("off")
+  lastCommandAt DateTime?
+  lastCommandBy String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  client        Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  device        Device?             @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  commands      ActuationCommand[]
+  schedules     ActuationSchedule[]
 
   @@index([clientId])
   @@index([deviceId])
@@ -156,19 +156,19 @@ model ActuationCommand {
 }
 
 model ActuationSchedule {
-  id            String   @id @default(uuid())
-  clientId      String
-  actuatorId    String
-  name          String
-  weekdays      String[]
-  startMinutes  Int
-  endMinutes    Int
-  timezone      String   @default("America/Sao_Paulo")
-  enabled       Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  actuator      Actuator @relation(fields: [actuatorId], references: [id], onDelete: Cascade)
-  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  id           String   @id @default(uuid())
+  clientId     String
+  actuatorId   String
+  name         String
+  weekdays     String[]
+  startMinutes Int
+  endMinutes   Int
+  timezone     String   @default("America/Sao_Paulo")
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  actuator     Actuator @relation(fields: [actuatorId], references: [id], onDelete: Cascade)
+  client       Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([clientId])
   @@index([actuatorId])
@@ -176,32 +176,32 @@ model ActuationSchedule {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  clientId     String?
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         String   @default("operator")
-  phone        String?
-  isActive     Boolean  @default(true)
-  lastLoginAt  DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  client       Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  id                  String               @id @default(uuid())
+  clientId            String?
+  name                String
+  email               String               @unique
+  passwordHash        String
+  role                String               @default("operator")
+  phone               String?
+  isActive            Boolean              @default(true)
+  lastLoginAt         DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  client              Client?              @relation(fields: [clientId], references: [id], onDelete: SetNull)
   passwordResetTokens PasswordResetToken[]
 
   @@index([clientId])
 }
 
 model PasswordResetToken {
-  id         String   @id @default(uuid())
-  userId     String
-  tokenHash  String   @unique
-  purpose    String
-  expiresAt  DateTime
-  usedAt     DateTime?
-  createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  purpose   String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, purpose, expiresAt])
   @@index([expiresAt])
@@ -221,36 +221,36 @@ model ClientModule {
 }
 
 model ModuleCatalog {
-  key         String   @id
+  key         String              @id
   name        String
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
   items       ModuleCatalogItem[]
 }
 
 model ModuleCatalogItem {
-  key         String   @id
+  key         String             @id
   moduleKey   String
   name        String
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  module      ModuleCatalog @relation(fields: [moduleKey], references: [key], onDelete: Cascade)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  module      ModuleCatalog      @relation(fields: [moduleKey], references: [key], onDelete: Cascade)
   clients     ClientModuleItem[]
 
   @@index([moduleKey])
 }
 
 model ClientModuleItem {
-  id       String   @id @default(uuid())
-  clientId String
-  itemKey  String
-  enabled  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  client   Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  item     ModuleCatalogItem @relation(fields: [itemKey], references: [key], onDelete: Cascade)
+  id        String            @id @default(uuid())
+  clientId  String
+  itemKey   String
+  enabled   Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  client    Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  item      ModuleCatalogItem @relation(fields: [itemKey], references: [key], onDelete: Cascade)
 
   @@unique([clientId, itemKey])
   @@index([clientId])
@@ -258,20 +258,120 @@ model ClientModuleItem {
 }
 
 model AuditLog {
-  id           String   @id @default(uuid())
-  clientId     String?
-  entityType   String
-  entityId     String
-  action       String
-  fieldName    String?
+  id            String   @id @default(uuid())
+  clientId      String?
+  entityType    String
+  entityId      String
+  action        String
+  fieldName     String?
   previousValue Json?
-  nextValue    Json?
-  actorUserId  String?
-  actorEmail   String?
-  actorRole    String?
+  nextValue     Json?
+  actorUserId   String?
+  actorEmail    String?
+  actorRole     String?
   actorClientId String?
-  createdAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
 
   @@index([clientId, createdAt])
   @@index([entityType, entityId, createdAt])
+}
+
+model JadeContact {
+  id            String    @id @default(uuid())
+  leadPhone     String    @unique @map("lead_phone")
+  leadName      String?   @map("lead_name")
+  source        String?   @default("whatsapp")
+  isClient      Boolean   @default(false) @map("is_client")
+  clientId      String?   @map("client_id")
+  tags          String[]  @default([])
+  status        String?   @default("active")
+  notes         String?
+  lastMessageAt DateTime? @map("last_message_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("jade_contacts")
+}
+
+model JadeConversation {
+  id            String        @id @default(uuid())
+  leadPhone     String        @unique @map("lead_phone")
+  leadName      String?       @map("lead_name")
+  isClient      Boolean       @default(false) @map("is_client")
+  clientId      String?       @map("client_id")
+  channel       String        @default("whatsapp")
+  lastMessageAt DateTime?     @map("last_message_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  messages      JadeMessage[]
+
+  @@map("jade_conversations")
+}
+
+model JadeMessage {
+  id             String            @id @default(uuid())
+  conversationId String?           @map("conversation_id")
+  leadPhone      String            @map("lead_phone")
+  role           String
+  content        String
+  metadata       Json              @default("{}")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  conversation   JadeConversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([leadPhone, createdAt])
+  @@map("jade_messages")
+}
+
+model JadeFollowUpQueue {
+  id            String    @id @default(uuid())
+  leadPhone     String    @map("lead_phone")
+  leadName      String?   @map("lead_name")
+  isClient      Boolean   @default(false) @map("is_client")
+  reason        String?
+  status        String    @default("pending")
+  priority      Int       @default(3)
+  nextContactAt DateTime? @map("next_contact_at")
+  lastAttemptAt DateTime? @map("last_attempt_at")
+  attempts      Int       @default(0)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([status, nextContactAt])
+  @@map("jade_follow_up_queue")
+}
+
+model JadeHumanHandoff {
+  id         String    @id @default(uuid())
+  leadPhone  String    @map("lead_phone")
+  leadName   String?   @map("lead_name")
+  reason     String?
+  status     String    @default("open")
+  assignedTo String?   @map("assigned_to")
+  summary    String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  resolvedAt DateTime? @map("resolved_at")
+
+  @@index([status, createdAt])
+  @@map("jade_human_handoff")
+}
+
+model JadeKnowledgeRegistry {
+  id                  String    @id @default(uuid())
+  googleDocId         String    @unique @map("google_doc_id")
+  docTopic            String    @map("doc_topic")
+  docTitle            String    @map("doc_title")
+  sourceUpdatedAt     DateTime? @map("source_updated_at")
+  contentHash         String    @map("content_hash")
+  chunkCount          Int       @default(0) @map("chunk_count")
+  vectorDocumentCount Int       @default(0) @map("vector_document_count")
+  active              Boolean   @default(true)
+  lastIngestedAt      DateTime? @map("last_ingested_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@index([docTopic])
+  @@index([active])
+  @@map("jade_knowledge_registry")
 }
