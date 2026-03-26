@@ -375,3 +375,19 @@ model JadeKnowledgeRegistry {
   @@index([active])
   @@map("jade_knowledge_registry")
 }
+
+model JadeKnowledgeDocument {
+  id        String                 @id @default(dbgenerated("gen_random_uuid()::text"))
+  docId     String?                @map("doc_id")
+  topic     String?
+  title     String?
+  content   String
+  metadata  Json                   @default("{}")
+  embedding Unsupported("vector")?
+  createdAt DateTime               @default(now()) @map("created_at")
+  updatedAt DateTime               @updatedAt @map("updated_at")
+
+  @@index([docId])
+  @@index([topic])
+  @@map("jade_knowledge_documents")
+}

@@ -1,0 +1,4 @@
+ALTER TABLE "jade_knowledge_documents"
+ALTER COLUMN "doc_id" DROP NOT NULL,
+ALTER COLUMN "topic" DROP NOT NULL,
+ALTER COLUMN "title" DROP NOT NULL;
