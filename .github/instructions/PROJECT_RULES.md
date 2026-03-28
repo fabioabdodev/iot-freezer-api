@@ -324,14 +324,24 @@ Atualizacao consolidada (Jade):
 - as tabelas `jade_*` agora devem ser tratadas como parte oficial do schema versionado
 - migration oficial: `prisma/migrations/20260324193000_create_jade_tables/migration.sql`
 
-## Regra de artefatos `fixed` (workflows)
+## Regra de artefatos n8n locais
 
 Para fluxos n8n deste projeto:
 
-- manter `tmp/workflows-fix/fixed/` como referencia local oficial dos workflows corrigidos
-- ao ajustar workflow no n8n UI, refletir a versao final na pasta `fixed`
-- evitar editar/copiar JSON intermediario fora da `fixed` como se fosse versao final
-- ao retomar um incidente, priorizar sempre o arquivo da `fixed` correspondente
+- manter `workflowsN8N/` na raiz como referencia local oficial dos workflows operacionais
+- ao ajustar workflow no n8n UI, refletir a versao final dentro de `workflowsN8N/`
+- evitar editar/copiar JSON intermediario fora de `workflowsN8N/` como se fosse versao final
+- ao retomar um incidente, priorizar sempre o arquivo correspondente em `workflowsN8N/`
+- arquivo canonico atual da Jade:
+  - `workflowsN8N/Jade assistente WhatsApp.json`
+- arquivos auxiliares atuais:
+  - `workflowsN8N/IoT acionamento WhatsApp.json`
+  - `workflowsN8N/IoT alerta de temperatura WhatsApp.json`
+  - `workflowsN8N/IoT dispositivo offline WhatsApp.json`
+  - `workflowsN8N/IoT dispositivo online WhatsApp.json`
+  - `workflowsN8N/IoT energia WhatsApp.json`
+- nao usar `tmp/workflows-fix/fixed/` como fonte oficial nova
+- nao usar `Knowledge Sync` como parte obrigatoria do caminho principal da Jade enquanto o fluxo atual permanecer sem dependência operacional de vector store/RAG
 
 ## Direcao de evolucao
 
@@ -729,4 +739,15 @@ Direcao pratica:
 - manter primeiro ciclo de testes com foco em seguranca e estabilidade de leitura
 - validar envio real para API em `POST /iot/readings` com `x-device-key`
 - usar ambiente controlado antes de qualquer instalacao em cliente
+
+## Regra operacional de commits para proximos agents
+
+- fazer commits pequenos e progressivos por etapa concluida, em vez de acumular alteracoes grandes
+- apos cada etapa estavel e validada, preferir `git commit` e `git push` para manter o historico rastreavel
+- nao fazer alteracoes grandes, estruturais ou com risco operacional sem consultar o usuario antes
+- quando houver duvida entre seguir e agrupar muitas mudancas, parar no menor recorte util e registrar um commit intermediario
+- objetivo dessa regra:
+  - facilitar rollback
+  - facilitar auditoria
+  - facilitar localizar a etapa exata quando surgir erro em CI, deploy, n8n ou producao
 

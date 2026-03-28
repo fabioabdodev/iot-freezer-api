@@ -204,7 +204,7 @@ function printHelp() {
       'Manifesto esperado:',
       '  {',
       '    "workflows": [',
-      '      { "input": "tmp/workflows-fix/fixed/Jade - Current Stable - FIXED.json", "output": "references/n8n/Jade - Current Stable - SANITIZED.json" }',
+      '      { "input": "workflowsN8N/Jade assistente WhatsApp.json", "output": "references/n8n/Jade - Current Stable - SANITIZED.json" }',
       '    ]',
       '  }',
       '',

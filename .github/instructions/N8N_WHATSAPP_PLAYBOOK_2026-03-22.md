@@ -142,15 +142,15 @@ Validacoes tecnicas repetidas em producao com sucesso:
 
 Versoes locais de importacao n8n:
 
-- `tmp/workflows-fix/fixed/IoT - Device Offline - WhatsApp - FIXED.json`
-- `tmp/workflows-fix/fixed/IoT - Device Online - WhatsApp - FIXED.json`
-- `tmp/workflows-fix/fixed/IoT - Alerta de Temperatura - WhatsApp (1) - FIXED.json`
-- `tmp/workflows-fix/fixed/IoT - Acionamento - WhatsApp - FIXED.json`
+- `workflowsN8N/IoT dispositivo offline WhatsApp.json`
+- `workflowsN8N/IoT dispositivo online WhatsApp.json`
+- `workflowsN8N/IoT alerta de temperatura WhatsApp.json`
+- `workflowsN8N/IoT acionamento WhatsApp.json`
 
 Nota:
 
-- arquivos fora de `tmp/workflows-fix/fixed` podem estar desatualizados/intermediarios
-- manter `tmp/workflows-fix/fixed` como fonte local oficial para copia/importacao
+- arquivos fora de `workflowsN8N/` podem estar desatualizados/intermediarios
+- manter `workflowsN8N/` como fonte local oficial para copia/importacao
 
 ## 10) Regra obrigatoria de governanca (Prisma)
 

@@ -57,6 +57,7 @@ env.prod
 /temp
 .cache/
 tmp/workflows-fix/fixed/
+/workflowsN8N/
 
 # runtime data
 pids

@@ -193,7 +193,7 @@ APP_RELEASE=manual-$(date +%s) APP_BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ) bas
 
 Arquivo de referencia local:
 
-- `tmp/workflows-fix/fixed/Virtuagil - Jade - Assistente Virtual - FIXED.json`
+- `workflowsN8N/Jade assistente WhatsApp.json`
 
 Regras aplicadas no fluxo:
 

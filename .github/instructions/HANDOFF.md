@@ -927,7 +927,7 @@ Objetivo consolidado com usuario:
 Entregas registradas:
 
 - workflow `Jade` em JSON unico:
-  - `tmp/workflows-fix/fixed/Virtuagil - Jade - Assistente Virtual - FIXED.json`
+  - `workflowsN8N/Jade assistente WhatsApp.json`
 - migration oficial de schema Jade:
   - `prisma/migrations/20260324193000_create_jade_tables/migration.sql`
 - documentos base locais para copiar/colar no Google Docs:
@@ -973,7 +973,41 @@ Diretriz para proximos agentes:
 Atualizacao operacional (2026-03-24):
 
 - tabelas `jade_*` foram consolidadas em migration Prisma oficial
-- o arquivo local `tmp/workflows-fix/fixed/jade-supabase-schema.sql` foi removido para evitar dupla-fonte de verdade
+- o arquivo local de schema auxiliar da Jade foi removido para evitar dupla-fonte de verdade
 - regra reforcada:
   - schema de banco deve ser mantido via Prisma migration
-  - workflow final deve ser preservado na pasta `tmp/workflows-fix/fixed/`
+  - workflow final deve ser preservado em `workflowsN8N/`
+
+Atualizacao operacional (2026-03-28):
+
+- a pasta local canonica dos workflows n8n foi movida para a raiz:
+  - `workflowsN8N/`
+- a nomenclatura dos JSONs locais foi simplificada para nomes operacionais sem `FIXED`
+- arquivo canonico atual para importacao da Jade:
+  - `workflowsN8N/Jade assistente WhatsApp.json`
+- workflows auxiliares atuais:
+  - `workflowsN8N/IoT acionamento WhatsApp.json`
+  - `workflowsN8N/IoT alerta de temperatura WhatsApp.json`
+  - `workflowsN8N/IoT dispositivo offline WhatsApp.json`
+  - `workflowsN8N/IoT dispositivo online WhatsApp.json`
+  - `workflowsN8N/IoT energia WhatsApp.json`
+- `Knowledge Sync` deixou de ser considerado arquivo oficial do caminho principal da Jade no estado atual
+- a copia local da Jade foi realinhada com o padrao do fluxo funcional fornecido pelo usuario:
+  - audio deve seguir `getBase64FromMediaMessage` -> `Convert to File` -> transcricao
+  - imagem deve seguir o mesmo preparo via Evolution antes da analise quando o payload nao trouxer base64 pronto
+  - respostas longas devem usar particionamento e loop de envio
+- o deploy que falhou em `27/03/2026 11:39:12` teve causa raiz confirmada:
+  - step `Deploy stack via SSH`
+  - erro: `Falha: DATABASE_URL nao pode ficar vazia.`
+  - causa pratica: `DATABASE_URL` continha `&connection_limit=1` sem aspas simples no `/opt/iot-virtuagil-api/.env.prod`
+  - correcao validada: manter `DATABASE_URL='postgresql://...:6543/postgres?pgbouncer=true&connection_limit=1'`
+- validacoes operacionais confirmadas apos a correcao:
+  - `set -a; . ./.env.prod; set +a` passou a carregar `DATABASE_URL` e `DIRECT_DATABASE_URL`
+  - `curl -fsS https://api-monitor.virtuagil.com.br/health` respondeu `status=ok`
+  - a rota correta de health da API em producao e `/health`, sem prefixo `/api`
+  - a VPS em `/opt/iot-virtuagil-api` continua nao sendo clone Git
+  - imagens inexistentes no GHCR devem ser tratadas como commit ainda nao publicado, nao como falha da VPS
+- diretriz operacional nova definida pelo usuario:
+  - novos agents devem trabalhar com commits pequenos por etapa
+  - apos cada etapa concluida e validada, preferir `git push`
+  - nao agrupar alteracoes grandes sem consultar antes
