@@ -46,6 +46,7 @@ Thumbs.db
 # dotenv environment variable files
 .env
 .env.*
+env.prod
 !.env.example
 !deploy/swarm/.env.prod.example
 
