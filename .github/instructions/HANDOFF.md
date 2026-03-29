@@ -59,6 +59,9 @@ Planejamento tecnico aprovado para a proxima etapa comercial da Jade:
   - agendar follow-up comercial
   - abrir handoff humano
   - calcular oportunidade de cross-sell para cliente ativo a partir dos modulos ja contratados
+- contatos comerciais agora acumulam historico de interesse em lista:
+  - `jade_contacts.interest_topic` continua como interesse principal/mais recente
+  - `jade_contacts.interest_topics` guarda a lista acumulada de interesses do mesmo lead
 - endpoints internos expostos para integracao via n8n:
   - `POST /jade-commercial/sales-leads`
   - `POST /jade-commercial/follow-ups`

@@ -288,6 +288,7 @@ model JadeContact {
   notes                  String?
   salesMode              Boolean   @default(false) @map("sales_mode")
   interestTopic          String?   @map("interest_topic")
+  interestTopics         String[]  @default([]) @map("interest_topics")
   leadTemperature        String?   @default("warm") @map("lead_temperature")
   commercialStatus       String?   @default("active") @map("commercial_status")
   lastCommercialIntentAt DateTime? @map("last_commercial_intent_at")

@@ -46,6 +46,16 @@ export class JadeCommercialService {
     const mergedTags = Array.from(
       new Set([...(existingContact?.tags ?? []), ...tags].filter(Boolean)),
     );
+    const mergedInterestTopics = Array.from(
+      new Set(
+        [
+          ...(((existingContact as any)?.interestTopics as string[] | undefined) ?? []),
+          ...(input.interestTopic ? [input.interestTopic.trim()] : []),
+        ]
+          .map((topic) => String(topic || '').trim())
+          .filter(Boolean),
+      ),
+    );
 
     return this.prisma.jadeContact.upsert({
       where: { leadPhone },
@@ -55,6 +65,7 @@ export class JadeCommercialService {
         clientId: input.clientId ?? existingContact?.clientId ?? null,
         salesMode: !(input.isClient ?? existingContact?.isClient ?? false),
         interestTopic: input.interestTopic ?? existingContact?.interestTopic ?? null,
+        interestTopics: mergedInterestTopics as any,
         tags: mergedTags,
         notes: input.notes ?? existingContact?.notes ?? null,
         leadTemperature:
@@ -74,6 +85,7 @@ export class JadeCommercialService {
         clientId: input.clientId ?? null,
         salesMode: !(input.isClient ?? false),
         interestTopic: input.interestTopic ?? null,
+        interestTopics: mergedInterestTopics as any,
         tags: mergedTags,
         notes: input.notes ?? null,
         leadTemperature: input.interestTopic ? 'warm' : 'cold',
