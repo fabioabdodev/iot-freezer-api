@@ -59,6 +59,15 @@ Planejamento tecnico aprovado para a proxima etapa comercial da Jade:
   - agendar follow-up comercial
   - abrir handoff humano
   - calcular oportunidade de cross-sell para cliente ativo a partir dos modulos ja contratados
+- endpoints internos expostos para integracao via n8n:
+  - `POST /jade-commercial/sales-leads`
+  - `POST /jade-commercial/follow-ups`
+  - `POST /jade-commercial/handoffs`
+  - `GET /jade-commercial/cross-sell/:clientId`
+- autenticacao desses endpoints:
+  - header `x-api-key` ou `apikey`
+  - chave lida de `JADE_COMMERCIAL_GATEWAY_KEY`
+  - fallback permitido para `JADE_DOCS_GATEWAY_KEY`
 
 Fechamento adicional apos retomada de internet:
 

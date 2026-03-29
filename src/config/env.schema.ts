@@ -51,6 +51,8 @@ export const envSchema = z.object({
   N8N_TEMPERATURE_ALERT_WEBHOOK_URL: optionalUrlEnv,
   N8N_ENERGY_ALERT_WEBHOOK_URL: optionalUrlEnv,
   N8N_ACTUATION_WEBHOOK_URL: optionalUrlEnv,
+  JADE_DOCS_GATEWAY_KEY: z.string().optional(),
+  JADE_COMMERCIAL_GATEWAY_KEY: z.string().optional(),
   ACTUATION_NOTIFY_ENABLED: booleanEnv.default(false),
   ACTUATION_NOTIFY_COOLDOWN_SECONDS: z.coerce.number().default(900),
   ACTUATION_NOTIFY_SOURCES: z.string().optional(),
