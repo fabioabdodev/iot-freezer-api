@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MapPinned, Thermometer } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { DeviceSummary } from '@/types/device';
 import { buildUniqueTechnicalId } from '@/lib/technical-id';
@@ -86,7 +86,7 @@ export function DeviceForm({
   const {
     register,
     getValues,
-    watch,
+    control,
     reset,
     setError,
     clearErrors,
@@ -99,6 +99,10 @@ export function DeviceForm({
       minTemperature: '',
       maxTemperature: '',
     },
+  });
+  const watchedName = useWatch({
+    control,
+    name: 'name',
   });
 
   useEffect(() => {
@@ -182,7 +186,7 @@ export function DeviceForm({
   }
 
   const generatedIdPreview = buildUniqueTechnicalId(
-    watch('name') ?? '',
+    watchedName ?? '',
     existingIds,
     {
       fallback: 'equipamento',

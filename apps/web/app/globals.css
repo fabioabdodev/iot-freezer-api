@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root {
+  --font-display: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: "Manrope", "Aptos", "Segoe UI", sans-serif;
   --bg: 224 43% 7%;
   --card: 222 36% 11%;
   --card-strong: 221 41% 9%;

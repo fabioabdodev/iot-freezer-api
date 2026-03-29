@@ -1369,10 +1369,6 @@ function DashboardContent() {
               devices={devices}
               canManageRules={canManageAlertRules}
               blockedReason="Seu perfil pode monitorar as regras, mas a alteracao fica restrita a administradores."
-              onCreateDevice={() => {
-                setEditingDeviceId(null);
-                setFormMode('create');
-              }}
             />
           </AccordionPanel>
         </div>

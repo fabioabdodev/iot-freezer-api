@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { Activity, AlertTriangle } from 'lucide-react';
 import {
   Line,
@@ -110,15 +109,15 @@ export function DeviceHistoryPanel({
   const [activeSensorKey, setActiveSensorKey] = useState<string>(
     sensorOptions[0]?.key ?? 'temperatura',
   );
-
-  useEffect(() => {
-    if (!sensorOptions.some((sensor) => sensor.key === activeSensorKey)) {
-      setActiveSensorKey(sensorOptions[0]?.key ?? 'temperatura');
-    }
-  }, [activeSensorKey, sensorOptions]);
+  const resolvedActiveSensorKey = sensorOptions.some(
+    (sensor) => sensor.key === activeSensorKey,
+  )
+    ? activeSensorKey
+    : (sensorOptions[0]?.key ?? 'temperatura');
 
   const activeSensor =
-    sensorOptions.find((sensor) => sensor.key === activeSensorKey) ?? sensorOptions[0];
+    sensorOptions.find((sensor) => sensor.key === resolvedActiveSensorKey) ??
+    sensorOptions[0];
   const activeSensorLabel = activeSensor?.label ?? 'Leitura';
   const activeSensorUnit = activeSensor?.unitLabel;
   const isTemperatureSensor = activeSensor?.querySensor === 'temperature';
@@ -156,7 +155,7 @@ export function DeviceHistoryPanel({
         <div className="flex items-center gap-2">
           {sensorOptions.length > 1 ? (
             <Select
-              value={activeSensorKey}
+              value={resolvedActiveSensorKey}
               onChange={(event) => setActiveSensorKey(event.target.value)}
               className="min-w-[150px] py-2 text-xs"
             >

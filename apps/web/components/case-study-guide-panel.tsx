@@ -60,9 +60,6 @@ export function CaseStudyGuidePanel({
     enabledAcionamentoItems.has('rele') &&
     enabledAcionamentoItems.has('status_abertura') &&
     enabledAcionamentoItems.has('tempo_aberto');
-  const hasCoreDevices = restaurantCase.environmentalDevices.every((expectedDeviceId) =>
-    devices.some((device) => device.id === expectedDeviceId),
-  );
   const hasAnyCoreDeviceOnline = restaurantCase.environmentalDevices.some((expectedDeviceId) =>
     devices.some((device) => device.id === expectedDeviceId && !device.isOffline),
   );

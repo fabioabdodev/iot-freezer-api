@@ -56,19 +56,23 @@ export function TurnstileWidget({
       widgetIdRef.current = window.turnstile.render(widgetContainerRef.current, {
         sitekey: siteKey,
         theme: 'dark',
-        callback: (token) => onTokenChange(token),
-        'expired-callback': () => onTokenChange(null),
+        callback: (token) => {
+          setHasWidgetError(false);
+          onTokenChange(token);
+        },
+        'expired-callback': () => {
+          setHasWidgetError(false);
+          onTokenChange(null);
+        },
         'error-callback': (errorCode) => {
           console.error('Turnstile widget error:', errorCode ?? 'unknown');
+          setHasWidgetError(true);
           onTokenChange(null);
         },
       });
-
-      setHasWidgetError(false);
     } catch (error) {
       widgetIdRef.current = null;
       console.error('Turnstile render failed:', error);
-      setHasWidgetError(true);
       onTokenChange(null);
     }
 
@@ -94,7 +98,6 @@ export function TurnstileWidget({
       onTokenChange(null);
     } catch (error) {
       console.error('Turnstile reset failed:', error);
-      setHasWidgetError(true);
       onTokenChange(null);
     }
   }, [onTokenChange, resetKey]);

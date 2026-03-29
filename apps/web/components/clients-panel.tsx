@@ -128,7 +128,7 @@ export function ClientsPanel({
   const [pendingDeleteClientId, setPendingDeleteClientId] = useState<string | null>(null);
   const [deletingClientId, setDeletingClientId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const clients = data ?? [];
+  const clients = useMemo(() => data ?? [], [data]);
 
   const {
     register,

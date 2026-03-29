@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useActuationSchedules } from '@/hooks/use-actuation-schedules';
 import { useActuationScheduleMutations } from '@/hooks/use-actuation-schedule-mutations';
-import { ActuationSchedule, ActuatorSummary } from '@/types/actuator';
+import { ActuatorSummary } from '@/types/actuator';
 import { Feedback } from '@/components/ui/feedback';
 import { Panel } from '@/components/ui/panel';
 import { Badge } from '@/components/ui/badge';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { FileSearch, ShieldCheck } from 'lucide-react';
 import { useAuditLogs } from '@/hooks/use-audit-logs';
 import { AuthUser } from '@/types/auth';
@@ -20,6 +20,24 @@ type AuditLogPanelProps = {
   currentUser: AuthUser | null;
   canView: boolean;
 };
+
+type PeriodPreset = '24h' | '7d' | '30d' | 'all';
+
+function resolvePeriodStart(periodPreset: PeriodPreset) {
+  const now = new Date();
+
+  switch (periodPreset) {
+    case '24h':
+      return new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+    case '7d':
+      return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    case '30d':
+      return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    case 'all':
+    default:
+      return undefined;
+  }
+}
 
 function formatValue(value: unknown) {
   if (value == null) return '-';
@@ -42,37 +60,19 @@ export function AuditLogPanel({
 }: AuditLogPanelProps) {
   const [entityTypeDraft, setEntityTypeDraft] = useState('');
   const [entityIdDraft, setEntityIdDraft] = useState('');
-  const [periodPreset, setPeriodPreset] = useState<'24h' | '7d' | '30d' | 'all'>(
-    '7d',
-  );
+  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>('7d');
   const [appliedFilters, setAppliedFilters] = useState({
     entityType: '',
     entityId: '',
-    periodPreset: '7d' as '24h' | '7d' | '30d' | 'all',
+    from: resolvePeriodStart('7d'),
   });
-
-  const from = useMemo(() => {
-    const now = Date.now();
-
-    switch (appliedFilters.periodPreset) {
-      case '24h':
-        return new Date(now - 24 * 60 * 60 * 1000).toISOString();
-      case '7d':
-        return new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
-      case '30d':
-        return new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
-      case 'all':
-      default:
-        return undefined;
-    }
-  }, [appliedFilters.periodPreset]);
 
   const { data, isLoading, isError, error } = useAuditLogs(
     {
       clientId,
       entityType: appliedFilters.entityType || undefined,
       entityId: appliedFilters.entityId || undefined,
-      from,
+      from: appliedFilters.from,
       limit: 12,
     },
     authToken,
@@ -140,7 +140,7 @@ export function AuditLogPanel({
             setAppliedFilters({
               entityType: entityTypeDraft.trim(),
               entityId: entityIdDraft.trim(),
-              periodPreset,
+              from: resolvePeriodStart(periodPreset),
             })
           }
           variant="secondary"

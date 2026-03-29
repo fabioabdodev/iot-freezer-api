@@ -9,7 +9,6 @@ import { useUserMutations } from '@/hooks/use-user-mutations';
 import { useUsers } from '@/hooks/use-users';
 import { createUserPasswordSetupLink } from '@/lib/api';
 import { AuthUser } from '@/types/auth';
-import { UserSummary } from '@/types/user';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';

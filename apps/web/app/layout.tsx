@@ -1,20 +1,7 @@
 import type { Metadata, Viewport } from 'next';
-import { Space_Grotesk, Manrope } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
 import { ReleaseFooter } from '@/components/release-footer';
-
-const display = Space_Grotesk({
-  subsets: ['latin'],
-  variable: '--font-display',
-  weight: ['500', '700'],
-});
-
-const body = Manrope({
-  subsets: ['latin'],
-  variable: '--font-body',
-  weight: ['400', '500', '700'],
-});
 
 export const metadata: Metadata = {
   title: 'Virtuagil | Monitor IoT',
@@ -40,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className={`${display.variable} ${body.variable}`}>
+    <html lang="pt-BR">
       <body className="font-[var(--font-body)] antialiased">
         <Providers>
           <div className="flex min-h-screen flex-col">

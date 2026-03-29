@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Gauge, LineChart, PlugZap } from 'lucide-react';
 import { useEnergyReadings } from '@/hooks/use-energy-readings';
 import { useEnergySummary } from '@/hooks/use-energy-summary';
@@ -48,19 +48,13 @@ export function EnergyPanel({
   const energyEnabled = moduleEnabled(clientId, clientModules);
   const [sensor, setSensor] = useState<EnergySensorType>('consumo');
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
-
-  useEffect(() => {
-    if (devices.length === 0) {
-      setSelectedDeviceId('');
-      return;
-    }
-
-    if (!devices.some((device) => device.id === selectedDeviceId)) {
-      setSelectedDeviceId(devices[0].id);
-    }
-  }, [devices, selectedDeviceId]);
-
-  const selectedDevice = devices.find((device) => device.id === selectedDeviceId) ?? null;
+  const resolvedSelectedDeviceId = devices.some(
+    (device) => device.id === selectedDeviceId,
+  )
+    ? selectedDeviceId
+    : (devices[0]?.id ?? '');
+  const selectedDevice =
+    devices.find((device) => device.id === resolvedSelectedDeviceId) ?? null;
   const selectedSensorMeta =
     SENSOR_OPTIONS.find((option) => option.value === sensor) ?? SENSOR_OPTIONS[0];
 
@@ -214,7 +208,7 @@ export function EnergyPanel({
                   <p className="text-sm font-semibold text-ink">Historico por equipamento</p>
                 </div>
                 <Select
-                  value={selectedDeviceId}
+                  value={resolvedSelectedDeviceId}
                   onChange={(event) => setSelectedDeviceId(event.target.value)}
                   className="w-[180px] py-2 text-xs"
                 >

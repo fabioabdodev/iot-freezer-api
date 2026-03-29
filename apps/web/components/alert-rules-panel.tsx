@@ -92,7 +92,6 @@ type AlertRulesPanelProps = {
   client?: ClientSummary;
   authToken?: string;
   devices: DeviceSummary[];
-  onCreateDevice?: () => void;
   canManageRules?: boolean;
   blockedReason?: string;
 };
@@ -127,7 +126,6 @@ export function AlertRulesPanel({
   client,
   authToken,
   devices,
-  onCreateDevice,
   canManageRules = false,
   blockedReason,
 }: AlertRulesPanelProps) {
