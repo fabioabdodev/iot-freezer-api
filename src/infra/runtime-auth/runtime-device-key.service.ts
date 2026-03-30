@@ -32,10 +32,15 @@ export class RuntimeDeviceKeyService {
         client: {
           select: {
             deviceApiKey: true,
+            status: true,
           },
         },
       },
     } as any);
+
+    if (this.isClientBlocked((device as any)?.client?.status)) {
+      return false;
+    }
 
     const expectedKey =
       (device as any)?.client?.deviceApiKey ??
@@ -55,10 +60,15 @@ export class RuntimeDeviceKeyService {
         client: {
           select: {
             deviceApiKey: true,
+            status: true,
           },
         },
       },
     } as any);
+
+    if (this.isClientBlocked((actuator as any)?.client?.status)) {
+      return false;
+    }
 
     const expectedKey =
       (actuator as any)?.client?.deviceApiKey ??
@@ -74,8 +84,12 @@ export class RuntimeDeviceKeyService {
     if (payload.clientId) {
       const client = await this.prisma.client.findUnique({
         where: { id: payload.clientId },
-        select: { deviceApiKey: true },
+        select: { deviceApiKey: true, status: true },
       } as any);
+
+      if (this.isClientBlocked(client?.status)) {
+        return null;
+      }
 
       if (client?.deviceApiKey) {
         return client.deviceApiKey;
@@ -88,14 +102,23 @@ export class RuntimeDeviceKeyService {
         client: {
           select: {
             deviceApiKey: true,
+            status: true,
           },
         },
       },
     } as any);
 
+    if (this.isClientBlocked((device as any)?.client?.status)) {
+      return null;
+    }
+
     return (
       (device as any)?.client?.deviceApiKey ??
       this.configService.get<string>('DEVICE_API_KEY')
     );
+  }
+
+  private isClientBlocked(status?: string | null) {
+    return status === 'inactive';
   }
 }
