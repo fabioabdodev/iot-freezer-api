@@ -9,6 +9,7 @@ describe('ClientsService', () => {
 
   beforeEach(async () => {
     fakePrisma = {
+      $transaction: jest.fn(async (callback) => callback(fakePrisma)),
       client: {
         create: jest.fn(),
         findMany: jest.fn(),
@@ -16,6 +17,57 @@ describe('ClientsService', () => {
         findFirst: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
+      },
+      device: {
+        findMany: jest.fn(),
+        deleteMany: jest.fn(),
+      },
+      jadeContact: {
+        findMany: jest.fn(),
+        deleteMany: jest.fn(),
+      },
+      jadeConversation: {
+        findMany: jest.fn(),
+        deleteMany: jest.fn(),
+      },
+      jadeHumanHandoff: {
+        deleteMany: jest.fn(),
+      },
+      jadeFollowUpQueue: {
+        deleteMany: jest.fn(),
+      },
+      auditLog: {
+        deleteMany: jest.fn(),
+      },
+      user: {
+        deleteMany: jest.fn(),
+      },
+      actuationSchedule: {
+        deleteMany: jest.fn(),
+      },
+      actuationCommand: {
+        deleteMany: jest.fn(),
+      },
+      actuator: {
+        deleteMany: jest.fn(),
+      },
+      clientModuleItem: {
+        deleteMany: jest.fn(),
+      },
+      clientModule: {
+        deleteMany: jest.fn(),
+      },
+      alertRule: {
+        deleteMany: jest.fn(),
+      },
+      alertRuleState: {
+        deleteMany: jest.fn(),
+      },
+      temperatureLog: {
+        deleteMany: jest.fn(),
+      },
+      sensorReading: {
+        deleteMany: jest.fn(),
       },
     };
 
@@ -108,6 +160,49 @@ describe('ClientsService', () => {
     ).rejects.toMatchObject<Partial<ConflictException>>({
       message:
         'Ja existe um cliente com este telefone: Cliente Duplicado (cliente-duplicado). Campos: WhatsApp do contato principal, WhatsApp principal para alertas. [field:adminPhone|alertPhone]',
+    });
+  });
+
+  it('should hard delete client operational data and devices', async () => {
+    fakePrisma.client.findUnique.mockResolvedValue({
+      id: 'client_a',
+      name: 'Client A',
+    });
+    fakePrisma.device.findMany.mockResolvedValue([
+      { id: 'freezer_01' },
+      { id: 'freezer_02' },
+    ]);
+    fakePrisma.jadeContact.findMany.mockResolvedValue([
+      { leadPhone: '5531999999999' },
+    ]);
+    fakePrisma.jadeConversation.findMany.mockResolvedValue([
+      { leadPhone: '5531988887777' },
+    ]);
+    fakePrisma.client.delete.mockResolvedValue({
+      id: 'client_a',
+      name: 'Client A',
+    });
+
+    const result = await service.remove('client_a');
+
+    expect(fakePrisma.temperatureLog.deleteMany).toHaveBeenCalledWith({
+      where: { deviceId: { in: ['freezer_01', 'freezer_02'] } },
+    });
+    expect(fakePrisma.sensorReading.deleteMany).toHaveBeenCalledWith({
+      where: { deviceId: { in: ['freezer_01', 'freezer_02'] } },
+    });
+    expect(fakePrisma.device.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ['freezer_01', 'freezer_02'] } },
+    });
+    expect(fakePrisma.jadeHumanHandoff.deleteMany).toHaveBeenCalledWith({
+      where: { leadPhone: { in: ['5531999999999', '5531988887777'] } },
+    });
+    expect(fakePrisma.client.delete).toHaveBeenCalledWith({
+      where: { id: 'client_a' },
+    });
+    expect(result).toEqual({
+      id: 'client_a',
+      name: 'Client A',
     });
   });
 });

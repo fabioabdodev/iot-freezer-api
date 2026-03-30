@@ -218,8 +218,100 @@ export class ClientsService {
   }
 
   async remove(id: string) {
-    await this.findOne(id);
-    return this.prisma.client.delete({ where: { id } });
+    return this.prisma.$transaction(async (tx) => {
+      const client = await tx.client.findUnique({ where: { id } });
+      if (!client) {
+        throw new NotFoundException('Client not found');
+      }
+
+      const [devices, jadeContacts, jadeConversations] = await Promise.all([
+        tx.device.findMany({
+          where: { clientId: id },
+          select: { id: true },
+        } as any),
+        tx.jadeContact.findMany({
+          where: { clientId: id },
+          select: { leadPhone: true },
+        } as any),
+        tx.jadeConversation.findMany({
+          where: { clientId: id },
+          select: { leadPhone: true },
+        } as any),
+      ]);
+
+      const deviceIds = devices.map((device) => device.id);
+      const leadPhones = Array.from(
+        new Set(
+          [...jadeContacts, ...jadeConversations]
+            .map((entry) => entry.leadPhone)
+            .filter((phone): phone is string => Boolean(phone)),
+        ),
+      );
+
+      if (leadPhones.length > 0) {
+        await tx.jadeHumanHandoff.deleteMany({
+          where: { leadPhone: { in: leadPhones } },
+        } as any);
+        await tx.jadeFollowUpQueue.deleteMany({
+          where: { leadPhone: { in: leadPhones } },
+        } as any);
+      }
+
+      await tx.auditLog.deleteMany({
+        where: {
+          OR: [{ clientId: id }, { actorClientId: id }],
+        },
+      } as any);
+
+      await tx.jadeConversation.deleteMany({
+        where: { clientId: id },
+      } as any);
+      await tx.jadeContact.deleteMany({
+        where: { clientId: id },
+      } as any);
+
+      await tx.user.deleteMany({
+        where: { clientId: id },
+      } as any);
+
+      await tx.actuationSchedule.deleteMany({
+        where: { clientId: id },
+      } as any);
+      await tx.actuationCommand.deleteMany({
+        where: { clientId: id },
+      } as any);
+      await tx.actuator.deleteMany({
+        where: { clientId: id },
+      } as any);
+
+      await tx.clientModuleItem.deleteMany({
+        where: { clientId: id },
+      } as any);
+      await tx.clientModule.deleteMany({
+        where: { clientId: id },
+      } as any);
+
+      await tx.alertRule.deleteMany({
+        where: { clientId: id },
+      } as any);
+
+      if (deviceIds.length > 0) {
+        await tx.alertRuleState.deleteMany({
+          where: { deviceId: { in: deviceIds } },
+        } as any);
+        await tx.temperatureLog.deleteMany({
+          where: { deviceId: { in: deviceIds } },
+        } as any);
+        await tx.sensorReading.deleteMany({
+          where: { deviceId: { in: deviceIds } },
+        } as any);
+        await tx.device.deleteMany({
+          where: { id: { in: deviceIds } },
+        } as any);
+      }
+
+      return tx.client.delete({ where: { id } });
+    });
   }
 
   private async ensurePhonesAreUnique(
