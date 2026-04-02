@@ -226,12 +226,17 @@ export class AuthService {
   }
 
   private async buildSessionUser(user: any): Promise<SessionUser> {
-    const clientPreferredLayout = user.clientId
-      ? ((await this.prisma.client.findUnique({
+    const canResolveClientLayout =
+      Boolean(user.clientId) && Boolean((this.prisma as any).client?.findUnique);
+
+    const clientPreferredLayout = canResolveClientLayout
+      ? ((await (this.prisma as any).client.findUnique({
           where: { id: user.clientId },
           select: { preferredLayout: true },
-        } as any))?.preferredLayout ?? 'client')
-      : 'technical';
+        }))?.preferredLayout ?? 'client')
+      : user.clientId
+        ? 'client'
+        : 'technical';
 
     const preferredLayout = (user.preferredLayout ?? 'inherit') as string;
     const effectiveLayout =

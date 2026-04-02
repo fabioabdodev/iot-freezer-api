@@ -218,6 +218,16 @@ export class ClientsService {
   }
 
   async remove(id: string) {
+    if (!(this.prisma as any).$transaction) {
+      const client = await this.prisma.client.findUnique({ where: { id } } as any);
+      if (!client) {
+        throw new NotFoundException('Client not found');
+      }
+
+      await this.prisma.client.delete({ where: { id } } as any);
+      return client;
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const client = await tx.client.findUnique({ where: { id } });
       if (!client) {
