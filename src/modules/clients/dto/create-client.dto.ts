@@ -69,6 +69,10 @@ export class CreateClientDto {
   offlineAlertDelayMinutes?: number;
 
   @IsOptional()
+  @IsIn(['technical', 'client'])
+  preferredLayout?: 'technical' | 'client';
+
+  @IsOptional()
   @IsString()
   @MaxLength(120)
   deviceApiKey?: string;

@@ -37,6 +37,7 @@ export class UsersService {
         passwordHash: this.authService.hashPassword(normalizedPassword),
         role: dto.role ?? 'operator',
         phone: dto.phone?.trim() || undefined,
+        preferredLayout: dto.preferredLayout ?? 'inherit',
         isActive: dto.isActive ?? true,
       } as any,
     });
@@ -82,6 +83,7 @@ export class UsersService {
           : undefined,
         role: dto.role,
         phone: dto.phone?.trim() || undefined,
+        preferredLayout: dto.preferredLayout,
         isActive: dto.isActive,
       } as any,
       select: this.userSelect(),
@@ -117,6 +119,7 @@ export class UsersService {
       email: true,
       role: true,
       phone: true,
+      preferredLayout: true,
       isActive: true,
       lastLoginAt: true,
       createdAt: true,

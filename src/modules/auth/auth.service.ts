@@ -87,12 +87,14 @@ export class AuthService {
       exp: this.buildExpiryTimestamp(),
     });
 
+    const refreshedUser = {
+      ...(user as any),
+      lastLoginAt: new Date(),
+    };
+
     return {
       token,
-      user: this.sanitizeUser({
-        ...(user as any),
-        lastLoginAt: new Date(),
-      }),
+      user: await this.buildSessionUser(refreshedUser),
     };
   }
 
@@ -205,21 +207,6 @@ export class AuthService {
     return `${salt}:${hash}`;
   }
 
-  private sanitizeUser(user: any) {
-    return {
-      id: user.id,
-      clientId: user.clientId ?? null,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      phone: user.phone ?? null,
-      isActive: user.isActive,
-      lastLoginAt: user.lastLoginAt ?? null,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    } satisfies SessionUser;
-  }
-
   async authenticateFromAuthorization(authorization?: string) {
     if (!authorization?.startsWith('Bearer ')) {
       throw new UnauthorizedException('Missing bearer token');
@@ -235,7 +222,35 @@ export class AuthService {
       throw new UnauthorizedException('Session user not found');
     }
 
-    return this.sanitizeUser(user);
+    return this.buildSessionUser(user);
+  }
+
+  private async buildSessionUser(user: any): Promise<SessionUser> {
+    const clientPreferredLayout = user.clientId
+      ? ((await this.prisma.client.findUnique({
+          where: { id: user.clientId },
+          select: { preferredLayout: true },
+        } as any))?.preferredLayout ?? 'client')
+      : 'technical';
+
+    const preferredLayout = (user.preferredLayout ?? 'inherit') as string;
+    const effectiveLayout =
+      preferredLayout === 'inherit' ? clientPreferredLayout : preferredLayout;
+
+    return {
+      id: user.id,
+      clientId: user.clientId ?? null,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      phone: user.phone ?? null,
+      preferredLayout,
+      effectiveLayout,
+      isActive: user.isActive,
+      lastLoginAt: user.lastLoginAt ?? null,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    } satisfies SessionUser;
   }
 
   private signToken(payload: AuthTokenPayload) {

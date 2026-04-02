@@ -5,6 +5,7 @@ export type UserSummary = {
   email: string;
   role: 'admin' | 'operator';
   phone: string | null;
+  preferredLayout: 'inherit' | 'technical' | 'client';
   isActive: boolean;
   lastLoginAt: string | null;
   createdAt: string;
@@ -18,5 +19,6 @@ export type UserInput = {
   password?: string;
   role?: 'admin' | 'operator';
   phone?: string;
+  preferredLayout?: 'inherit' | 'technical' | 'client';
   isActive?: boolean;
 };

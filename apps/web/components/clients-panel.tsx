@@ -88,6 +88,7 @@ const formSchema = z.object({
     .refine((value) => Number.isFinite(value) && value >= 1 && value <= 10080, {
       message: 'Use entre 1 e 10080 minutos',
     }),
+  preferredLayout: z.enum(['technical', 'client']).default('client'),
   status: z.enum(['active', 'inactive', 'delinquent']).default('active'),
   notes: z.string().trim().optional().transform((value) => value || undefined),
 }).superRefine((values, context) => {
@@ -168,6 +169,7 @@ export function ClientsPanel({
       billingEmail: '',
       monitoringIntervalSeconds: '300',
       offlineAlertDelayMinutes: '15',
+      preferredLayout: 'client',
       status: 'active',
       notes: '',
     },
@@ -386,6 +388,7 @@ export function ClientsPanel({
                 billingEmail: values.billingEmail,
                 monitoringIntervalSeconds: values.monitoringIntervalSeconds,
                 offlineAlertDelayMinutes: values.offlineAlertDelayMinutes,
+                preferredLayout: values.preferredLayout,
                 status: values.status,
                 notes: values.notes,
               });
@@ -441,6 +444,14 @@ export function ClientsPanel({
                       <option value="active">Ativo</option>
                       <option value="inactive">Inativo</option>
                       <option value="delinquent">Pendente</option>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs text-muted">Layout padrao</label>
+                    <Select {...register('preferredLayout')}>
+                      <option value="client">Painel do cliente</option>
+                      <option value="technical">Painel tecnico</option>
                     </Select>
                   </div>
                 </div>
@@ -691,6 +702,9 @@ export function ClientsPanel({
                       </span>
                       <span className="text-xs">
                         alertas: {client.alertPhone ?? client.adminPhone ?? client.phone ?? 'Sem WhatsApp'}
+                      </span>
+                      <span className="text-xs">
+                        layout padrao: {client.preferredLayout === 'client' ? 'Painel do cliente' : 'Painel tecnico'}
                       </span>
                     </div>
                   </td>

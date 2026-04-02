@@ -101,6 +101,7 @@ function DashboardContent() {
   // O filtro principal vive na URL para facilitar refresh e compartilhamento do estado atual.
   const queryClientId = searchParams.get('clientId') ?? '';
   const queryResetToken = searchParams.get('resetToken') ?? '';
+  const queryView = searchParams.get('view') ?? '';
 
   const [clientIdDraft, setClientIdDraft] = useState(queryClientId);
   const [authEmailDraft, setAuthEmailDraft] = useState('');
@@ -158,6 +159,30 @@ function DashboardContent() {
     // Mantem o campo de filtro sincronizado quando a URL muda por navegacao ou refresh.
     setClientIdDraft(queryClientId);
   }, [queryClientId]);
+
+  useEffect(() => {
+    if (!isReady || !isAuthenticated) return;
+    if (queryView === 'technical') return;
+    if (user?.effectiveLayout !== 'client') return;
+
+    const params = new URLSearchParams();
+    if (queryClientId.trim()) {
+      params.set('clientId', queryClientId.trim());
+    } else if (user?.clientId) {
+      params.set('clientId', user.clientId);
+    }
+
+    const query = params.toString();
+    router.replace(query ? `/cliente?${query}` : '/cliente');
+  }, [
+    isAuthenticated,
+    isReady,
+    queryClientId,
+    queryView,
+    router,
+    user?.clientId,
+    user?.effectiveLayout,
+  ]);
 
   useEffect(() => {
     const normalized = queryResetToken.trim();

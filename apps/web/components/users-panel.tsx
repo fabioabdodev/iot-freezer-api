@@ -27,6 +27,7 @@ const formSchema = z.object({
     .optional()
     .transform((value) => (value?.trim() ? value : undefined)),
   role: z.enum(['admin', 'operator']),
+  preferredLayout: z.enum(['inherit', 'technical', 'client']),
   isActive: z.enum(['true', 'false']).transform((value) => value === 'true'),
 });
 
@@ -38,6 +39,15 @@ type UsersPanelProps = {
   currentUser: AuthUser | null;
   canManage: boolean;
   blockedReason?: string;
+};
+
+const layoutLabels: Record<
+  'inherit' | 'technical' | 'client',
+  string
+> = {
+  inherit: 'Herdar do cliente',
+  technical: 'Painel tecnico',
+  client: 'Painel do cliente',
 };
 
 export function UsersPanel({
@@ -84,6 +94,7 @@ export function UsersPanel({
       email: '',
       phone: '',
       role: 'operator',
+      preferredLayout: 'inherit',
       isActive: 'true',
     },
   });
@@ -95,6 +106,7 @@ export function UsersPanel({
         email: editingUser.email,
         phone: editingUser.phone ?? '',
         role: editingUser.role,
+        preferredLayout: editingUser.preferredLayout,
         isActive: editingUser.isActive ? 'true' : 'false',
       });
       return;
@@ -105,6 +117,7 @@ export function UsersPanel({
       email: '',
       phone: '',
       role: 'operator',
+      preferredLayout: 'inherit',
       isActive: 'true',
     });
   }, [editingUser, reset]);
@@ -203,6 +216,7 @@ export function UsersPanel({
                 email: values.email,
                 phone: values.phone,
                 role: values.role,
+                preferredLayout: values.preferredLayout,
                 isActive: values.isActive,
               },
             });
@@ -214,6 +228,7 @@ export function UsersPanel({
               email: values.email,
               phone: values.phone,
               role: values.role,
+              preferredLayout: values.preferredLayout,
               isActive: values.isActive,
             });
             await generateSetupLink(createdUser.id);
@@ -252,6 +267,18 @@ export function UsersPanel({
               <option value="true">Ativo</option>
               <option value="false">Inativo</option>
             </Select>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-xs text-muted">Layout inicial</label>
+            <Select {...register('preferredLayout')}>
+              <option value="inherit">Herdar do cliente</option>
+              <option value="client">Painel do cliente</option>
+              <option value="technical">Painel tecnico</option>
+            </Select>
+            <p className="mt-1 text-xs text-muted">
+              O usuario pode herdar o padrao da conta ou usar um painel proprio.
+            </p>
           </div>
 
           <div className="sm:col-span-2 lg:col-span-3">
@@ -329,6 +356,7 @@ export function UsersPanel({
               <tr>
                 <th>Usuario</th>
                 <th>Papel</th>
+                <th>Layout</th>
                 <th>Status</th>
                 <th>Ultimo login</th>
                 <th>Acesso</th>
@@ -345,6 +373,7 @@ export function UsersPanel({
                     </div>
                   </td>
                   <td>{user.role}</td>
+                  <td>{layoutLabels[user.preferredLayout]}</td>
                   <td>
                     <span
                       className={`rounded-full border px-2.5 py-1 text-xs ${

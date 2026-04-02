@@ -12,6 +12,7 @@ export interface ClientSummary {
   deviceApiKey: string | null;
   monitoringIntervalSeconds: number;
   offlineAlertDelayMinutes: number;
+  preferredLayout: 'technical' | 'client';
   billingName: string | null;
   billingPhone: string | null;
   phone: string | null;
@@ -34,6 +35,7 @@ export interface ClientInput {
   regenerateDeviceApiKey?: boolean;
   monitoringIntervalSeconds?: number;
   offlineAlertDelayMinutes?: number;
+  preferredLayout?: 'technical' | 'client';
   billingName?: string;
   billingPhone?: string;
   billingEmail?: string;
@@ -53,6 +55,7 @@ export interface CreateClientInput extends ClientInput {
   deviceApiKey?: string;
   monitoringIntervalSeconds?: number;
   offlineAlertDelayMinutes?: number;
+  preferredLayout?: 'technical' | 'client';
   billingName?: string;
   billingPhone: string;
   billingEmail: string;

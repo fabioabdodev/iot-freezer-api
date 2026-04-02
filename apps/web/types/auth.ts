@@ -5,6 +5,8 @@ export type AuthUser = {
   email: string;
   role: 'operator' | 'admin';
   phone?: string | null;
+  preferredLayout?: 'inherit' | 'technical' | 'client';
+  effectiveLayout?: 'technical' | 'client';
   isActive?: boolean;
   lastLoginAt?: string | null;
   createdAt?: string;

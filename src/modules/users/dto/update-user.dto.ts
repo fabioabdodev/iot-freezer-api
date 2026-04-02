@@ -37,6 +37,10 @@ export class UpdateUserDto {
   role?: 'admin' | 'operator';
 
   @IsOptional()
+  @IsIn(['inherit', 'technical', 'client'])
+  preferredLayout?: 'inherit' | 'technical' | 'client';
+
+  @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 }

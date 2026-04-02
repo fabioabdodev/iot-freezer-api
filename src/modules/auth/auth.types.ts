@@ -5,6 +5,8 @@ export type SessionUser = {
   email: string;
   role: string;
   phone: string | null;
+  preferredLayout: string;
+  effectiveLayout: string;
   isActive: boolean;
   lastLoginAt: Date | null;
   createdAt: Date;

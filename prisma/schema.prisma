@@ -71,6 +71,7 @@ model Client {
   deviceApiKey                   String?             @unique
   monitoringIntervalSeconds      Int                 @default(300)
   offlineAlertDelayMinutes       Int                 @default(15)
+  preferredLayout                String              @default("client")
   billingName                    String?
   billingPhone                   String?
   billingEmail                   String?
@@ -190,6 +191,7 @@ model User {
   passwordHash        String
   role                String               @default("operator")
   phone               String?
+  preferredLayout     String               @default("inherit")
   isActive            Boolean              @default(true)
   lastLoginAt         DateTime?
   createdAt           DateTime             @default(now())

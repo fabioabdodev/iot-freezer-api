@@ -43,6 +43,7 @@ const statusBadgeClassName: Record<ClientStatus, string> = {
 
 type PhoneField = 'adminPhone' | 'alertPhone' | 'billingPhone';
 type NotifyIntensity = 'low' | 'medium' | 'high';
+type ClientLayout = 'technical' | 'client';
 
 const NOTIFY_COOLDOWN_PRESETS: Array<{
   key: NotifyIntensity;
@@ -97,6 +98,7 @@ export function ClientProfilePanel({
     useState('15');
   const [monitoringIntervalSeconds, setMonitoringIntervalSeconds] = useState('300');
   const [offlineAlertDelayMinutes, setOfflineAlertDelayMinutes] = useState('15');
+  const [preferredLayout, setPreferredLayout] = useState<ClientLayout>('client');
   const [useSameAlertPhone, setUseSameAlertPhone] = useState(true);
   const [useSameBillingPhone, setUseSameBillingPhone] = useState(true);
   const [billingEmail, setBillingEmail] = useState('');
@@ -130,6 +132,7 @@ export function ClientProfilePanel({
     );
     setMonitoringIntervalSeconds(String(data.monitoringIntervalSeconds ?? 300));
     setOfflineAlertDelayMinutes(String(data.offlineAlertDelayMinutes ?? 15));
+    setPreferredLayout(data.preferredLayout ?? 'client');
     setUseSameAlertPhone(nextAlertPhone === nextAdminPhone);
     setUseSameBillingPhone(nextBillingPhone === nextAdminPhone);
     setBillingEmail(data.billingEmail ?? '');
@@ -292,6 +295,7 @@ export function ClientProfilePanel({
       ),
       monitoringIntervalSeconds: Math.floor(parsedMonitoringIntervalSeconds),
       offlineAlertDelayMinutes: Math.floor(parsedOfflineAlertDelayMinutes),
+      preferredLayout,
       status,
       notes: notes.trim() || undefined,
     });
@@ -387,7 +391,7 @@ export function ClientProfilePanel({
 
       {data ? (
         <>
-          <div className="mb-4 grid gap-3 md:grid-cols-5">
+          <div className="mb-4 grid gap-3 md:grid-cols-6">
             <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
               <p className="text-xs uppercase tracking-[0.16em] text-muted">
                 Cliente
@@ -430,6 +434,14 @@ export function ClientProfilePanel({
               </p>
               <p className="mt-2 text-sm font-medium text-ink">
                 {formatOfflineAlertDelay(data.offlineAlertDelayMinutes)}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-line/70 bg-bg/30 p-3">
+              <p className="text-xs uppercase tracking-[0.16em] text-muted">
+                Layout padrao
+              </p>
+              <p className="mt-2 text-sm font-medium text-ink">
+                {data.preferredLayout === 'client' ? 'Painel do cliente' : 'Painel tecnico'}
               </p>
             </div>
           </div>
@@ -600,6 +612,23 @@ export function ClientProfilePanel({
                 />
                 <p className="mt-1 text-xs text-muted">
                   Quanto tempo sem leitura a operacao aceita antes de marcar offline.
+                </p>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-muted">
+                  Layout padrao da conta
+                </label>
+                <Select
+                  value={preferredLayout}
+                  onChange={(event) =>
+                    setPreferredLayout(event.target.value as ClientLayout)
+                  }
+                >
+                  <option value="client">Painel do cliente</option>
+                  <option value="technical">Painel tecnico</option>
+                </Select>
+                <p className="mt-1 text-xs text-muted">
+                  Usuarios novos podem herdar esse padrao ou sobrescrever no proprio cadastro.
                 </p>
               </div>
               <div>

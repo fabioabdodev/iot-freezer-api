@@ -35,6 +35,10 @@ export class CreateUserDto {
   role?: 'admin' | 'operator';
 
   @IsOptional()
+  @IsIn(['inherit', 'technical', 'client'])
+  preferredLayout?: 'inherit' | 'technical' | 'client';
+
+  @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 }
