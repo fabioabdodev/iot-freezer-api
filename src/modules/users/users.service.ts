@@ -1,11 +1,13 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
+import { normalizeClientPhone } from '../clients/client-contact.utils';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -22,7 +24,14 @@ export class UsersService {
       throw new BadRequestException('name is required');
     }
 
+    const normalizedEmail = dto.email?.toLowerCase().trim();
+    const normalizedPhone = normalizeClientPhone(dto.phone);
+    if (!normalizedPhone) {
+      throw new BadRequestException('phone is required');
+    }
+
     await this.ensureClientExists(dto.clientId);
+    await this.ensureEmailAvailable(normalizedEmail);
 
     const normalizedPassword =
       dto.password?.trim() && dto.password.trim().length >= 6
@@ -33,10 +42,10 @@ export class UsersService {
       data: {
         clientId: dto.clientId,
         name: trimmedName,
-        email: dto.email.toLowerCase().trim(),
+        email: normalizedEmail,
         passwordHash: this.authService.hashPassword(normalizedPassword),
         role: dto.role ?? 'operator',
-        phone: dto.phone?.trim() || undefined,
+        phone: normalizedPhone,
         preferredLayout: dto.preferredLayout ?? 'inherit',
         isActive: dto.isActive ?? true,
       } as any,
@@ -72,17 +81,25 @@ export class UsersService {
       throw new BadRequestException('name is required');
     }
 
+    const normalizedEmail = dto.email?.toLowerCase().trim();
+    const normalizedPhone =
+      dto.phone !== undefined ? normalizeClientPhone(dto.phone) : undefined;
+    if (dto.phone !== undefined && !normalizedPhone) {
+      throw new BadRequestException('phone is required');
+    }
+    await this.ensureEmailAvailable(normalizedEmail, id);
+
     return this.prisma.user.update({
       where: { id },
       data: {
         clientId: dto.clientId,
         name: nextName,
-        email: dto.email?.toLowerCase().trim(),
+        email: normalizedEmail,
         passwordHash: dto.password
           ? this.authService.hashPassword(dto.password)
           : undefined,
         role: dto.role,
-        phone: dto.phone?.trim() || undefined,
+        phone: normalizedPhone,
         preferredLayout: dto.preferredLayout,
         isActive: dto.isActive,
       } as any,
@@ -108,6 +125,18 @@ export class UsersService {
     const client = await this.prisma.client.findUnique({ where: { id: clientId } });
     if (!client) {
       throw new BadRequestException('clientId does not exist');
+    }
+  }
+
+  private async ensureEmailAvailable(email?: string, currentUserId?: string) {
+    if (!email) return;
+
+    const existing = await this.prisma.user.findUnique({
+      where: { email },
+    } as any);
+
+    if (existing && (!currentUserId || (existing as any).id !== currentUserId)) {
+      throw new ConflictException('Ja existe um usuario com este email.');
     }
   }
 

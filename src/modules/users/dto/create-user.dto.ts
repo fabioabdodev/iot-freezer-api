@@ -2,11 +2,13 @@ import {
   IsBoolean,
   IsEmail,
   IsIn,
+  IsNotEmpty,
   IsOptional,
   IsString,
   Matches,
   MinLength,
 } from 'class-validator';
+import { IsClientPhone } from '../../clients/client-contact.validator';
 
 export class CreateUserDto {
   @IsString()
@@ -26,8 +28,9 @@ export class CreateUserDto {
   @Matches(/^[a-zA-Z0-9_-]{3,50}$/)
   clientId?: string;
 
-  @IsOptional()
   @IsString()
+  @IsNotEmpty()
+  @IsClientPhone()
   phone?: string;
 
   @IsOptional()

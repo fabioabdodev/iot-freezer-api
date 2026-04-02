@@ -119,6 +119,7 @@ describe('Users (e2e)', () => {
         clientId: 'virtuagil',
         name: 'Operador Virtuagil',
         email: 'operator@virtuagil.com.br',
+        phone: '31999999999',
         password: 'operador123',
         role: 'operator',
       })
@@ -148,7 +149,7 @@ describe('Users (e2e)', () => {
       .expect((res) => {
         expect(res.body).toEqual(
           expect.objectContaining({
-            phone: '31999999999',
+            phone: '5531999999999',
             role: 'admin',
           }),
         );
@@ -159,5 +160,31 @@ describe('Users (e2e)', () => {
       .expect(200);
 
     await request(app.getHttpServer()).get(`/users/${created.body.id}`).expect(404);
+  });
+
+  it('should reject duplicated email for same or another client', async () => {
+    await request(app.getHttpServer())
+      .post('/users')
+      .send({
+        clientId: 'virtuagil',
+        name: 'Operador Virtuagil',
+        email: 'operator@virtuagil.com.br',
+        phone: '31999999999',
+        password: 'operador123',
+        role: 'operator',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/users')
+      .send({
+        clientId: 'virtuagil',
+        name: 'Outro Usuario',
+        email: 'operator@virtuagil.com.br',
+        phone: '31988887777',
+        password: 'operador123',
+        role: 'operator',
+      })
+      .expect(409);
   });
 });

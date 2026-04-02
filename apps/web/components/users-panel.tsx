@@ -8,6 +8,7 @@ import { Copy, KeyRound } from 'lucide-react';
 import { useUserMutations } from '@/hooks/use-user-mutations';
 import { useUsers } from '@/hooks/use-users';
 import { createUserPasswordSetupLink } from '@/lib/api';
+import { isValidPhone } from '@/lib/client-form';
 import { AuthUser } from '@/types/auth';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,8 +25,9 @@ const formSchema = z.object({
   email: z.string().trim().email('Email invalido'),
   phone: z
     .string()
-    .optional()
-    .transform((value) => (value?.trim() ? value : undefined)),
+    .trim()
+    .min(1, 'Telefone obrigatorio')
+    .refine((value) => isValidPhone(value), 'Telefone invalido'),
   role: z.enum(['admin', 'operator']),
   preferredLayout: z.enum(['inherit', 'technical', 'client']),
   isActive: z.enum(['true', 'false']).transform((value) => value === 'true'),
@@ -251,6 +253,7 @@ export function UsersPanel({
           <div>
             <label className="mb-1 block text-xs text-muted">Telefone</label>
             <Input {...register('phone')} placeholder="31999999999" />
+            {errors.phone ? <p className="mt-1 text-xs text-bad">{errors.phone.message}</p> : null}
           </div>
 
           <div>

@@ -2,11 +2,13 @@ import {
   IsBoolean,
   IsEmail,
   IsIn,
+  IsNotEmpty,
   IsOptional,
   IsString,
   Matches,
   MinLength,
 } from 'class-validator';
+import { IsClientPhone } from '../../clients/client-contact.validator';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -30,6 +32,8 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
+  @IsClientPhone()
   phone?: string;
 
   @IsOptional()
