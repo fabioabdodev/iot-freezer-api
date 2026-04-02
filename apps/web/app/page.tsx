@@ -122,6 +122,7 @@ function DashboardContent() {
   const [resetValidationMessage, setResetValidationMessage] = useState<string | null>(
     null,
   );
+  const [resetEmailHint, setResetEmailHint] = useState<string | null>(null);
   const [resetSuccessMessage, setResetSuccessMessage] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileResetKey, setTurnstileResetKey] = useState(0);
@@ -162,7 +163,11 @@ function DashboardContent() {
 
   useEffect(() => {
     if (!isReady || !isAuthenticated) return;
-    if (queryView === 'technical') return;
+    const canStayOnTechnicalView =
+      user?.effectiveLayout === 'client' &&
+      user?.role === 'admin' &&
+      queryView === 'technical';
+    if (canStayOnTechnicalView) return;
     if (user?.effectiveLayout !== 'client') return;
 
     const params = new URLSearchParams();
@@ -190,9 +195,11 @@ function DashboardContent() {
     setResetTokenDraft(normalized);
     setAuthFlow('reset');
     setResetValidationMessage(null);
+    setResetEmailHint(null);
 
     void validatePasswordResetToken(normalized)
       .then((result) => {
+        setResetEmailHint(result.emailHint);
         setResetValidationMessage(
           `Token valido para ${result.emailHint}. Expira em ${formatRelativeDateTime(result.expiresAt)}.`,
         );
@@ -210,6 +217,7 @@ function DashboardContent() {
   const scopedClientId = clientId ?? user?.clientId ?? undefined;
   const isAdmin = user?.role === 'admin';
   const isPlatformAdmin = Boolean(isAdmin && !user?.clientId);
+  const isClientAdmin = Boolean(isAdmin && user?.clientId);
   const canManageUsers = Boolean(scopedClientId && isPlatformAdmin);
   const canManageClientModules = Boolean(scopedClientId && isPlatformAdmin);
   const canManageClientProfile = Boolean(scopedClientId && isPlatformAdmin);
@@ -218,8 +226,16 @@ function DashboardContent() {
   const canEditDeviceStructure = Boolean(scopedClientId && isPlatformAdmin);
   const canManageAlertRules = Boolean(scopedClientId && isAdmin);
   const canManageActuatorStructure = Boolean(scopedClientId && isPlatformAdmin);
-  const canManageActuatorCommands = Boolean(scopedClientId && isAdmin);
-  const canManageActuatorSchedules = Boolean(scopedClientId && isAdmin);
+  const canManageActuatorCommands = Boolean(scopedClientId && isPlatformAdmin);
+  const canManageActuatorSchedules = Boolean(scopedClientId && isPlatformAdmin);
+  const canAccessTechnicalManagement = Boolean(isPlatformAdmin || isClientAdmin);
+  const canViewClientModules = Boolean(scopedClientId && canAccessTechnicalManagement);
+  const canViewCommercialPanels = Boolean(scopedClientId && isPlatformAdmin);
+  const canViewActuationPanel = Boolean(scopedClientId && isPlatformAdmin);
+  const canViewClientAdministration = Boolean(scopedClientId && isPlatformAdmin);
+  const canViewSimulationLab = Boolean(scopedClientId && isPlatformAdmin);
+  const canViewAuditPanel = Boolean(scopedClientId && isPlatformAdmin);
+  const canViewInternalGuides = Boolean(scopedClientId && isPlatformAdmin);
   const { data: selectedClient } = useClient(
     scopedClientId,
     authToken,
@@ -692,15 +708,33 @@ function DashboardContent() {
                 {authFlow === 'reset' ? (
                   <div className="space-y-4">
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-muted">
-                        Token de recuperacao
-                      </label>
-                      <Input
-                        value={resetTokenDraft}
-                        onChange={(event) => setResetTokenDraft(event.target.value)}
-                        placeholder="Cole o token recebido"
-                        className="min-h-[50px]"
-                      />
+                      {queryResetToken ? (
+                        <div className="rounded-2xl border border-line/70 bg-bg/40 p-4">
+                          <p className="text-xs uppercase tracking-[0.16em] text-muted">
+                            Recuperacao de acesso
+                          </p>
+                          <p className="mt-2 text-sm font-medium text-ink">
+                            {resetEmailHint
+                              ? `Definindo nova senha para ${resetEmailHint}`
+                              : 'Link de recuperacao validado'}
+                          </p>
+                          <p className="mt-1 text-xs leading-6 text-muted">
+                            O token do link foi reconhecido automaticamente. Agora voce so precisa criar a nova senha.
+                          </p>
+                        </div>
+                      ) : (
+                        <div>
+                          <label className="mb-1.5 block text-xs font-medium text-muted">
+                            Token de recuperacao
+                          </label>
+                          <Input
+                            value={resetTokenDraft}
+                            onChange={(event) => setResetTokenDraft(event.target.value)}
+                            placeholder="Cole o token recebido"
+                            className="min-h-[50px]"
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -924,38 +958,42 @@ function DashboardContent() {
         </div>
       </Panel>
 
-      <AccordionPanel
-        title="Clientes"
-        description="Escolha a conta em foco e cadastre novos clientes quando necessario."
-        className="mb-6"
-      >
-        <ClientsPanel
-          authToken={authToken}
-          currentUser={user}
-          canManage={isPlatformAdmin}
-          selectedClientId={scopedClientId}
-          onSelectClient={focusClient}
-        />
-      </AccordionPanel>
+      {isPlatformAdmin ? (
+        <AccordionPanel
+          title="Clientes"
+          description="Escolha a conta em foco e cadastre novos clientes quando necessario."
+          className="mb-6"
+        >
+          <ClientsPanel
+            authToken={authToken}
+            currentUser={user}
+            canManage={isPlatformAdmin}
+            selectedClientId={scopedClientId}
+            onSelectClient={focusClient}
+          />
+        </AccordionPanel>
+      ) : null}
 
-      <AccordionPanel
-        title="Modulos do cliente"
-        description="Confira o que esta contratado antes de seguir para equipamentos e regras."
-        className="mb-6"
-      >
-        <ClientModulesPanel
-          clientId={scopedClientId}
-          clientName={selectedClient?.name}
-          authToken={authToken}
-          currentUser={user}
-          canManage={canManageClientModules}
-          blockedReason={
-            scopedClientId
-              ? 'Somente o administrador da plataforma pode alterar os modulos contratados deste cliente.'
-              : 'Escolha um cliente para revisar e ajustar a contratacao de modulos.'
-          }
-        />
-      </AccordionPanel>
+      {canViewClientModules ? (
+        <AccordionPanel
+          title="Modulos do cliente"
+          description="Confira o que esta contratado antes de seguir para equipamentos e regras."
+          className="mb-6"
+        >
+          <ClientModulesPanel
+            clientId={scopedClientId}
+            clientName={selectedClient?.name}
+            authToken={authToken}
+            currentUser={user}
+            canManage={canManageClientModules}
+            blockedReason={
+              scopedClientId
+                ? 'Somente o administrador da plataforma pode alterar os modulos contratados deste cliente.'
+                : 'Escolha um cliente para revisar e ajustar a contratacao de modulos.'
+            }
+          />
+        </AccordionPanel>
+      ) : null}
 
       <section id="resumo-operacional" className="mb-8 scroll-mt-28 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
@@ -992,8 +1030,20 @@ function DashboardContent() {
         />
       </section>
 
+      <section className="mt-8">
+        <p className="text-xs uppercase tracking-[0.18em] text-muted">
+          Operacao
+        </p>
+        <h2 className="mt-1 text-xl font-semibold">
+          Monitoramento, equipamentos e regras
+        </h2>
+        <p className="mt-2 max-w-3xl text-sm text-muted">
+          Acompanhe a operacao da conta, revise os equipamentos monitorados e ajuste as regras de alerta conforme o perfil de acesso.
+        </p>
+      </section>
+
       <AccordionPanel
-        title="Atividade operacional"
+        title="Monitoramento da conta"
         description="Veja rapidamente o estado dos equipamentos e as ocorrencias recentes."
         className="mt-6"
       >
@@ -1416,38 +1466,42 @@ function DashboardContent() {
         </div>
       ) : null}
 
-      <AccordionPanel
-        title="Prontidao comercial"
-        description="Veja o quadro geral da conta, contratacao e nivel de implantacao."
-        className="mt-6"
-        defaultOpen={false}
-      >
-        <div id="contas-modulos" className="scroll-mt-28">
-          <CommercialReadinessPanel
-          clientId={scopedClientId}
-          authToken={authToken}
-          currentUser={user}
-          client={selectedClient}
-          devices={devices}
-          clientModules={clientModules}
-          />
-        </div>
-      </AccordionPanel>
+      {canViewCommercialPanels ? (
+        <>
+          <AccordionPanel
+            title="Prontidao comercial"
+            description="Veja o quadro geral da conta, contratacao e nivel de implantacao."
+            className="mt-6"
+            defaultOpen={false}
+          >
+            <div id="contas-modulos" className="scroll-mt-28">
+              <CommercialReadinessPanel
+              clientId={scopedClientId}
+              authToken={authToken}
+              currentUser={user}
+              client={selectedClient}
+              devices={devices}
+              clientModules={clientModules}
+              />
+            </div>
+          </AccordionPanel>
 
-      <div id="solucoes-comerciais" className="mt-6 scroll-mt-28">
-        <AccordionPanel
-          title="Solucoes comerciais"
-          description="Aplique receitas prontas e acompanhe a prontidao para proposta."
-          defaultOpen={false}
-        >
-          <SolutionReadinessPanel
-            clientId={scopedClientId}
-            authToken={authToken}
-            currentUser={user}
-            client={selectedClient}
-          />
-        </AccordionPanel>
-      </div>
+          <div id="solucoes-comerciais" className="mt-6 scroll-mt-28">
+            <AccordionPanel
+              title="Solucoes comerciais"
+              description="Aplique receitas prontas e acompanhe a prontidao para proposta."
+              defaultOpen={false}
+            >
+              <SolutionReadinessPanel
+                clientId={scopedClientId}
+                authToken={authToken}
+                currentUser={user}
+                client={selectedClient}
+              />
+            </AccordionPanel>
+          </div>
+        </>
+      ) : null}
 
       {energiaEnabled ? (
         <div id="energia" className="mt-6 scroll-mt-28">
@@ -1476,7 +1530,7 @@ function DashboardContent() {
         </div>
       )}
 
-      {!isPlatformAdmin ? (
+      {canViewInternalGuides ? (
         <AccordionPanel
           title="Estudo de caso"
           description="Use o caso real como roteiro de implantacao e demonstracao."
@@ -1503,7 +1557,7 @@ function DashboardContent() {
         </AccordionPanel>
       ) : null}
 
-      {scopedClientId && !isPlatformAdmin ? (
+      {canViewInternalGuides ? (
         <AccordionPanel
           title="Jornada da conta"
           description="Veja a etapa atual e pule para a proxima acao recomendada."
@@ -1599,7 +1653,8 @@ function DashboardContent() {
         </AccordionPanel>
       ) : null}
 
-      {actuationEnabled ? (
+      {canViewActuationPanel ? (
+        actuationEnabled ? (
         <div id="acionamento" className="mt-6 scroll-mt-28">
           <AccordionPanel
             title="Acionamento"
@@ -1621,7 +1676,7 @@ function DashboardContent() {
             />
           </AccordionPanel>
         </div>
-      ) : (
+        ) : (
         <div className="mt-6">
           <AccessNotice
             title="Acionamento indisponivel"
@@ -1630,81 +1685,90 @@ function DashboardContent() {
             hint="Quando o recurso for habilitado, este bloco libera cadastro de pontos de acionamento, comandos e historico operacional."
           />
         </div>
-      )}
+        )
+      ) : null}
 
-      <AccordionPanel
-        title="Perfil do cliente"
-        description="Revise os dados comerciais e operacionais minimos da conta."
-        className="mt-6"
-        defaultOpen={false}
-      >
-        <ClientProfilePanel
-          clientId={scopedClientId}
-          authToken={authToken}
-          currentUser={user}
-          canManage={canManageClientProfile}
-          blockedReason={
-            scopedClientId
-              ? 'Somente o administrador da plataforma pode alterar o cadastro comercial do cliente.'
-              : 'Escolha um cliente para revisar o perfil comercial da conta.'
-          }
-        />
-      </AccordionPanel>
+      {canViewClientAdministration ? (
+        <>
+          <AccordionPanel
+            title="Perfil do cliente"
+            description="Revise os dados comerciais e operacionais minimos da conta."
+            className="mt-6"
+            defaultOpen={false}
+          >
+            <ClientProfilePanel
+              clientId={scopedClientId}
+              authToken={authToken}
+              currentUser={user}
+              canManage={canManageClientProfile}
+              blockedReason={
+                scopedClientId
+                  ? 'Somente o administrador da plataforma pode alterar o cadastro comercial do cliente.'
+                  : 'Escolha um cliente para revisar o perfil comercial da conta.'
+              }
+            />
+          </AccordionPanel>
 
-      <AccordionPanel
-        title="Usuarios"
-        description="Gerencie os acessos da conta quando necessario."
-        className="mt-6"
-        defaultOpen={false}
-      >
-        <UsersPanel
-          clientId={scopedClientId}
-          authToken={authToken}
-          currentUser={user}
-          canManage={canManageUsers}
-          blockedReason={
-            scopedClientId
-              ? 'Somente o administrador da plataforma pode gerenciar acessos deste cliente nesta fase.'
-              : 'Escolha um cliente para administrar os usuarios desta conta.'
-          }
-        />
-      </AccordionPanel>
+          <AccordionPanel
+            title="Usuarios"
+            description="Gerencie os acessos da conta quando necessario."
+            className="mt-6"
+            defaultOpen={false}
+          >
+            <UsersPanel
+              clientId={scopedClientId}
+              authToken={authToken}
+              currentUser={user}
+              canManage={canManageUsers}
+              blockedReason={
+                scopedClientId
+                  ? 'Somente o administrador da plataforma pode gerenciar acessos deste cliente nesta fase.'
+                  : 'Escolha um cliente para administrar os usuarios desta conta.'
+              }
+            />
+          </AccordionPanel>
+        </>
+      ) : null}
 
-      <div id="laboratorio" className="mt-6 scroll-mt-28">
-        <AccordionPanel
-          title="Laboratorio"
-          description="Ensaie a demonstracao e simule a operacao sem depender do hardware."
-          defaultOpen={false}
-        >
-          <SimulationLabPanel
+      {canViewSimulationLab ? (
+        <div id="laboratorio" className="mt-6 scroll-mt-28">
+          <AccordionPanel
+            title="Laboratorio"
+            description="Ensaie a demonstracao e simule a operacao sem depender do hardware."
+            defaultOpen={false}
+          >
+            <SimulationLabPanel
+              clientId={scopedClientId}
+              client={selectedClient}
+              devices={devices}
+              alertRules={alertRules}
+              actuators={actuators}
+              actuationEnabled={actuationEnabled}
+              canCreateDevices={canCreateDevices}
+              canManageAlertRules={canManageAlertRules}
+            />
+          </AccordionPanel>
+        </div>
+      ) : null}
+
+      {canViewAuditPanel ? (
+        <div id="auditoria" className="scroll-mt-28">
+          <AccordionPanel
+            title="Auditoria"
+            description="Acompanhe alteracoes criticas e rastreabilidade da conta."
+            className="mt-6"
+            defaultOpen={false}
+          >
+            <AuditLogPanel
             clientId={scopedClientId}
             client={selectedClient}
-            devices={devices}
-            alertRules={alertRules}
-            actuators={actuators}
-            actuationEnabled={actuationEnabled}
-            canCreateDevices={canCreateDevices}
-            canManageAlertRules={canManageAlertRules}
-          />
-        </AccordionPanel>
-      </div>
-
-      <div id="auditoria" className="scroll-mt-28">
-        <AccordionPanel
-          title="Auditoria"
-          description="Acompanhe alteracoes criticas e rastreabilidade da conta."
-          className="mt-6"
-          defaultOpen={false}
-        >
-          <AuditLogPanel
-          clientId={scopedClientId}
-          client={selectedClient}
-          authToken={authToken}
-          currentUser={user}
-          canView={isAdmin}
-          />
-        </AccordionPanel>
-      </div>
+            authToken={authToken}
+            currentUser={user}
+            canView={isPlatformAdmin}
+            />
+          </AccordionPanel>
+        </div>
+      ) : null}
 
       </div>
     </main>

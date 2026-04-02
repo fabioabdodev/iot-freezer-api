@@ -209,6 +209,7 @@ export function ClientDashboard() {
   const previewClientId = searchParams.get('clientId') ?? '';
   const clientId = user?.clientId ?? (previewClientId || undefined);
   const isAdminPreview = Boolean(!user?.clientId && previewClientId);
+  const canAccessTechnicalPanel = Boolean(isAdminPreview || user?.role === 'admin');
   const technicalHref = useMemo(() => {
     const params = new URLSearchParams();
     params.set('view', 'technical');
@@ -309,10 +310,12 @@ export function ClientDashboard() {
 
           <div className="flex flex-wrap items-center gap-3">
             {isAdminPreview ? <Badge>preview admin</Badge> : null}
-            <Link href={technicalHref} className="btn-secondary px-4 py-3 text-sm font-semibold">
-              <ArrowLeft className="h-4 w-4" />
-              Painel tecnico
-            </Link>
+            {canAccessTechnicalPanel ? (
+              <Link href={technicalHref} className="btn-secondary px-4 py-3 text-sm font-semibold">
+                <ArrowLeft className="h-4 w-4" />
+                Painel tecnico
+              </Link>
+            ) : null}
           </div>
         </div>
 
@@ -381,7 +384,11 @@ export function ClientDashboard() {
               <p>1. Veja primeiro os cards do topo para entender o estado geral.</p>
               <p>2. Depois confira os equipamentos em atencao ou offline.</p>
               <p>3. Use o historico resumido para validar tendencia e estabilidade.</p>
-              <p>4. Para configuracoes profundas, use o painel tecnico.</p>
+              {canAccessTechnicalPanel ? (
+                <p>4. Para configuracoes profundas, use o painel tecnico.</p>
+              ) : (
+                <p>4. Se precisar alterar configuracoes, fale com o administrador responsavel pela conta.</p>
+              )}
             </div>
           </Panel>
         </div>
@@ -413,10 +420,12 @@ export function ClientDashboard() {
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Equipamentos</p>
                 <h2 className="mt-1 text-xl font-semibold text-ink">Painel de leitura</h2>
               </div>
-              <Link href={technicalHref} className="inline-flex items-center gap-2 text-sm font-medium text-accent transition hover:text-[hsl(var(--accent-2))]">
-                Abrir painel tecnico
-                <ChevronRight className="h-4 w-4" />
-              </Link>
+              {canAccessTechnicalPanel ? (
+                <Link href={technicalHref} className="inline-flex items-center gap-2 text-sm font-medium text-accent transition hover:text-[hsl(var(--accent-2))]">
+                  Abrir painel tecnico
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              ) : null}
             </div>
             <div className="grid gap-4 xl:grid-cols-2">
               {devices.map((device) => (

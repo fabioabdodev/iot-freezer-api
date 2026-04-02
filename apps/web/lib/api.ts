@@ -33,6 +33,95 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 const DEVICE_REQUEST_TIMEOUT_MS = 15000;
 
+function translateApiMessage(message: string): string {
+  const normalized = message.trim();
+  const lower = normalized.toLowerCase();
+
+  const directMap: Record<string, string> = {
+    'incorrect password': 'Senha incorreta.',
+    'invalid email or password': 'Email ou senha invalidos.',
+    'invalid credentials': 'Credenciais invalidas.',
+    'missing bearer token': 'Sessao invalida. Faca login novamente.',
+    'session user not found': 'Usuario da sessao nao encontrado.',
+    'invalid token format': 'Formato de token invalido.',
+    'invalid token signature': 'Assinatura do token invalida.',
+    'invalid token payload': 'Conteudo do token invalido.',
+    'token expired': 'Sua sessao expirou. Faca login novamente.',
+    'reset token is required': 'Token de recuperacao obrigatorio.',
+    'password must have at least 6 characters':
+      'A senha deve ter pelo menos 6 caracteres.',
+    'invalid or used reset token': 'Token de recuperacao invalido ou ja utilizado.',
+    'reset token expired': 'O token de recuperacao expirou.',
+    'cloudflare turnstile token is required':
+      'Confirme a validacao anti-bot antes de continuar.',
+    'cloudflare turnstile verification failed':
+      'Nao foi possivel validar a verificacao anti-bot.',
+    'cloudflare turnstile validation failed':
+      'A validacao anti-bot falhou. Tente novamente.',
+    'missing authenticated user': 'Usuario autenticado nao encontrado.',
+    'insufficient role for this action':
+      'Seu perfil nao tem permissao para executar esta acao.',
+    'name is required': 'Nome obrigatorio.',
+    'phone is required': 'Telefone obrigatorio.',
+    'clientid is required': 'Cliente obrigatorio.',
+    'clientid does not exist': 'Cliente informado nao existe.',
+    'device not found': 'Equipamento nao encontrado.',
+    'device not found for client': 'Equipamento nao encontrado para este cliente.',
+    'user not found': 'Usuario nao encontrado.',
+    'user not found for client': 'Usuario nao encontrado para este cliente.',
+    'client not found': 'Cliente nao encontrado.',
+    'alert rule not found': 'Regra de alerta nao encontrada.',
+    'alert rule not found for client':
+      'Regra de alerta nao encontrada para este cliente.',
+    'actuator not found': 'Atuador nao encontrado.',
+    'actuator not found for client': 'Atuador nao encontrado para este cliente.',
+    'actuation schedule not found': 'Rotina de acionamento nao encontrada.',
+    'actuation schedule not found for client':
+      'Rotina de acionamento nao encontrada para este cliente.',
+    'invalid device key': 'Chave do dispositivo invalida.',
+    'unauthorized': 'Nao autorizado.',
+    'forbidden resource': 'Acesso negado a este recurso.',
+  };
+
+  if (directMap[lower]) {
+    return directMap[lower];
+  }
+
+  if (lower.includes('email already') || lower.includes('already exists')) {
+    return 'Ja existe um cadastro com estes dados.';
+  }
+
+  if (lower.includes('does not belong to clientid')) {
+    return 'O registro informado nao pertence a este cliente.';
+  }
+
+  if (lower.includes('only platform admin')) {
+    return 'Somente o administrador da plataforma pode executar esta acao.';
+  }
+
+  if (lower.includes('clientid does not match authenticated session')) {
+    return 'O cliente informado nao corresponde a sessao autenticada.';
+  }
+
+  if (lower.includes('modulekey is not supported')) {
+    return 'Modulo informado nao suportado.';
+  }
+
+  if (lower.includes('itemkey is not supported')) {
+    return 'Item informado nao suportado.';
+  }
+
+  if (lower.includes('itemkey does not belong to modulekey')) {
+    return 'O item informado nao pertence a este modulo.';
+  }
+
+  if (lower.includes('solutionkey/version is not supported')) {
+    return 'Solucao ou versao nao suportada.';
+  }
+
+  return normalized;
+}
+
 async function extractApiErrorMessage(
   response: Response,
   fallback: string,
@@ -43,17 +132,17 @@ async function extractApiErrorMessage(
       | undefined;
 
     if (Array.isArray(payload?.message) && payload.message.length > 0) {
-      return payload.message.join(', ');
+      return payload.message.map((item) => translateApiMessage(item)).join(', ');
     }
 
     if (typeof payload?.message === 'string' && payload.message.trim()) {
-      return payload.message;
+      return translateApiMessage(payload.message);
     }
   } catch {
     // Ignora erro de parse e usa mensagem padrao abaixo.
   }
 
-  return fallback;
+  return translateApiMessage(fallback);
 }
 
 function buildAuthHeaders(authToken?: string) {

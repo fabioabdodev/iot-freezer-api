@@ -69,7 +69,7 @@ export class AuthService {
       !this.verifyPassword(dto.password, (user as any).passwordHash)
     ) {
       this.registerFailedAttempt(loginKey, normalizedEmail, context.ipAddress);
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException('Email ou senha invalidos.');
     }
 
     this.clearLoginAttempts(loginKey);
@@ -135,7 +135,7 @@ export class AuthService {
 
   async validatePasswordResetToken(token?: string) {
     if (!token?.trim()) {
-      throw new BadRequestException('Reset token is required');
+      throw new BadRequestException('Token de recuperacao obrigatorio.');
     }
 
     const tokenRow = await this.findValidPasswordToken(token.trim());
@@ -150,9 +150,9 @@ export class AuthService {
   async resetPassword(dto: ConfirmPasswordResetDto) {
     const token = dto.token.trim();
     const password = dto.password.trim();
-    if (!token) throw new BadRequestException('Reset token is required');
+    if (!token) throw new BadRequestException('Token de recuperacao obrigatorio.');
     if (password.length < 6) {
-      throw new BadRequestException('Password must have at least 6 characters');
+      throw new BadRequestException('A senha deve ter pelo menos 6 caracteres.');
     }
 
     const tokenRow = await this.findValidPasswordToken(token);
@@ -187,7 +187,7 @@ export class AuthService {
     } as any);
 
     if (!user || !(user as any).isActive) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Usuario nao encontrado.');
     }
 
     const issued = await this.issuePasswordResetForUser((user as any).id, 'setup');
@@ -209,7 +209,7 @@ export class AuthService {
 
   async authenticateFromAuthorization(authorization?: string) {
     if (!authorization?.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Missing bearer token');
+      throw new UnauthorizedException('Sessao invalida. Faca login novamente.');
     }
 
     const token = authorization.slice('Bearer '.length).trim();
@@ -219,7 +219,7 @@ export class AuthService {
     } as any);
 
     if (!user || !(user as any).isActive) {
-      throw new UnauthorizedException('Session user not found');
+      throw new UnauthorizedException('Usuario da sessao nao encontrado.');
     }
 
     return this.buildSessionUser(user);
@@ -267,7 +267,7 @@ export class AuthService {
   private verifyToken(token: string): AuthTokenPayload {
     const [encodedPayload, providedSignature] = token.split('.');
     if (!encodedPayload || !providedSignature) {
-      throw new UnauthorizedException('Invalid token format');
+      throw new UnauthorizedException('Formato de token invalido.');
     }
 
     const expectedSignature = this.createSignature(encodedPayload);
@@ -275,7 +275,7 @@ export class AuthService {
       Buffer.byteLength(providedSignature) !== Buffer.byteLength(expectedSignature) ||
       !timingSafeEqual(Buffer.from(providedSignature), Buffer.from(expectedSignature))
     ) {
-      throw new UnauthorizedException('Invalid token signature');
+      throw new UnauthorizedException('Assinatura do token invalida.');
     }
 
     let payload: AuthTokenPayload;
@@ -284,15 +284,15 @@ export class AuthService {
         Buffer.from(encodedPayload, 'base64url').toString('utf8'),
       ) as AuthTokenPayload;
     } catch {
-      throw new UnauthorizedException('Invalid token payload');
+      throw new UnauthorizedException('Conteudo do token invalido.');
     }
 
     if (!payload?.sub || !payload?.email || !payload?.exp) {
-      throw new UnauthorizedException('Invalid token payload');
+      throw new UnauthorizedException('Conteudo do token invalido.');
     }
 
     if (payload.exp <= Date.now()) {
-      throw new UnauthorizedException('Token expired');
+      throw new UnauthorizedException('Sua sessao expirou. Faca login novamente.');
     }
 
     return payload;
@@ -338,7 +338,7 @@ export class AuthService {
       Math.ceil((state.blockedUntil - Date.now()) / 1000),
     );
     throw new HttpException(
-      `Too many login attempts. Try again in ${retryAfterSeconds} seconds.`,
+      `Muitas tentativas de login. Tente novamente em ${retryAfterSeconds} segundos.`,
       HttpStatus.TOO_MANY_REQUESTS,
     );
   }
@@ -487,15 +487,15 @@ export class AuthService {
     });
 
     if (!tokenRow || tokenRow.usedAt) {
-      throw new UnauthorizedException('Invalid or used reset token');
+      throw new UnauthorizedException('Token de recuperacao invalido ou ja utilizado.');
     }
 
     if (new Date(tokenRow.expiresAt).getTime() <= Date.now()) {
-      throw new UnauthorizedException('Reset token expired');
+      throw new UnauthorizedException('O token de recuperacao expirou.');
     }
 
     if (!tokenRow.user || !tokenRow.user.isActive) {
-      throw new UnauthorizedException('Session user not found');
+      throw new UnauthorizedException('Usuario da sessao nao encontrado.');
     }
 
     return tokenRow;
@@ -568,7 +568,7 @@ export class AuthService {
     if (!secret) return;
 
     if (!turnstileToken?.trim()) {
-      throw new BadRequestException('Cloudflare Turnstile token is required');
+      throw new BadRequestException('Confirme a validacao anti-bot antes de continuar.');
     }
 
     const verifyUrl =
@@ -597,7 +597,7 @@ export class AuthService {
         this.logger.warn(
           `Turnstile verification HTTP failure status=${response.status}`,
         );
-        throw new BadRequestException('Cloudflare Turnstile verification failed');
+        throw new BadRequestException('Nao foi possivel validar a verificacao anti-bot.');
       }
 
       const data = (await response.json()) as {
@@ -608,7 +608,7 @@ export class AuthService {
       if (!data.success) {
         const code = data['error-codes']?.join(', ') || 'unknown';
         this.logger.warn(`Turnstile rejected login attempt errorCodes=${code}`);
-        throw new BadRequestException('Cloudflare Turnstile validation failed');
+        throw new BadRequestException('A validacao anti-bot falhou. Tente novamente.');
       }
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -618,7 +618,7 @@ export class AuthService {
       this.logger.warn(
         `Turnstile verification unavailable: ${(error as Error).message}`,
       );
-      throw new BadRequestException('Cloudflare Turnstile verification failed');
+      throw new BadRequestException('Nao foi possivel validar a verificacao anti-bot.');
     }
   }
 
