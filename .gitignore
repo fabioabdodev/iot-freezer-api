@@ -78,12 +78,14 @@ prisma/*.db-journal
 out/
 apps/web/node_modules/
 apps/web/.next/
+institucional-site/web/node_modules/
+institucional-site/web/.next/
 
 # misc local files
 *.local
 
 # escopo local do futuro site institucional
-institucional-site/
+# agora versionado no mesmo repositorio, mas mantido isolado em sua propria pasta
 
 # escopo local do futuro projeto de firmware/hardware
 iot-virtuagil-firmware/

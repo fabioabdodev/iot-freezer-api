@@ -1,0 +1,15 @@
+﻿Leia toda a pasta deste projeto e implemente o site institucional completo em Next.js (App Router + TypeScript), com visual premium e foco comercial da Virtuagil.
+
+Regras:
+- usar a logomarca e favicon da pasta de branding (public/brand)
+- criar páginas: Home, Soluções, Segmentos, Como funciona, Planos, Contato
+- usar os textos e diretrizes das pastas regras/, estrategia/, textos/, comercial/
+- SEO básico (title/description por página, Open Graph, favicon)
+- layout responsivo desktop/mobile
+- CTA para WhatsApp e formulário de contato
+- preparar para deploy Docker (Dockerfile + instruções)
+
+Entregáveis:
+- estrutura de projeto pronta para produção
+- README com comandos de run/build/deploy
+- checklist final de validação

@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  virtuagil-site:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: virtuagil/site-institucional:local
+    networks:
+      - traefik_public
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NEXT_PUBLIC_WHATSAPP_URL=${NEXT_PUBLIC_WHATSAPP_URL}
+      - NEXT_PUBLIC_CONTACT_EMAIL=${NEXT_PUBLIC_CONTACT_EMAIL}
+    deploy:
+      replicas: 1
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik_public
+        - traefik.http.routers.virtuagil-site.rule=Host(`www.virtuagil.com.br`)
+        - traefik.http.routers.virtuagil-site.entrypoints=websecure
+        - traefik.http.routers.virtuagil-site.tls=true
+        - traefik.http.services.virtuagil-site.loadbalancer.server.port=3000
+
+networks:
+  traefik_public:
+    external: true

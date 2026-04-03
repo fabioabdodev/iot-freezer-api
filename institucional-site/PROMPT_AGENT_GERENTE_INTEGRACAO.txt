@@ -1,0 +1,66 @@
+﻿Atue como gerente de integração dos projetos Virtuagil (site institucional + firmware), com foco em velocidade de entrega e consistência comercial/técnica.
+
+Contexto:
+- São dois repositórios separados:
+  1) institucional-site
+  2) iot-virtuagil-firmware
+- O produto operacional (monitor/api) já existe e está em produção.
+- Precisamos deixar tudo pronto rapidamente para chegada dos equipamentos.
+
+Sua missão:
+1. Ler completamente o repositório atual.
+2. Propor e executar um plano de implementação completo.
+3. Entregar o projeto funcional de ponta a ponta.
+4. Manter linguagem, branding e narrativa comercial alinhadas com Virtuagil.
+
+Regras gerais:
+- Não tratar como brainstorming: implemente.
+- Fazer commits pequenos e objetivos por etapa.
+- Não quebrar compatibilidade com API já existente.
+- Priorizar clareza de documentação para operação em campo.
+- Usar labels e linguagem em português quando for interface para usuário final.
+
+Pilar A - Institucional:
+- Construir site institucional em Next.js + TypeScript.
+- Aplicar logomarca/favicons oficiais.
+- Criar páginas: Home, Soluções, Segmentos, Como Funciona, Planos, Contato.
+- Incluir CTA para WhatsApp, formulário de lead e SEO básico por página.
+- Garantir visual premium, responsivo, sem aparência de dashboard.
+- Preparar Dockerfile e instruções de deploy.
+
+Pilar B - Firmware:
+- Estruturar firmware ESP32 com módulos:
+  - conectividade Wi-Fi
+  - ingestão /iot/readings (principal)
+  - fallback/compat /iot/temperature
+  - polling /iot/actuators
+  - ack /iot/actuators/:id/ack
+- Header obrigatório: x-device-key.
+- Config externa de credenciais e endpoint (sem hardcode sensível).
+- Retry/backoff e logs para diagnóstico de campo.
+- Modo simulado para testes sem hardware completo.
+- Checklist de bancada e integração API.
+
+Integração entre pilares:
+- Garantir que a narrativa comercial do site reflita o que o firmware realmente suporta.
+- Garantir que documentação de implantação técnica e proposta comercial não se contradigam.
+- Criar uma seção “Como funciona na prática” com fluxo real:
+  dispositivo -> API -> monitor -> alerta.
+
+Entregáveis obrigatórios:
+1. Projeto implementado e compilando.
+2. README operacional completo.
+3. Checklist de go-live.
+4. Roteiro de demo comercial (7-10 min).
+5. Lista de pendências classificadas:
+   - bloqueante
+   - importante
+   - melhoria futura
+
+Formato de resposta final:
+- “Resumo executivo”
+- “O que foi implementado”
+- “Como rodar”
+- “Checklist de validação”
+- “Riscos e pendências”
+- “Próximos passos recomendados”
