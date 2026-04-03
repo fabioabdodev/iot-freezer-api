@@ -1,63 +1,92 @@
 # Estado Atual do Site Institucional
 
-## Situacao
+## Situação em 2026-04-03
 
-O site institucional ainda nao foi implementado como app real.
+O site institucional já existe como app real em:
 
-Hoje existe:
+- `institucional-site/web`
 
-- base de estrategia
-- base de textos
-- regras de frontend
-- regras de marca
-- materiais comerciais
-- identidade visual basica
+Ele está separado visualmente do monitor e foi preparado para rodar em stack própria no `Portainer`, com `Traefik` e `Cloudflare`, usando o domínio:
 
-## O que ja esta decidido
+- `www.virtuagil.com.br`
 
-- o institucional deve ser separado do monitor
-- a linguagem precisa ser premium, confiavel e moderna
-- a proposta comercial e modular
-- o monitor do cliente final e o painel tecnico do admin sao produtos visuais diferentes
-- o site institucional nao deve parecer um dashboard
+## O que já está implementado
 
-## O que ainda falta decidir na implementacao
+- app institucional em `Next.js`
+- páginas:
+  - `/`
+  - `/solucoes`
+  - `/planos`
+  - `/contato`
+- home com direção comercial
+- header fixo
+- CTA da Jade
+- cards de venda dos módulos
+- uso de `framer-motion`
+- uso de `lucide-react`
+- componentes `ui` próprios no estilo `shadcn`
+- metadata institucional
+- favicon e logomarca em `public/`
 
-- vai nascer em repositorio proprio ou neste repo por pouco tempo
-- stack exata do `web/`
-- se o MVP tera formulario simples ou integracao imediata com WhatsApp
-- quais casos reais entrarao como prova social na primeira versao
+## Infraestrutura adotada
 
-## Conteudo que ja deve orientar a implementacao
+- stack separada no `Portainer`
+- rede pública do ambiente: `network_public`
+- proxy reverso: `Traefik`
+- DNS e borda: `Cloudflare`
+- imagem publicada no `GHCR`
 
-- `textos/TEXTO_HOME.md`
-- `textos/TEXTO_SOLUCOES.md`
-- `textos/TEXTO_SEGMENTOS.md`
-- `textos/FAQ_COMERCIAL.md`
-- `textos/ESTRUTURA_HOME_SECOES.md`
-- `textos/PROPOSTA_VISUAL.md`
+## Arquivos principais desta fase
 
-## Regras que devem ser respeitadas
+- `institucional-site/web/app/page.tsx`
+- `institucional-site/web/app/layout.tsx`
+- `institucional-site/web/app/globals.css`
+- `institucional-site/web/components/site/home-page.tsx`
+- `institucional-site/web/components/site/hero-illustration.tsx`
+- `institucional-site/web/components/ui/button.tsx`
+- `institucional-site/web/components/ui/card.tsx`
+- `institucional-site/web/public/brand/logomarca.png`
+- `institucional-site/web/public/favicon.png`
+- `institucional-site/web/portainer-stack.yml`
+- `.github/workflows/deploy.yml`
 
-- `regras/REGRAS_FRONTEND.md`
-- `regras/REGRAS_MARCA.md`
-- `regras/REGRAS_CONTEUDO.md`
-- `regras/REGRAS_SEO.md`
-- `regras/REGRAS_PRODUTO.md`
+## O que já foi validado
 
-## Recomendacao de inicio
+- build local do institucional: ok
+- stack no `Portainer`: subiu
+- domínio `www.virtuagil.com.br`: abriu
+- certificado/TLS: passou a responder depois do ajuste de imagem/stack
 
-Se o projeto comecar agora, a primeira entrega deve ser:
+## Ponto importante para o próximo agente
 
-1. shell do site
-2. home
-3. solucoes
-4. planos
-5. contato
+Se o site publicado ainda parecer antigo, o problema mais provável não é código. Os pontos a checar são:
 
-So depois:
+1. se a `GitHub Action` terminou;
+2. se a imagem nova foi publicada no `GHCR`;
+3. se a stack `virtuagil-site` foi atualizada no `Portainer`;
+4. se o navegador ainda está com cache antigo.
 
-- segmentos detalhados
-- casos
-- blog
-- paginas comerciais por nicho
+## Decisões já tomadas e que devem ser preservadas
+
+- o institucional não deve parecer dashboard
+- a linguagem deve ser comercial, moderna e confiável
+- a Jade faz parte da experiência comercial
+- o texto-base da Jade no institucional pode usar a linha:
+  - `Como posso ajudar?`
+- o monitor e o institucional devem continuar separados, mesmo estando no mesmo repositório por enquanto
+
+## O que ainda merece evolução
+
+- deixar a home ainda mais premium e autoral
+- revisar visual de `/solucoes`, `/planos` e `/contato` no mesmo nível da home
+- incluir prova social, segmentos e casos de uso reais
+- revisar SEO e Open Graph com mais capricho
+- decidir se o projeto continua neste repositório ou migra depois para repo próprio
+
+## Observação sobre a base da Jade
+
+A pasta `docs/jade-knowledge/` foi revisada localmente para dar à Jade uma base mais ampla, direta e comercial. A versão mais útil para copiar em Google Docs está em:
+
+- `docs/jade-knowledge/formatado/`
+
+Esses arquivos continuam fora do fluxo normal de Git do projeto atual. Se o próximo agente precisar publicar essa base, deve primeiro revisar a regra de versionamento dessa pasta.
