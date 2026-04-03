@@ -120,15 +120,12 @@ jobs:
   deploy-swarm:
     runs-on: ubuntu-latest
     needs: build-and-push
-    env:
-      PORTAINER_WEBHOOK_URL: ${{ secrets.PORTAINER_WEBHOOK_URL }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Encode stack file
-        if: ${{ env.PORTAINER_WEBHOOK_URL == '' }}
+      - name: Encode monitor stack file
         id: stack_payload
         run: |
           {
@@ -138,21 +135,33 @@ jobs:
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
-      - name: Deploy stack via SSH
-        if: ${{ env.PORTAINER_WEBHOOK_URL == '' }}
+      - name: Encode site stack file
+        id: site_stack_payload
+        run: |
+          {
+            echo 'stack_b64<<EOF'
+            base64 -w 0 institucional-site/web/portainer-stack.yml
+            echo
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Deploy monitor and institutional site via SSH
         uses: appleboy/ssh-action@v1.2.0
         env:
           STACK_PROD_YML_BASE64: ${{ steps.stack_payload.outputs.stack_b64 }}
+          SITE_STACK_YML_BASE64: ${{ steps.site_stack_payload.outputs.stack_b64 }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          envs: STACK_PROD_YML_BASE64
+          envs: STACK_PROD_YML_BASE64,SITE_STACK_YML_BASE64
           script: |
             set -e
             mkdir -p /opt/iot-virtuagil-api/deploy/swarm
             printf '%s' "$STACK_PROD_YML_BASE64" | base64 -d > /opt/iot-virtuagil-api/deploy/swarm/stack.prod.yml
+            mkdir -p /opt/virtuagil-site
+            printf '%s' "$SITE_STACK_YML_BASE64" | base64 -d > /opt/virtuagil-site/portainer-stack.yml
             cd /opt/iot-virtuagil-api
 
             if [ ! -f .env.prod ]; then
@@ -223,12 +232,14 @@ jobs:
             export IMAGE_TAG="${{ needs.build-and-push.outputs.image_tag }}"
             export API_IMAGE="${{ needs.build-and-push.outputs.api_image }}"
             export WEB_IMAGE="${{ needs.build-and-push.outputs.web_image }}"
+            export SITE_IMAGE="${{ needs.build-and-push.outputs.site_image }}"
             export APP_RELEASE="${{ github.sha }}"
             export APP_BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
             docker pull "${API_IMAGE}"
             docker pull "${WEB_IMAGE}"
+            docker pull "${SITE_IMAGE}"
             MIGRATE_DATABASE_URL="${DIRECT_DATABASE_URL:-$DATABASE_URL}"
             if [ -z "${MIGRATE_DATABASE_URL}" ]; then
               echo "Falha: DATABASE_URL/DIRECT_DATABASE_URL ausentes para rodar migrate deploy."
@@ -240,10 +251,11 @@ jobs:
               -e DIRECT_DATABASE_URL="${DIRECT_DATABASE_URL:-}" \
               "${API_IMAGE}" npx prisma migrate deploy
             docker stack deploy -c deploy/swarm/stack.prod.yml iot-monitor --with-registry-auth
+            if [ -f /opt/virtuagil-site/.env.prod ]; then
+              set -a
+              . /opt/virtuagil-site/.env.prod
+              set +a
+            fi
+            docker stack deploy -c /opt/virtuagil-site/portainer-stack.yml virtuagil-site --with-registry-auth
             docker service ls | grep iot-monitor
-
-      - name: Trigger Portainer webhook
-        if: ${{ env.PORTAINER_WEBHOOK_URL != '' }}
-        run: |
-          set -e
-          curl -fsSL -X POST "${PORTAINER_WEBHOOK_URL}"
+            docker service ls | grep virtuagil-site

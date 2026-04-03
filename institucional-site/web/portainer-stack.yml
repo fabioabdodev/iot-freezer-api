@@ -2,12 +2,15 @@ version: "3.8"
 
 services:
   virtuagil-site:
-    image: ${SITE_IMAGE:-ghcr.io/fabioabdodev/iot-virtuagil-api/institucional-site:latest}
+    image: ${SITE_IMAGE:?SITE_IMAGE must be set to an immutable image tag}
     networks:
       - network_public
     environment:
       - NODE_ENV=production
       - PORT=3000
+      - SITE_IMAGE=${SITE_IMAGE}
+      - APP_RELEASE=${APP_RELEASE:-unknown}
+      - APP_BUILD_TIME=${APP_BUILD_TIME:-unknown}
       - NEXT_PUBLIC_WHATSAPP_URL=${NEXT_PUBLIC_WHATSAPP_URL}
       - NEXT_PUBLIC_CONTACT_EMAIL=${NEXT_PUBLIC_CONTACT_EMAIL}
     deploy:

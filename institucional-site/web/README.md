@@ -32,3 +32,11 @@ npm run start
 - dominio principal `www.virtuagil.com.br`
 - proxy por `Traefik`
 - DNS e borda por `Cloudflare`
+
+## Regra de release em producao
+
+- nao usar `latest` como referencia efetiva da stack
+- publicar a imagem com tag imutavel `sha-xxxxxxx`
+- preencher `SITE_IMAGE` com essa tag no deploy
+- expor `APP_RELEASE` e `APP_BUILD_TIME` no container
+- validar a release ativa em `https://www.virtuagil.com.br/api/health`
