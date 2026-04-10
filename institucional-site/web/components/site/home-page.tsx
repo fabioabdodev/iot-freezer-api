@@ -8,15 +8,13 @@ import {
   Bot,
   Building2,
   ChevronRight,
-  Gauge,
-  Power,
   Sparkles,
-  Thermometer,
   Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { HeroIllustration } from '@/components/site/hero-illustration';
+import { products } from '@/lib/products';
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -30,70 +28,6 @@ function WhatsAppIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
-const modules = [
-  {
-    title: 'Temperatura',
-    icon: Thermometer,
-    subtitle: 'Entrada comercial mais simples',
-    text: 'Monitoramento continuo para proteger equipamentos, insumos e operacoes sensiveis sem complicar a leitura.',
-    bullets: [
-      'Alertas no momento certo',
-      'Historico por equipamento',
-      'Leitura simples para a equipe',
-    ],
-  },
-  {
-    title: 'Acionamento',
-    icon: Power,
-    subtitle: 'Resposta operacional',
-    text: 'Comandos e rotinas para agir com rapidez, menos improviso e mais controle do que foi feito.',
-    bullets: [
-      'Acionamentos registrados',
-      'Mais padrao na rotina',
-      'Valor percebido maior',
-    ],
-    featured: true,
-  },
-  {
-    title: 'Consumo',
-    icon: Gauge,
-    subtitle: 'Camada premium de gestao',
-    text: 'Leitura eletrica para enxergar desperdicios, prever manutencao e apoiar decisoes com mais clareza.',
-    bullets: [
-      'Corrente, tensao e consumo',
-      'Diagnostico mais profundo',
-      'Mais previsibilidade',
-    ],
-  },
-];
-
-const capabilities = [
-  {
-    title: 'Temperatura',
-    text: 'Proteja o que nao pode sair da faixa ideal.',
-    image:
-      'url(https://images.pexels.com/photos/17630214/pexels-photo-17630214.jpeg?auto=compress&cs=tinysrgb&w=1200)',
-  },
-  {
-    title: 'Acionamento',
-    text: 'Controle operacional com resposta mais rapida.',
-    image:
-      'url(https://images.pexels.com/photos/7662853/pexels-photo-7662853.jpeg?auto=compress&cs=tinysrgb&w=1200)',
-  },
-  {
-    title: 'Consumo',
-    text: 'Acompanhe energia para reduzir desperdicios.',
-    image:
-      'url(https://images.pexels.com/photos/11924298/pexels-photo-11924298.jpeg?auto=compress&cs=tinysrgb&w=1200)',
-  },
-  {
-    title: 'Gases',
-    text: 'Monitore ambiente e utilidades com mais previsibilidade.',
-    image:
-      'url(https://images.pexels.com/photos/29102280/pexels-photo-29102280.jpeg?auto=compress&cs=tinysrgb&w=1200)',
-  },
-];
 
 const segments = [
   'Restaurantes, cozinhas e cadeia fria',
@@ -127,9 +61,14 @@ const rise = {
 type HomePageProps = {
   whatsappUrl: string;
   contactEmail: string;
+  monitorUrl: string;
 };
 
-export function HomePage({ whatsappUrl, contactEmail }: HomePageProps) {
+export function HomePage({
+  whatsappUrl,
+  contactEmail,
+  monitorUrl,
+}: HomePageProps) {
   return (
     <main className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[640px] bg-[radial-gradient(circle_at_top_left,rgba(229,122,65,0.18),transparent_36%),radial-gradient(circle_at_top_right,rgba(31,132,90,0.14),transparent_32%),linear-gradient(180deg,rgba(255,248,241,0.95),rgba(255,248,241,0))]" />
@@ -165,12 +104,19 @@ export function HomePage({ whatsappUrl, contactEmail }: HomePageProps) {
             </Link>
           </nav>
 
-          <Button asChild className="hidden md:inline-flex">
-            <a href={whatsappUrl} target="_blank" rel="noreferrer">
-              <WhatsAppIcon className="h-4 w-4" />
-              Fale com a Jade
-            </a>
-          </Button>
+          <div className="hidden items-center gap-3 md:flex">
+            <Button asChild variant="secondary">
+              <a href={monitorUrl} target="_blank" rel="noreferrer">
+                Area do cliente
+              </a>
+            </Button>
+            <Button asChild>
+              <a href={whatsappUrl} target="_blank" rel="noreferrer">
+                <WhatsAppIcon className="h-4 w-4" />
+                Fale com a Jade
+              </a>
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -179,16 +125,15 @@ export function HomePage({ whatsappUrl, contactEmail }: HomePageProps) {
           <motion.div {...rise}>
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-black/8 bg-white/75 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-600 shadow-[0_12px_40px_rgba(43,33,24,0.06)]">
               <Sparkles className="h-3.5 w-3.5 text-[#e57a41]" />
-              Automacao comercial com cara de marca
+              Automacao comercial
             </div>
 
             <h1 className="max-w-[11ch] font-serif text-5xl leading-[0.94] tracking-[-0.03em] text-stone-950 md:text-7xl">
-              Um site que vende confianca antes de vender tecnologia.
+              Solucoes em monitoramento de equipamentos.
             </h1>
 
             <p className="mt-6 max-w-2xl text-base leading-8 text-stone-600 md:text-lg">
-              Organizamos o monitoramento dos seus equipamentos medindo:
-              temperaturas, gases, acionamentos e consumo de forma automatica,
+              Temperaturas, gases, acionamentos e consumo de forma automatica,
               diminuindo muito os custos operacionais do seu negocio.
             </p>
 
@@ -209,9 +154,15 @@ export function HomePage({ whatsappUrl, contactEmail }: HomePageProps) {
 
             <div className="mt-10 grid gap-3 md:grid-cols-3">
               {[
-                ['Reducao de custo', 'Operacao mais eficiente'],
-                ['Mais clareza', 'Leitura simples para o cliente'],
-                ['Crescimento modular', 'Comece pelo que mais doi'],
+                [
+                  'Reducao de custos',
+                  'Controle tudo remotamente 24 horas por dia.',
+                ],
+                [
+                  'Tenha o controle',
+                  'Receba alertas via WhatsApp e monitore tudo de maneira simples e eficaz.',
+                ],
+                ['Crescimento modular', 'Economia e gestao simples'],
               ].map(([label, value]) => (
                 <div
                   key={label}
@@ -266,106 +217,45 @@ export function HomePage({ whatsappUrl, contactEmail }: HomePageProps) {
       <section className="pb-10 pt-2 md:pb-14">
         <div className="mx-auto w-[min(1240px,calc(100%-32px))]">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {capabilities.map((item, index) => (
+            {products.map((item, index) => (
               <motion.article
                 key={item.title}
                 {...rise}
                 transition={{ ...rise.transition, delay: index * 0.05 }}
-                className="group relative min-h-[290px] overflow-hidden rounded-[30px] border border-black/6"
+                className="group relative min-h-[360px] overflow-hidden rounded-[30px] border border-white/10 bg-[#10171f]"
                 style={{
                   backgroundImage: `${item.image}, linear-gradient(180deg,#4b2d1a,#2f1e12)`,
                 }}
               >
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(38,24,14,0.08),rgba(38,24,14,0.72))] transition duration-300 group-hover:bg-[linear-gradient(180deg,rgba(38,24,14,0.02),rgba(38,24,14,0.68))]" />
-                <div className="absolute inset-0 bg-cover bg-center opacity-0" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,14,20,0.12),rgba(9,14,20,0.88))] transition duration-300 group-hover:bg-[linear-gradient(180deg,rgba(9,14,20,0.06),rgba(9,14,20,0.84))]" />
                 <div className="relative flex h-full flex-col justify-end p-6 text-white">
                   <div className="mb-3 inline-flex w-fit rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] backdrop-blur-sm">
-                    Monitoramento
+                    {item.shortLabel}
                   </div>
                   <h3 className="font-serif text-3xl">{item.title}</h3>
                   <p className="mt-3 max-w-[24ch] text-sm leading-7 text-white/84">
-                    {item.text}
+                    {item.summary}
                   </p>
+                  <ul className="mt-5 grid gap-2 text-sm text-white/78">
+                    {item.bullets.slice(0, 2).map((bullet) => (
+                      <li key={bullet} className="flex items-start gap-2">
+                        <ChevronRight className="mt-0.5 h-4 w-4 flex-none text-[#d9a25f]" />
+                        <span>{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-6">
+                    <Link
+                      href={`/solucoes/${item.slug}`}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/16 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/14"
+                    >
+                      Conheca o produto
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
                 </div>
               </motion.article>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-10 md:py-14">
-        <div className="mx-auto w-[min(1240px,calc(100%-32px))]">
-          <motion.div
-            {...rise}
-            className="mb-7 flex items-end justify-between gap-6"
-          >
-            <div>
-              <div className="text-sm uppercase tracking-[0.22em] text-stone-500">
-                Modulos comerciais
-              </div>
-              <h2 className="mt-3 max-w-[14ch] font-serif text-4xl leading-tight text-stone-950 md:text-5xl">
-                Uma oferta modular para vender melhor sem assustar o cliente.
-              </h2>
-            </div>
-            <p className="hidden max-w-md text-sm leading-7 text-stone-600 lg:block">
-              A entrada comercial pode ser simples. O crescimento vem em
-              camadas, com mais clareza, mais valor percebido e uma proposta
-              facil de explicar.
-            </p>
-          </motion.div>
-
-          <div className="grid gap-4 lg:grid-cols-3">
-            {modules.map((module, index) => {
-              const Icon = module.icon;
-
-              return (
-                <motion.div
-                  key={module.title}
-                  {...rise}
-                  transition={{ ...rise.transition, delay: index * 0.06 }}
-                >
-                  <Card
-                    className={
-                      module.featured
-                        ? 'border-[#e9cbb8] bg-[linear-gradient(180deg,#fffaf6,#fff3ea)] shadow-[0_24px_70px_rgba(190,115,61,0.14)]'
-                        : ''
-                    }
-                  >
-                    <CardContent>
-                      <div className="mb-5 flex items-center justify-between gap-3">
-                        <div className="inline-flex rounded-[20px] bg-[#fff1e7] p-3 text-[#e57a41]">
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <span className="text-[11px] uppercase tracking-[0.18em] text-stone-500">
-                          {module.subtitle}
-                        </span>
-                      </div>
-                      <h3 className="font-serif text-3xl text-stone-950">
-                        {module.title}
-                      </h3>
-                      <p className="mt-4 text-sm leading-7 text-stone-600">
-                        {module.text}
-                      </p>
-                      <ul className="mt-5 grid gap-3 text-sm text-stone-800">
-                        {module.bullets.map((bullet) => (
-                          <li key={bullet} className="flex items-start gap-3">
-                            <ChevronRight className="mt-0.5 h-4 w-4 flex-none text-[#1f845a]" />
-                            <span>{bullet}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <Link
-                        href="/solucoes"
-                        className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#b86438]"
-                      >
-                        Ver modulo
-                        <ChevronRight className="h-4 w-4" />
-                      </Link>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
           </div>
         </div>
       </section>
@@ -380,7 +270,7 @@ export function HomePage({ whatsappUrl, contactEmail }: HomePageProps) {
                   Segmentos
                 </div>
                 <h2 className="max-w-[13ch] font-serif text-4xl leading-tight text-stone-950 md:text-5xl">
-                  Onde a Virtuagil ganha aderencia real.
+                  Onde atuamos
                 </h2>
                 <ul className="mt-6 grid gap-3 text-sm leading-7 text-stone-700">
                   {segments.map((segment) => (

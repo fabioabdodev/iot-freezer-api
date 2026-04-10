@@ -6,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 
 const whatsappUrl =
   process.env.NEXT_PUBLIC_WHATSAPP_URL ?? 'https://wa.me/5531999990000';
+const monitorUrl =
+  process.env.NEXT_PUBLIC_MONITOR_URL ?? 'https://monitor.virtuagil.com.br';
 
 const plans = [
   {
@@ -85,11 +87,18 @@ export default function PlanosPage() {
             </Link>
           </nav>
 
-          <Button asChild className="hidden md:inline-flex">
-            <a href={whatsappUrl} target="_blank" rel="noreferrer">
-              Falar com a Jade
-            </a>
-          </Button>
+          <div className="hidden items-center gap-3 md:flex">
+            <Button asChild variant="secondary">
+              <a href={monitorUrl} target="_blank" rel="noreferrer">
+                Area do cliente
+              </a>
+            </Button>
+            <Button asChild>
+              <a href={whatsappUrl} target="_blank" rel="noreferrer">
+                Falar com a Jade
+              </a>
+            </Button>
+          </div>
         </div>
       </header>
 
