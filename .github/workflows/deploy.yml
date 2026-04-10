@@ -197,11 +197,26 @@ jobs:
               fi
             }
 
+            validate_image_ref() {
+              local key="$1"
+              local value="${!key:-}"
+              if [ -z "$value" ]; then
+                echo "Falha: ${key} nao pode ficar vazia."
+                exit 1
+              fi
+              if ! printf '%s' "$value" | grep -Eq '^[^[:space:]]+/[^[:space:]]+:[^[:space:]]+$'; then
+                echo "Falha: ${key} invalida: $value"
+                exit 1
+              fi
+            }
+
             trim_var DATABASE_URL
             trim_var DIRECT_DATABASE_URL
             trim_var N8N_OFFLINE_WEBHOOK_URL
             trim_var N8N_ONLINE_WEBHOOK_URL
             trim_var N8N_TEMPERATURE_ALERT_WEBHOOK_URL
+            trim_var N8N_ENERGY_ALERT_WEBHOOK_URL
+            trim_var N8N_ACTUATION_WEBHOOK_URL
 
             if [ -z "${DATABASE_URL:-}" ]; then
               echo "Falha: DATABASE_URL nao pode ficar vazia."
@@ -228,6 +243,8 @@ jobs:
             validate_optional_url N8N_OFFLINE_WEBHOOK_URL
             validate_optional_url N8N_ONLINE_WEBHOOK_URL
             validate_optional_url N8N_TEMPERATURE_ALERT_WEBHOOK_URL
+            validate_optional_url N8N_ENERGY_ALERT_WEBHOOK_URL
+            validate_optional_url N8N_ACTUATION_WEBHOOK_URL
 
             export IMAGE_TAG="${{ needs.build-and-push.outputs.image_tag }}"
             export API_IMAGE="${{ needs.build-and-push.outputs.api_image }}"
@@ -235,6 +252,10 @@ jobs:
             export SITE_IMAGE="${{ needs.build-and-push.outputs.site_image }}"
             export APP_RELEASE="${{ github.sha }}"
             export APP_BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+            validate_image_ref API_IMAGE
+            validate_image_ref WEB_IMAGE
+            validate_image_ref SITE_IMAGE
 
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
             docker pull "${API_IMAGE}"
