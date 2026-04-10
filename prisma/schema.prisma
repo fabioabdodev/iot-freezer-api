@@ -383,38 +383,3 @@ model JadeHumanHandoff {
   @@index([status, createdAt])
   @@map("jade_human_handoff")
 }
-
-model JadeKnowledgeRegistry {
-  id                  String    @id @default(uuid())
-  googleDocId         String    @unique @map("google_doc_id")
-  docTopic            String    @map("doc_topic")
-  docTitle            String    @map("doc_title")
-  sourceUpdatedAt     DateTime? @map("source_updated_at")
-  contentHash         String    @map("content_hash")
-  chunkCount          Int       @default(0) @map("chunk_count")
-  vectorDocumentCount Int       @default(0) @map("vector_document_count")
-  active              Boolean   @default(true)
-  lastIngestedAt      DateTime? @map("last_ingested_at")
-  createdAt           DateTime  @default(now()) @map("created_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
-
-  @@index([docTopic])
-  @@index([active])
-  @@map("jade_knowledge_registry")
-}
-
-model JadeKnowledgeDocument {
-  id        String                 @id @default(dbgenerated("gen_random_uuid()::text"))
-  docId     String?                @map("doc_id")
-  topic     String?
-  title     String?
-  content   String
-  metadata  Json                   @default("{}")
-  embedding Unsupported("vector")?
-  createdAt DateTime               @default(now()) @map("created_at")
-  updatedAt DateTime               @updatedAt @map("updated_at")
-
-  @@index([docId])
-  @@index([topic])
-  @@map("jade_knowledge_documents")
-}
