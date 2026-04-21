@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ArrowRight, Bot, Building2, Sparkles, Zap } from 'lucide-react';
+import { ArrowRight, Building2, Sparkles, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { OfferCarousel, type Offer } from '@/components/ui/offer-carousel';
@@ -138,16 +138,6 @@ export function HomePage({ whatsappUrl, contactEmail }: HomePageProps) {
             transition={{ ...rise.transition, delay: 0.08 }}
           >
             <div className="relative rounded-[36px] border border-white/10 bg-[linear-gradient(180deg,rgba(18,22,29,0.94),rgba(10,13,18,0.98))] p-4 shadow-[0_30px_120px_rgba(0,0,0,0.28)] md:p-6">
-              <div className="mb-5 flex items-center justify-between gap-4">
-                <div className="inline-flex items-center gap-2 rounded-full bg-white/6 px-3 py-2 text-sm text-stone-300">
-                  <Bot className="h-4 w-4 text-[#d68642]" />
-                  Jade como assistente comercial
-                </div>
-                <div className="rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs uppercase tracking-[0.18em] text-stone-400">
-                  atendimento inicial
-                </div>
-              </div>
-
               <div className="overflow-hidden rounded-[24px] border border-white/10">
                 <Image
                   src="/hero/iot.jpg"
@@ -167,10 +157,8 @@ export function HomePage({ whatsappUrl, contactEmail }: HomePageProps) {
                   Como posso ajudar?
                 </h2>
                 <p className="mt-3 text-sm leading-7 text-stone-300">
-                  A Jade e nossa secretaria e vai te orientar em tudo. Apresenta
-                  os modulos, entende a principal dor da operacao e orienta o
-                  visitante para o proximo passo comercial com uma linguagem
-                  leve, simples e humana.
+                  A virtuagil e uma empresa de IOT que tem servidores dedicados
+                  e API propria, com suporte 24 horas 7 dias na semana.
                 </p>
               </div>
             </div>
