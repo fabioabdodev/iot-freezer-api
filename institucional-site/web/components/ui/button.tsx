@@ -9,10 +9,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          'bg-[linear-gradient(135deg,#1f8f66_0%,#1a6f52_100%)] text-white shadow-[0_18px_45px_rgba(9,47,34,0.42)] hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_24px_60px_rgba(10,60,42,0.52)]',
+          'bg-[linear-gradient(135deg,var(--btn-primary-from)_0%,var(--btn-primary-to)_100%)] text-white shadow-[0_18px_45px_var(--btn-primary-shadow)] hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_24px_60px_var(--btn-primary-shadow-hover)]',
         secondary:
-          'border border-[#2f7058]/70 bg-[rgba(17,34,28,0.6)] text-[#d8f8ea] shadow-[0_14px_30px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 hover:border-[#58c19a]/70 hover:bg-[rgba(25,54,43,0.72)]',
-        ghost: 'text-[#dcf7eb] hover:bg-[rgba(26,70,54,0.25)]',
+          'border bg-[linear-gradient(135deg,var(--btn-secondary-from)_0%,var(--btn-secondary-to)_100%)] text-[var(--btn-secondary-text)] shadow-[0_14px_36px_var(--btn-secondary-shadow)] hover:-translate-y-0.5 hover:brightness-110',
+        ghost:
+          'border text-[var(--btn-ghost-text)] hover:bg-[var(--btn-ghost-bg-hover)]',
       },
       size: {
         sm: 'h-10 px-4 text-sm',
@@ -37,10 +38,20 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
+    const toneClasses =
+      variant === 'secondary'
+        ? 'border-[var(--btn-secondary-border)] hover:border-[var(--btn-secondary-border-hover)]'
+        : variant === 'ghost'
+          ? 'border-[var(--btn-ghost-border)] bg-[var(--btn-ghost-bg)]'
+          : '';
 
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(
+          buttonVariants({ variant, size }),
+          toneClasses,
+          className,
+        )}
         ref={ref}
         {...props}
       />

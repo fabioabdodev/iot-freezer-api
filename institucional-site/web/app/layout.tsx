@@ -81,6 +81,7 @@ export default function RootLayout({
     process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'contato@virtuagil.com.br';
   const monitorUrl =
     process.env.NEXT_PUBLIC_MONITOR_URL ?? 'https://monitor.virtuagil.com.br';
+  const siteTheme = process.env.NEXT_PUBLIC_SITE_THEME ?? 'emerald-market';
 
   const organizationJsonLd = {
     '@context': 'https://schema.org',
@@ -105,6 +106,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body
         className={`${poppins.variable} ${cormorant.variable} min-h-screen`}
+        data-theme={siteTheme}
       >
         <BackgroundSnippets />
         <script

@@ -1,14 +1,136 @@
 @import 'tailwindcss';
 
 :root {
-  --background: #06080c;
+  --background: #020617;
   --foreground: #f4efe8;
-  --muted: #9d958d;
-  --card: rgba(15, 22, 24, 0.88);
-  --line: rgba(255, 255, 255, 0.08);
+  --muted: #9ba5b4;
+  --card: rgba(10, 20, 31, 0.88);
+  --line: rgba(148, 163, 184, 0.2);
   --brand: #2ca476;
   --brand-2: #7fe2bf;
   --brand-3: #154535;
+
+  --bg-top: #020617;
+  --bg-mid: #040d18;
+  --bg-bottom: #020617;
+  --grid-line: rgba(30, 41, 59, 0.28);
+  --radial-1: rgba(16, 185, 129, 0.18);
+  --radial-2: rgba(14, 116, 144, 0.14);
+  --radial-3: rgba(2, 132, 199, 0.12);
+
+  --btn-primary-from: #1f8f66;
+  --btn-primary-to: #1a6f52;
+  --btn-primary-shadow: rgba(9, 47, 34, 0.42);
+  --btn-primary-shadow-hover: rgba(10, 60, 42, 0.52);
+
+  --btn-secondary-border: #2c8d69;
+  --btn-secondary-from: rgba(18, 86, 63, 0.88);
+  --btn-secondary-to: rgba(12, 60, 44, 0.92);
+  --btn-secondary-text: #eafff5;
+  --btn-secondary-shadow: rgba(8, 39, 29, 0.35);
+  --btn-secondary-border-hover: #4fc49a;
+
+  --btn-ghost-border: rgba(4, 120, 87, 0.5);
+  --btn-ghost-bg: rgba(2, 44, 34, 0.2);
+  --btn-ghost-text: #d1fae5;
+  --btn-ghost-bg-hover: rgba(6, 78, 59, 0.35);
+}
+
+body[data-theme='emerald-market'] {
+  --bg-top: #020617;
+  --bg-mid: #040d18;
+  --bg-bottom: #020617;
+  --grid-line: rgba(30, 41, 59, 0.28);
+  --radial-1: rgba(16, 185, 129, 0.18);
+  --radial-2: rgba(14, 116, 144, 0.14);
+  --radial-3: rgba(2, 132, 199, 0.12);
+}
+
+body[data-theme='blue-market'] {
+  --background: #020617;
+  --foreground: #e8eef8;
+  --card: rgba(8, 16, 32, 0.88);
+  --line: rgba(96, 165, 250, 0.25);
+  --brand: #3b82f6;
+  --brand-2: #93c5fd;
+  --brand-3: #1e3a8a;
+
+  --bg-top: #020617;
+  --bg-mid: #0a1326;
+  --bg-bottom: #020617;
+  --grid-line: rgba(30, 58, 138, 0.3);
+  --radial-1: rgba(59, 130, 246, 0.2);
+  --radial-2: rgba(56, 189, 248, 0.14);
+  --radial-3: rgba(37, 99, 235, 0.12);
+
+  --btn-primary-from: #1d4ed8;
+  --btn-primary-to: #1e40af;
+  --btn-primary-shadow: rgba(30, 64, 175, 0.42);
+  --btn-primary-shadow-hover: rgba(30, 64, 175, 0.58);
+  --btn-secondary-border: #2563eb;
+  --btn-secondary-from: rgba(37, 99, 235, 0.88);
+  --btn-secondary-to: rgba(30, 64, 175, 0.92);
+  --btn-secondary-text: #e0ecff;
+  --btn-secondary-shadow: rgba(30, 64, 175, 0.35);
+  --btn-secondary-border-hover: #60a5fa;
+}
+
+body[data-theme='slate-market'] {
+  --background: #020617;
+  --foreground: #eef2f7;
+  --card: rgba(12, 16, 24, 0.9);
+  --line: rgba(100, 116, 139, 0.28);
+  --brand: #10b981;
+  --brand-2: #34d399;
+  --brand-3: #0f172a;
+
+  --bg-top: #020617;
+  --bg-mid: #0b1220;
+  --bg-bottom: #030712;
+  --grid-line: rgba(71, 85, 105, 0.3);
+  --radial-1: rgba(16, 185, 129, 0.14);
+  --radial-2: rgba(51, 65, 85, 0.2);
+  --radial-3: rgba(15, 23, 42, 0.28);
+
+  --btn-primary-from: #0f766e;
+  --btn-primary-to: #115e59;
+  --btn-primary-shadow: rgba(15, 118, 110, 0.4);
+  --btn-primary-shadow-hover: rgba(15, 118, 110, 0.55);
+  --btn-secondary-border: #0f766e;
+  --btn-secondary-from: rgba(15, 118, 110, 0.9);
+  --btn-secondary-to: rgba(17, 94, 89, 0.9);
+  --btn-secondary-text: #e6fffa;
+  --btn-secondary-shadow: rgba(15, 118, 110, 0.32);
+  --btn-secondary-border-hover: #2dd4bf;
+}
+
+body[data-theme='teal-navy-market'] {
+  --background: #020617;
+  --foreground: #e7f7f3;
+  --card: rgba(8, 19, 28, 0.9);
+  --line: rgba(20, 184, 166, 0.24);
+  --brand: #14b8a6;
+  --brand-2: #5eead4;
+  --brand-3: #0f172a;
+
+  --bg-top: #031018;
+  --bg-mid: #061726;
+  --bg-bottom: #020617;
+  --grid-line: rgba(13, 148, 136, 0.24);
+  --radial-1: rgba(20, 184, 166, 0.18);
+  --radial-2: rgba(6, 182, 212, 0.13);
+  --radial-3: rgba(30, 64, 175, 0.1);
+
+  --btn-primary-from: #0f766e;
+  --btn-primary-to: #115e59;
+  --btn-primary-shadow: rgba(13, 148, 136, 0.38);
+  --btn-primary-shadow-hover: rgba(13, 148, 136, 0.52);
+  --btn-secondary-border: #14b8a6;
+  --btn-secondary-from: rgba(15, 118, 110, 0.9);
+  --btn-secondary-to: rgba(17, 94, 89, 0.92);
+  --btn-secondary-text: #ddfff7;
+  --btn-secondary-shadow: rgba(15, 118, 110, 0.34);
+  --btn-secondary-border-hover: #2dd4bf;
 }
 
 * {
@@ -38,7 +160,12 @@ a {
 }
 
 .text-gradient-brand {
-  background: linear-gradient(90deg, #f8f3ec 0%, #56c59d 42%, #b4ffdf 100%);
+  background: linear-gradient(
+    90deg,
+    #f8f3ec 0%,
+    var(--brand) 42%,
+    var(--brand-2) 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
