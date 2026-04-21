@@ -48,9 +48,9 @@ export function SiteFooter({
           </Link>
 
           <p className="mt-5 max-w-xl text-sm leading-7 text-stone-400">
-            Solucoes em monitoramento de equipamentos com foco em temperatura,
-            gases, acionamentos e consumo para reduzir custo operacional e
-            melhorar o controle da operacao.
+            Soluçoes em monitoramento de equipamentos com foco em Temperatura,
+            Gases, Acionamentos e Consumo para reduzir custos operacionais e
+            melhorar o controle da operação do seu negócio..
           </p>
 
           <p className="mt-6 text-xs uppercase tracking-[0.18em] text-stone-600">
