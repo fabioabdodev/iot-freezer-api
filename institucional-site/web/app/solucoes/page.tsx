@@ -70,7 +70,7 @@ export default function SolucoesPage() {
               key={product.slug}
               className="group relative min-h-[420px] overflow-hidden rounded-[32px] border border-white/10 bg-[#10171f]"
               style={{
-                backgroundImage: `${product.image}, linear-gradient(180deg,#202632,#0e1319)`,
+                backgroundImage: `url(${product.image}), linear-gradient(180deg,#202632,#0e1319)`,
               }}
             >
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,14,20,0.08),rgba(10,14,20,0.88))] transition duration-300 group-hover:bg-[linear-gradient(180deg,rgba(10,14,20,0.04),rgba(10,14,20,0.84))]" />

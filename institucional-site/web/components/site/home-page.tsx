@@ -51,17 +51,6 @@ const rise = {
   transition: { duration: 0.55, ease: 'easeOut' as const },
 };
 
-const productCarouselImages: Record<string, string> = {
-  temperatura:
-    'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1974&auto=format&fit=crop',
-  acionamento:
-    'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1974&auto=format&fit=crop',
-  consumo:
-    'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?q=80&w=1974&auto=format&fit=crop',
-  gases:
-    'https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?q=80&w=1974&auto=format&fit=crop',
-};
-
 type HomePageProps = {
   whatsappUrl: string;
   contactEmail: string;
@@ -70,7 +59,7 @@ type HomePageProps = {
 export function HomePage({ whatsappUrl, contactEmail }: HomePageProps) {
   const productOffers: Offer[] = products.map((item) => ({
     id: item.slug,
-    imageSrc: productCarouselImages[item.slug] ?? item.image,
+    imageSrc: item.image,
     imageAlt: item.title,
     tag: item.shortLabel,
     title: item.title,

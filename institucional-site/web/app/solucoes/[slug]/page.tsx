@@ -73,7 +73,7 @@ export default async function ProductDetailPage({
           <article
             className="relative min-h-[380px] overflow-hidden rounded-[32px] border border-white/10 bg-[#10171f]"
             style={{
-              backgroundImage: `${product.image}, linear-gradient(180deg,#202632,#0e1319)`,
+              backgroundImage: `url(${product.image}), linear-gradient(180deg,#202632,#0e1319)`,
             }}
           >
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,14,20,0.06),rgba(10,14,20,0.82))]" />

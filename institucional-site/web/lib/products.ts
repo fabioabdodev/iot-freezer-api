@@ -34,8 +34,7 @@ export const products: Product[] = [
       'Proteja o que nao pode sair da faixa ideal com historico, alertas e acompanhamento continuo.',
     cardDescription:
       'Ideal para freezers, geladeiras e pontos refrigerados criticos que exigem resposta rapida.',
-    image:
-      'url(https://images.pexels.com/photos/17630214/pexels-photo-17630214.jpeg?auto=compress&cs=tinysrgb&w=1200)',
+    image: '/solucoes/temperatura.jpg',
     icon: Thermometer,
     bullets: [
       'Alertas objetivos no momento certo',
@@ -68,8 +67,7 @@ export const products: Product[] = [
       'Comandos e rotinas para agir com rapidez, menos improviso e mais controle do que foi feito.',
     cardDescription:
       'Um modulo para padronizar resposta operacional e reduzir dependencia de memoria ou improviso.',
-    image:
-      'url(https://images.pexels.com/photos/7662853/pexels-photo-7662853.jpeg?auto=compress&cs=tinysrgb&w=1200)',
+    image: '/solucoes/acionamento.jpg',
     icon: Power,
     bullets: [
       'Acionamentos registrados',
@@ -102,8 +100,7 @@ export const products: Product[] = [
       'Leitura eletrica para enxergar desperdicios, prever manutencao e apoiar decisoes com mais clareza.',
     cardDescription:
       'Uma camada premium para operacoes que precisam entender melhor corrente, tensao e consumo.',
-    image:
-      'url(https://images.pexels.com/photos/11924298/pexels-photo-11924298.jpeg?auto=compress&cs=tinysrgb&w=1200)',
+    image: '/solucoes/consumo.webp',
     icon: Gauge,
     bullets: [
       'Corrente, tensao e consumo',
@@ -136,8 +133,7 @@ export const products: Product[] = [
       'Monitore ambiente e utilidades com uma camada extra de visibilidade para operacoes sensiveis.',
     cardDescription:
       'Ajuda a acompanhar variacoes importantes em ambientes que exigem mais atencao com risco e estabilidade.',
-    image:
-      'url(https://images.pexels.com/photos/29102280/pexels-photo-29102280.jpeg?auto=compress&cs=tinysrgb&w=1200)',
+    image: '/solucoes/gases.jpg',
     icon: Waves,
     bullets: [
       'Mais visibilidade operacional',
